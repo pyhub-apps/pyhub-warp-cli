@@ -1,12 +1,20 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd"
+)
+
+// Build variables - will be set during build
+var (
+	version   = "0.1.0-dev"
+	gitCommit = "unknown"
+	buildDate = "unknown"
 )
 
 func main() {
-	fmt.Println("Sejong CLI - Korean Law Information Search Tool")
-	fmt.Println("Version: 0.1.0-dev")
-	os.Exit(0)
+	// Set version information
+	cmd.SetVersionInfo(version, gitCommit, buildDate)
+	
+	// Execute the root command
+	cmd.Execute()
 }
