@@ -4,7 +4,7 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.20%2B-00ADD8?logo=go)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/badge/Release-2025.08.21--dev-orange)](https://github.com/pyhub-kr/pyhub-sejong-cli/releases)
+[![Release](https://img.shields.io/badge/Release-1.2534.6--dev-orange)](https://github.com/pyhub-kr/pyhub-sejong-cli/releases)
 
 ## 📖 소개
 

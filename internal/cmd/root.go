@@ -10,8 +10,9 @@ import (
 
 var (
 	// Version information - will be set during build
-	// Following HeadVer versioning: YYYY.0M.0D
-	Version   = "2025.08.21-dev"
+	// Following LINE HeadVer versioning: {head}.{yearweek}.{build}
+	// NOTE: real value should be injected via -ldflags; keep a neutral default.
+	Version   = "dev"
 	BuildDate = "unknown"
 	GitCommit = "unknown"
 )
