@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -106,7 +108,7 @@ func TestClient_SearchWithRetry(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		attempts++
 		if attempts < 3 {
-			// Simulate network error
+			// Simulate server error (retryable)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -117,9 +119,10 @@ func TestClient_SearchWithRetry(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Create client with short retry delay for testing
+	// Create client with short retry delay for faster testing
 	client := NewClientWithConfig("test-api-key", 10*time.Second)
 	client.baseURL = server.URL
+	client.retryBaseDelay = 5 * time.Millisecond // Speed up test
 
 	// Test search with retry
 	ctx := context.Background()
@@ -133,7 +136,7 @@ func TestClient_SearchWithRetry(t *testing.T) {
 		t.Fatalf("Search failed after retries: %v", err)
 	}
 
-	// Verify retry happened
+	// Verify exactly 3 attempts (initial + 2 retries)
 	if attempts != 3 {
 		t.Errorf("Expected 3 attempts, got %d", attempts)
 	}
@@ -153,6 +156,7 @@ func TestClient_SearchTimeout(t *testing.T) {
 	// Create client with short timeout
 	client := NewClientWithConfig("test-api-key", 100*time.Millisecond)
 	client.baseURL = server.URL
+	client.retryBaseDelay = 5 * time.Millisecond // Speed up test
 
 	// Test search with timeout
 	ctx := context.Background()
@@ -162,8 +166,33 @@ func TestClient_SearchTimeout(t *testing.T) {
 
 	_, err := client.Search(ctx, req)
 	if err == nil {
-		t.Error("Expected timeout error")
+		t.Fatal("Expected timeout error, got nil")
 	}
+	
+	// Check if it's a timeout error
+	if !isTimeoutError(err) {
+		t.Errorf("Expected timeout error, got: %v", err)
+	}
+}
+
+// isTimeoutError checks if an error is a timeout error
+func isTimeoutError(err error) bool {
+	if err == nil {
+		return false
+	}
+	
+	// Check for net.Error timeout
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
+	
+	// Check for context deadline exceeded
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	
+	return false
 }
 
 func TestClient_SearchWithCancel(t *testing.T) {
@@ -191,6 +220,129 @@ func TestClient_SearchWithCancel(t *testing.T) {
 
 	_, err := client.Search(ctx, req)
 	if err == nil {
-		t.Error("Expected context cancellation error")
+		t.Fatal("Expected context cancellation error, got nil")
+	}
+	
+	// Check if it's a context canceled error
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("Expected context.Canceled error, got: %v", err)
+	}
+}
+
+func TestClient_SearchNoRetryOn4xx(t *testing.T) {
+	attempts := 0
+	// Create a mock server that returns 400 Bad Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error": "bad request"}`))
+	}))
+	defer server.Close()
+
+	// Create client with short retry delay
+	client := NewClientWithConfig("test-api-key", 10*time.Second)
+	client.baseURL = server.URL
+	client.retryBaseDelay = 5 * time.Millisecond
+
+	// Test search
+	ctx := context.Background()
+	req := &SearchRequest{
+		Query: "test",
+	}
+
+	_, err := client.Search(ctx, req)
+	if err == nil {
+		t.Fatal("Expected error for 400 status")
+	}
+
+	// Should not retry on 4xx errors
+	if attempts != 1 {
+		t.Errorf("Expected 1 attempt (no retry on 4xx), got %d", attempts)
+	}
+}
+
+func TestClient_SearchXMLResponse(t *testing.T) {
+	// Create a mock server that returns XML
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/xml")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+		<SearchResponse>
+			<totalCnt>1</totalCnt>
+			<page>1</page>
+			<law>
+				<법령ID>001234</법령ID>
+				<법령명한글>테스트 법령</법령명한글>
+				<법령명약칭>테스트법</법령명약칭>
+				<법령일련번호>12345</법령일련번호>
+				<공포일자>20231201</공포일자>
+				<공포번호>1234</공포번호>
+				<제개정구분명>제정</제개정구분명>
+				<소관부처명>테스트부</소관부처명>
+				<시행일자>20240101</시행일자>
+				<법령구분명>법률</법령구분명>
+			</law>
+		</SearchResponse>`))
+	}))
+	defer server.Close()
+
+	// Create client
+	client := NewClientWithConfig("test-api-key", 10*time.Second)
+	client.baseURL = server.URL
+
+	// Test search with XML response
+	ctx := context.Background()
+	req := &SearchRequest{
+		Query: "test",
+		Type:  TypeXML,
+	}
+
+	resp, err := client.Search(ctx, req)
+	if err != nil {
+		t.Fatalf("Failed to parse XML response: %v", err)
+	}
+
+	// Verify response
+	if resp.TotalCount != 1 {
+		t.Errorf("Expected total count 1, got %d", resp.TotalCount)
+	}
+	if len(resp.Laws) != 1 {
+		t.Errorf("Expected 1 law, got %d", len(resp.Laws))
+	}
+	if resp.Laws[0].Name != "테스트 법령" {
+		t.Errorf("Expected law name '테스트 법령', got '%s'", resp.Laws[0].Name)
+	}
+}
+
+func TestClient_SearchEmptyQuery(t *testing.T) {
+	// Create client
+	client := NewClientWithConfig("test-api-key", 10*time.Second)
+
+	// Test with empty query
+	ctx := context.Background()
+	req := &SearchRequest{
+		Query: "",
+	}
+
+	// For now, empty query is allowed (API will handle it)
+	// In future, we might want to add validation
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query().Get("query")
+		if query != "" {
+			t.Errorf("Expected empty query, got '%s'", query)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"totalCnt": 0, "page": 1, "law": []}`))
+	}))
+	defer server.Close()
+
+	client.baseURL = server.URL
+	resp, err := client.Search(ctx, req)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if resp.TotalCount != 0 {
+		t.Errorf("Expected 0 results for empty query, got %d", resp.TotalCount)
 	}
 }

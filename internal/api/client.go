@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,13 +27,21 @@ const (
 	
 	// Initial retry delay
 	InitialRetryDelay = 1 * time.Second
+	
+	// Supported response types
+	TypeJSON = "JSON"
+	TypeXML  = "XML"
+	
+	// Default target for API requests
+	DefaultTarget = "law"
 )
 
 // Client represents the API client for National Law Information Center
 type Client struct {
-	httpClient *http.Client
-	baseURL    string
-	apiKey     string
+	httpClient     *http.Client
+	baseURL        string
+	apiKey         string
+	retryBaseDelay time.Duration // Configurable retry delay for testing
 }
 
 // SearchRequest represents the search request parameters
@@ -71,6 +80,19 @@ type ErrorInfo struct {
 	Message string `json:"message" xml:"message"`
 }
 
+// RetryableError represents an error that can be retried
+type RetryableError struct {
+	err error
+}
+
+func (e *RetryableError) Error() string {
+	return e.err.Error()
+}
+
+func (e *RetryableError) Unwrap() error {
+	return e.err
+}
+
 // NewClient creates a new API client
 func NewClient() (*Client, error) {
 	apiKey := config.GetAPIKey()
@@ -82,8 +104,9 @@ func NewClient() (*Client, error) {
 		httpClient: &http.Client{
 			Timeout: DefaultTimeout,
 		},
-		baseURL: BaseURL,
-		apiKey:  apiKey,
+		baseURL:        BaseURL,
+		apiKey:         apiKey,
+		retryBaseDelay: InitialRetryDelay,
 	}, nil
 }
 
@@ -93,8 +116,9 @@ func NewClientWithConfig(apiKey string, timeout time.Duration) *Client {
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
-		baseURL: BaseURL,
-		apiKey:  apiKey,
+		baseURL:        BaseURL,
+		apiKey:         apiKey,
+		retryBaseDelay: InitialRetryDelay,
 	}
 }
 
@@ -102,7 +126,7 @@ func NewClientWithConfig(apiKey string, timeout time.Duration) *Client {
 func (c *Client) Search(ctx context.Context, req *SearchRequest) (*SearchResponse, error) {
 	// Set defaults
 	if req.Type == "" {
-		req.Type = "JSON"
+		req.Type = TypeJSON
 	}
 	if req.PageNo == 0 {
 		req.PageNo = 1
@@ -114,7 +138,7 @@ func (c *Client) Search(ctx context.Context, req *SearchRequest) (*SearchRespons
 	// Build URL with parameters
 	params := url.Values{}
 	params.Set("OC", c.apiKey)
-	params.Set("target", "law")
+	params.Set("target", DefaultTarget)
 	params.Set("query", req.Query)
 	params.Set("type", req.Type)
 	params.Set("page", fmt.Sprintf("%d", req.PageNo))
@@ -124,9 +148,9 @@ func (c *Client) Search(ctx context.Context, req *SearchRequest) (*SearchRespons
 
 	// Perform request with retries
 	var lastErr error
-	retryDelay := InitialRetryDelay
+	retryDelay := c.retryBaseDelay
 
-	for attempt := 0; attempt <= MaxRetries; attempt++ {
+	for attempt := 0; attempt < MaxRetries; attempt++ {
 		if attempt > 0 {
 			// Wait before retry with exponential backoff
 			select {
@@ -140,6 +164,10 @@ func (c *Client) Search(ctx context.Context, req *SearchRequest) (*SearchRespons
 		resp, err := c.doRequest(ctx, fullURL)
 		if err != nil {
 			lastErr = err
+			// Only retry on network errors or 5xx server errors
+			if !c.shouldRetry(err) {
+				return nil, err
+			}
 			continue
 		}
 
@@ -158,19 +186,24 @@ func (c *Client) doRequest(ctx context.Context, url string) (*SearchResponse, er
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("네트워크 에러: %w", err)
+		return nil, &RetryableError{fmt.Errorf("네트워크 에러: %w", err)}
 	}
 	defer resp.Body.Close()
 
-	// Read response body
+	// Check HTTP status first
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode >= 500 {
+			// Server error - retryable
+			return nil, &RetryableError{fmt.Errorf("서버 에러: HTTP %d", resp.StatusCode)}
+		}
+		// Client error - not retryable
+		return nil, fmt.Errorf("클라이언트 에러: HTTP %d", resp.StatusCode)
+	}
+
+	// Read response body only if status is OK
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("응답 읽기 실패: %w", err)
-	}
-
-	// Check HTTP status
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("서버 에러: HTTP %d", resp.StatusCode)
 	}
 
 	// Parse response based on content type
@@ -200,4 +233,19 @@ func (c *Client) doRequest(ctx context.Context, url string) (*SearchResponse, er
 	}
 
 	return &searchResp, nil
+}
+
+// shouldRetry determines if an error is retryable
+func (c *Client) shouldRetry(err error) bool {
+	if err == nil {
+		return false
+	}
+	
+	// Check if it's a RetryableError
+	var retryableErr *RetryableError
+	if errors.As(err, &retryableErr) {
+		return true
+	}
+	
+	return false
 }
