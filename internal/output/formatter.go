@@ -36,6 +36,10 @@ func (f *Formatter) FormatSearchResult(resp *api.SearchResponse) error {
 
 // FormatSearchResultToString formats the search results and returns as string
 func (f *Formatter) FormatSearchResultToString(resp *api.SearchResponse) (string, error) {
+	if resp == nil {
+		return "", fmt.Errorf("검색 결과가 없습니다")
+	}
+	
 	switch f.format {
 	case "json":
 		return f.formatJSONToString(resp)

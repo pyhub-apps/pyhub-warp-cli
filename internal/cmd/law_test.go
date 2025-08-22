@@ -305,7 +305,7 @@ func TestSearchLaws(t *testing.T) {
 	
 	// Test table output
 	var buf bytes.Buffer
-	err := searchLaws(mockClient, "테스트", "table", 1, 10, &buf)
+	err := searchLaws(mockClient, "테스트", "table", 1, 10, &buf, false)
 	if err != nil {
 		t.Errorf("searchLaws() error = %v", err)
 	}
@@ -317,7 +317,7 @@ func TestSearchLaws(t *testing.T) {
 	
 	// Test JSON output
 	buf.Reset()
-	err = searchLaws(mockClient, "테스트", "json", 1, 10, &buf)
+	err = searchLaws(mockClient, "테스트", "json", 1, 10, &buf, false)
 	if err != nil {
 		t.Errorf("searchLaws() error = %v", err)
 	}

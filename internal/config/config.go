@@ -57,8 +57,8 @@ func Initialize() error {
 		configPath = filepath.Join(homeDir, ConfigDirName)
 	}
 
-	// Create config directory if it doesn't exist
-	if err := os.MkdirAll(configPath, 0755); err != nil {
+	// Create config directory if it doesn't exist (restricted permissions for security)
+	if err := os.MkdirAll(configPath, 0700); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
@@ -111,7 +111,7 @@ law:
 `
 
 	// Write default config
-	if err := os.WriteFile(configFile, []byte(defaultConfig), 0644); err != nil {
+	if err := os.WriteFile(configFile, []byte(defaultConfig), 0600); err != nil {
 		return fmt.Errorf("failed to write default config: %w", err)
 	}
 

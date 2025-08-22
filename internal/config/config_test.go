@@ -48,7 +48,7 @@ func TestInitialize_ExistingConfig(t *testing.T) {
 	content := `law:
   key: "test-api-key"`
 	
-	if err := os.WriteFile(configFile, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(configFile, []byte(content), 0600); err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
 
@@ -77,7 +77,7 @@ func TestInitialize_InvalidYAML(t *testing.T) {
 	content := `law:
   key: [invalid yaml`
 	
-	if err := os.WriteFile(configFile, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(configFile, []byte(content), 0600); err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
 

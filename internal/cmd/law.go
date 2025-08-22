@@ -92,12 +92,15 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 		client = apiClient
 	}
 	
+	// Get verbose flag
+	verbose, _ := cmd.Flags().GetBool("verbose")
+	
 	// Use searchLaws for the actual search logic
-	return searchLaws(client, query, outputFormat, pageNo, pageSize, cmd.OutOrStdout())
+	return searchLaws(client, query, outputFormat, pageNo, pageSize, cmd.OutOrStdout(), verbose)
 }
 
 // searchLaws performs the actual law search - extracted for testing
-func searchLaws(client APIClient, query string, format string, page int, size int, output io.Writer) error {
+func searchLaws(client APIClient, query string, format string, page int, size int, output io.Writer, verbose bool) error {
 	logger.Info("Searching for: %s (page: %d, size: %d)", query, page, size)
 	
 	// Create search request
@@ -114,7 +117,7 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 	
 	resp, err := client.Search(ctx, req)
 	if err != nil {
-		logger.LogError(err, false)
+		logger.LogError(err, verbose)
 		
 		// Show user-friendly error with hint
 		var cliErr *cliErrors.CLIError
