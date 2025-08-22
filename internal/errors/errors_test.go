@@ -42,29 +42,56 @@ func TestCLIError_Error(t *testing.T) {
 }
 
 func TestCLIError_DetailedError(t *testing.T) {
-	underlying := errors.New("socket timeout")
-	err := &CLIError{
-		Code:       ErrCodeTimeout,
-		Message:    "Request timeout",
-		Hint:       "Try again later",
-		Underlying: underlying,
-	}
+	t.Run("With underlying error", func(t *testing.T) {
+		underlying := errors.New("socket timeout")
+		err := &CLIError{
+			Code:       ErrCodeTimeout,
+			Message:    "Request timeout",
+			Hint:       "Try again later",
+			Underlying: underlying,
+		}
 
-	detailed := err.DetailedError()
-	
-	// Check for all expected parts
-	if !strings.Contains(detailed, "[NET002]") {
-		t.Error("DetailedError should contain error code")
-	}
-	if !strings.Contains(detailed, "Request timeout") {
-		t.Error("DetailedError should contain message")
-	}
-	if !strings.Contains(detailed, "힌트: Try again later") {
-		t.Error("DetailedError should contain hint")
-	}
-	if !strings.Contains(detailed, "socket timeout") {
-		t.Error("DetailedError should contain underlying error")
-	}
+		detailed := err.DetailedError()
+		
+		// Check for all expected parts
+		if !strings.Contains(detailed, "[NET002]") {
+			t.Error("DetailedError should contain error code")
+		}
+		if !strings.Contains(detailed, "Request timeout") {
+			t.Error("DetailedError should contain message")
+		}
+		if !strings.Contains(detailed, "힌트: Try again later") {
+			t.Error("DetailedError should contain hint")
+		}
+		if !strings.Contains(detailed, "socket timeout") {
+			t.Error("DetailedError should contain underlying error")
+		}
+	})
+
+	t.Run("Without underlying error", func(t *testing.T) {
+		err := &CLIError{
+			Code:    ErrCodeInvalidInput,
+			Message: "Invalid input",
+			Hint:    "Check your input",
+		}
+
+		detailed := err.DetailedError()
+		
+		// Check that it contains expected parts
+		if !strings.Contains(detailed, "[VAL001]") {
+			t.Error("DetailedError should contain error code")
+		}
+		if !strings.Contains(detailed, "Invalid input") {
+			t.Error("DetailedError should contain message")
+		}
+		if !strings.Contains(detailed, "힌트: Check your input") {
+			t.Error("DetailedError should contain hint")
+		}
+		// Should NOT contain "상세" field when no underlying error
+		if strings.Contains(detailed, "🔍 상세:") {
+			t.Error("DetailedError should not contain 상세 field when underlying is nil")
+		}
+	})
 }
 
 func TestWrap(t *testing.T) {
