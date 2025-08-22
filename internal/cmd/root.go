@@ -11,7 +11,8 @@ import (
 var (
 	// Version information - will be set during build
 	// Following LINE HeadVer versioning: {head}.{yearweek}.{build}
-	Version   = "1.2534.6-dev"
+	// NOTE: real value should be injected via -ldflags; keep a neutral default.
+	Version   = "dev"
 	BuildDate = "unknown"
 	GitCommit = "unknown"
 )

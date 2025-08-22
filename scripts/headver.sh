@@ -3,7 +3,7 @@
 # Format: {head}.{yearweek}.{build}
 # https://github.com/line/headver
 
-set -e
+set -Eeuo pipefail
 
 # Configuration
 HEAD_VERSION_FILE=".headver"
@@ -16,7 +16,14 @@ cd "$PROJECT_ROOT"
 # Function to get head version
 get_head_version() {
     if [ -f "$HEAD_VERSION_FILE" ]; then
-        cat "$HEAD_VERSION_FILE"
+        local head
+        head="$(cat "$HEAD_VERSION_FILE" | tr -d '\r\n')"
+        if [[ "$head" =~ ^[0-9]+$ ]]; then
+            echo "$head"
+        else
+            echo "Error: invalid head version '$head' in $HEAD_VERSION_FILE" >&2
+            exit 1
+        fi
     else
         echo "1"
     fi
@@ -32,10 +39,10 @@ get_yearweek() {
 
 # Function to get build number
 get_build_number() {
-    if [ -n "$BUILD_NUMBER" ]; then
+    if [ -n "${BUILD_NUMBER:-}" ]; then
         # Use CI/CD build number if available
         echo "$BUILD_NUMBER"
-    elif [ -n "$GITHUB_RUN_NUMBER" ]; then
+    elif [ -n "${GITHUB_RUN_NUMBER:-}" ]; then
         # Use GitHub Actions run number if available
         echo "$GITHUB_RUN_NUMBER"
     else
@@ -50,13 +57,14 @@ get_build_number() {
         fi
         
         # Count commits since week start
-        BUILD=$(git rev-list --count --since="$WEEK_START" HEAD 2>/dev/null || echo "0")
+        BUILD="$(git rev-list --count --since="$WEEK_START" HEAD 2>/dev/null || echo "0")"
+        [[ "$BUILD" =~ ^[0-9]+$ ]] || BUILD="0"
         echo "$BUILD"
     fi
 }
 
 # Parse command line arguments
-case "$1" in
+case "${1:-}" in
     --help|-h)
         cat << EOF
 HeadVer Version Generator
@@ -105,19 +113,28 @@ EOF
         ;;
     
     --set-head)
-        if [ -z "$2" ]; then
+        if [ -z "${2:-}" ]; then
             echo "Error: --set-head requires a version number" >&2
             echo "Usage: $0 --set-head <version>" >&2
             exit 1
         fi
-        echo "$2" > "$HEAD_VERSION_FILE"
-        echo "Head version set to $2"
+        if [[ "$2" =~ ^[0-9]+$ ]]; then
+            printf "%s\n" "$2" > "$HEAD_VERSION_FILE"
+            echo "Head version set to $2"
+        else
+            echo "Error: head version must be a non-negative integer" >&2
+            exit 1
+        fi
         ;;
     
     --bump-head)
-        CURRENT_HEAD=$(get_head_version)
-        NEW_HEAD=$((CURRENT_HEAD + 1))
-        echo "$NEW_HEAD" > "$HEAD_VERSION_FILE"
+        CURRENT_HEAD="$(get_head_version | tr -d '\r\n')"
+        if [[ ! "$CURRENT_HEAD" =~ ^[0-9]+$ ]]; then
+            echo "Error: invalid head version '$CURRENT_HEAD' in $HEAD_VERSION_FILE" >&2
+            exit 1
+        fi
+        NEW_HEAD=$(( CURRENT_HEAD + 1 ))
+        printf "%s\n" "$NEW_HEAD" > "$HEAD_VERSION_FILE"
         echo "Head version bumped from $CURRENT_HEAD to $NEW_HEAD"
         ;;
     
@@ -127,7 +144,7 @@ EOF
         BUILD=$(get_build_number)
         VERSION="${HEAD}.${YEARWEEK}.${BUILD}"
         
-        case "$2" in
+        case "${2:-}" in
             json)
                 printf '{"head":"%s","yearweek":"%s","build":"%s","version":"%s"}\n' \
                     "$HEAD" "$YEARWEEK" "$BUILD" "$VERSION"

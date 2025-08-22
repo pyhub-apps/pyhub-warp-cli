@@ -15,7 +15,7 @@ var configCmd = &cobra.Command{
 	Long: `Sejong CLI의 설정을 관리합니다.
 
 API 키와 같은 설정값을 저장하고 조회할 수 있습니다.
-설정 파일은 ~/.sejong/config.yaml에 저장됩니다.`,
+설정 파일 위치는 'sejong config path' 명령으로 확인할 수 있습니다.`,
 	Example: `  # API 키 설정
   sejong config set law.key YOUR_API_KEY
   
@@ -39,12 +39,17 @@ var configSetCmd = &cobra.Command{
   sejong config set law.key YOUR_API_KEY`,
 	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		key := args[0]
-		value := args[1]
+		key := strings.TrimSpace(args[0])
+		value := strings.TrimSpace(args[1])
 
 		// Validate key format
 		if !isValidConfigKey(key) {
-			return fmt.Errorf("잘못된 설정 키 형식: %s\n사용 가능한 키: law.key", key)
+			return fmt.Errorf("잘못된 설정 키 형식: %s (허용: law.key)", key)
+		}
+		
+		// Validate value is not empty
+		if value == "" {
+			return fmt.Errorf("설정값이 비어있습니다")
 		}
 
 		// Special handling for API key
@@ -77,7 +82,12 @@ var configGetCmd = &cobra.Command{
   sejong config get law.key`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		key := args[0]
+		key := strings.TrimSpace(args[0])
+
+		// Validate key format
+		if !isValidConfigKey(key) {
+			return fmt.Errorf("잘못된 설정 키 형식: %s (허용: law.key)", key)
+		}
 
 		// Special handling for API key
 		if key == "law.key" {
@@ -101,12 +111,19 @@ var configGetCmd = &cobra.Command{
 
 		// Generic config get
 		value := config.Get(key)
-		if value == nil || value == "" {
+		switch v := value.(type) {
+		case nil:
 			fmt.Printf("❌ 설정값이 없습니다: %s\n", key)
 			return nil
+		case string:
+			if strings.TrimSpace(v) == "" {
+				fmt.Printf("❌ 설정값이 없습니다: %s\n", key)
+				return nil
+			}
+			fmt.Printf("%s: %s\n", key, v)
+		default:
+			fmt.Printf("%s: %v\n", key, v)
 		}
-
-		fmt.Printf("%s: %v\n", key, value)
 		return nil
 	},
 }
@@ -145,6 +162,16 @@ func isValidConfigKey(key string) bool {
 
 func init() {
 	// Add subcommands to config
+	// Avoid printing usage on handled errors
+	configCmd.SilenceUsage = true
+	configCmd.SilenceErrors = true
+	configSetCmd.SilenceUsage = true
+	configSetCmd.SilenceErrors = true
+	configGetCmd.SilenceUsage = true
+	configGetCmd.SilenceErrors = true
+	configPathCmd.SilenceUsage = true
+	configPathCmd.SilenceErrors = true
+	
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configPathCmd)
