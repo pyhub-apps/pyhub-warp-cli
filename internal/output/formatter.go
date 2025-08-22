@@ -77,7 +77,12 @@ func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 	// Show pagination info if there are more results
 	if resp.TotalCount > len(resp.Laws) {
 		currentPage := resp.Page
-		totalPages := (resp.TotalCount + len(resp.Laws) - 1) / len(resp.Laws)
+		// Use a default page size of 10 if not enough items to determine
+		pageSize := 10
+		if len(resp.Laws) > 0 {
+			pageSize = len(resp.Laws)
+		}
+		totalPages := (resp.TotalCount + pageSize - 1) / pageSize
 		fmt.Printf("\n페이지 %d/%d (--page 옵션으로 다른 페이지 조회 가능)\n", currentPage, totalPages)
 	}
 	
@@ -94,13 +99,21 @@ func formatDate(date string) string {
 
 // truncateString truncates a string to maxLen and adds ellipsis if needed
 func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
+	if maxLen <= 0 {
+		return ""
 	}
-	// Handle Korean characters properly by using rune slice
+	
+	// Handle Unicode characters properly by using rune slice
 	runes := []rune(s)
 	if len(runes) <= maxLen {
 		return s
 	}
+	
+	// Ensure we don't underflow when adding ellipsis
+	if maxLen <= 3 {
+		// Return just ellipsis dots up to maxLen
+		return "..."[:maxLen]
+	}
+	
 	return string(runes[:maxLen-3]) + "..."
 }

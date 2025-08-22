@@ -3,12 +3,28 @@ package output
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
 )
+
+// captureStdout captures stdout during function execution
+func captureStdout(f func()) string {
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	f()
+
+	w.Close()
+	os.Stdout = old
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+	return buf.String()
+}
 
 func TestNewFormatter(t *testing.T) {
 	tests := []struct {
@@ -54,24 +70,16 @@ func TestFormatSearchResult_JSON(t *testing.T) {
 		},
 	}
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	// Format as JSON
-	f := NewFormatter("json")
-	err := f.FormatSearchResult(resp)
+	// Capture output
+	var err error
+	output := captureStdout(func() {
+		f := NewFormatter("json")
+		err = f.FormatSearchResult(resp)
+	})
+	
 	if err != nil {
 		t.Fatalf("FormatSearchResult failed: %v", err)
 	}
-
-	// Restore stdout and read output
-	w.Close()
-	os.Stdout = old
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
 
 	// Parse JSON output
 	var result api.SearchResponse
@@ -103,24 +111,16 @@ func TestFormatSearchResult_Table(t *testing.T) {
 		},
 	}
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	// Format as table
-	f := NewFormatter("table")
-	err := f.FormatSearchResult(resp)
+	// Capture output
+	var err error
+	output := captureStdout(func() {
+		f := NewFormatter("table")
+		err = f.FormatSearchResult(resp)
+	})
+	
 	if err != nil {
 		t.Fatalf("FormatSearchResult failed: %v", err)
 	}
-
-	// Restore stdout and read output
-	w.Close()
-	os.Stdout = old
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
 
 	// Verify output contains expected elements
 	if !strings.Contains(output, "총 2개의 법령을 찾았습니다") {
@@ -141,24 +141,16 @@ func TestFormatSearchResult_EmptyResult(t *testing.T) {
 		Laws:       []api.LawInfo{},
 	}
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	// Format as table
-	f := NewFormatter("table")
-	err := f.FormatSearchResult(resp)
+	// Capture output
+	var err error
+	output := captureStdout(func() {
+		f := NewFormatter("table")
+		err = f.FormatSearchResult(resp)
+	})
+	
 	if err != nil {
 		t.Fatalf("FormatSearchResult failed: %v", err)
 	}
-
-	// Restore stdout and read output
-	w.Close()
-	os.Stdout = old
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
 
 	// Verify
 	if !strings.Contains(output, "검색 결과가 없습니다") {
@@ -210,6 +202,11 @@ func TestTruncateString(t *testing.T) {
 		{"this is a very long string", 10, "this is..."},
 		{"한글테스트입니다", 5, "한글..."},
 		{"", 10, ""},
+		{"abcdef", 3, "..."},
+		{"abcdef", 2, ".."},
+		{"abcdef", 1, "."},
+		{"abcdef", 0, ""},
+		{"test", -1, ""},
 	}
 
 	for _, tt := range tests {
