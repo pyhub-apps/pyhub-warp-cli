@@ -5,9 +5,9 @@ import (
 )
 
 // Build variables - will be set during build
-// Following HeadVer versioning: YYYY.0M.0D
+// Following LINE HeadVer versioning: {head}.{yearweek}.{build}
 var (
-	version   = "2025.08.21-dev"
+	version   = "1.2534.6-dev"
 	gitCommit = "unknown"
 	buildDate = "unknown"
 )

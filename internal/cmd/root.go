@@ -10,8 +10,8 @@ import (
 
 var (
 	// Version information - will be set during build
-	// Following HeadVer versioning: YYYY.0M.0D
-	Version   = "2025.08.21-dev"
+	// Following LINE HeadVer versioning: {head}.{yearweek}.{build}
+	Version   = "1.2534.6-dev"
 	BuildDate = "unknown"
 	GitCommit = "unknown"
 )
