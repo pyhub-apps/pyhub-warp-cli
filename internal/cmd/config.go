@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	cliErrors "github.com/pyhub-kr/pyhub-sejong-cli/internal/errors"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
 	"github.com/spf13/cobra"
 )
@@ -89,7 +91,12 @@ var configGetCmd = &cobra.Command{
 
 		// Validate key format
 		if !isValidConfigKey(key) {
-			return fmt.Errorf("잘못된 설정 키 형식: %s (허용: law.key)", key)
+			logger.Error("Invalid config key format: %s", key)
+			return cliErrors.New(
+				cliErrors.ErrCodeInvalidInput,
+				fmt.Sprintf("잘못된 설정 키 형식: %s", key),
+				"현재 law.key만 지원됩니다",
+			)
 		}
 
 		// Special handling for API key
