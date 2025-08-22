@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -47,6 +48,9 @@ func Execute() {
 }
 
 func init() {
+	// Initialize configuration
+	cobra.OnInitialize(initConfig)
+	
 	// Global flags
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "상세 로그 출력")
 	
@@ -54,6 +58,13 @@ func init() {
 	rootCmd.Version = fmt.Sprintf("%s (built %s, commit %s)", Version, BuildDate, GitCommit)
 	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{printf "version %s" .Version}}
 `)
+}
+
+// initConfig initializes the configuration
+func initConfig() {
+	if err := config.Initialize(); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: Failed to initialize config: %v\n", err)
+	}
 }
 
 // SetVersionInfo sets the version information for the CLI
