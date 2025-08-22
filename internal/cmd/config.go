@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
 	"github.com/spf13/cobra"
 )
 
@@ -57,7 +58,8 @@ var configSetCmd = &cobra.Command{
 			if err := config.SetAPIKey(value); err != nil {
 				return fmt.Errorf("API 키 설정 실패: %w", err)
 			}
-			fmt.Printf("✅ API 키가 성공적으로 설정되었습니다.\n")
+			guide := onboarding.NewGuide()
+			guide.ShowSuccess("API 키가 성공적으로 설정되었습니다")
 			fmt.Printf("설정 파일: %s\n", config.GetConfigPath())
 			return nil
 		}
@@ -68,7 +70,8 @@ var configSetCmd = &cobra.Command{
 			return fmt.Errorf("설정 저장 실패: %w", err)
 		}
 
-		fmt.Printf("✅ 설정이 저장되었습니다: %s = %s\n", key, value)
+		guide := onboarding.NewGuide()
+		guide.ShowSuccess(fmt.Sprintf("설정이 저장되었습니다: %s = %s", key, value))
 		return nil
 	},
 }
@@ -92,10 +95,8 @@ var configGetCmd = &cobra.Command{
 		// Special handling for API key
 		if key == "law.key" {
 			if !config.IsAPIKeySet() {
-				fmt.Println("❌ API 키가 설정되지 않았습니다.")
-				fmt.Println("\n설정 방법:")
-				fmt.Println("1. API 키 발급: https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9")
-				fmt.Println("2. 키 설정: sejong config set law.key <발급받은_인증키>")
+				guide := onboarding.NewGuide()
+				guide.ShowAPIKeySetup()
 				return nil
 			}
 			

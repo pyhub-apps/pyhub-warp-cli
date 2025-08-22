@@ -3,11 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -59,11 +59,8 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		// Check if it's an API key error
 		if strings.Contains(err.Error(), "API 키") {
-			fmt.Fprintln(os.Stderr, "❌ API 키가 설정되지 않았습니다.")
-			fmt.Fprintln(os.Stderr)
-			fmt.Fprintln(os.Stderr, "국가법령정보센터 오픈 API 이용을 위해 인증키가 필요합니다.")
-			fmt.Fprintln(os.Stderr, "1. 인증키 발급: https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9")
-			fmt.Fprintln(os.Stderr, "2. 키 설정: sejong config set law.key <발급받은_인증키>")
+			guide := onboarding.NewGuide()
+			guide.ShowAPIKeySetup()
 			return nil // Return nil to avoid printing the error twice
 		}
 		return fmt.Errorf("API 클라이언트 생성 실패: %w", err)
@@ -72,7 +69,8 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	// Show searching message
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	if verbose {
-		fmt.Fprintf(os.Stderr, "검색 중... (%s)\n", query)
+		guide := onboarding.NewGuide()
+		guide.ShowSearchProgress(query)
 	}
 	
 	// Create search request
