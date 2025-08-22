@@ -82,6 +82,8 @@ func SetOutput(w io.Writer) {
 // SetColorEnabled enables or disables color output
 func SetColorEnabled(enabled bool) {
 	defaultLogger.useColor = enabled
+	// Also force fatih/color global to honor this toggle
+	color.NoColor = !enabled
 }
 
 // formatMessage formats a log message with timestamp and level
