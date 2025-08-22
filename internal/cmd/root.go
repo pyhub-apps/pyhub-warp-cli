@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -63,8 +64,13 @@ func init() {
 
 // initConfig initializes the configuration
 func initConfig() {
+	// Set up logging based on verbose flag
+	if verbose, _ := rootCmd.PersistentFlags().GetBool("verbose"); verbose {
+		logger.SetVerbose(true)
+	}
+	
 	if err := config.Initialize(); err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: Failed to initialize config: %v\n", err)
+		logger.Warn("Failed to initialize config: %v", err)
 	}
 }
 

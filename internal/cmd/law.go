@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
+	cliErrors "github.com/pyhub-kr/pyhub-sejong-cli/internal/errors"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/output"
 	"github.com/spf13/cobra"
@@ -51,19 +53,26 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	// Get search query
 	query := strings.TrimSpace(args[0])
 	if query == "" {
-		return fmt.Errorf("검색어를 입력해주세요")
+		logger.Debug("Empty query provided")
+		return cliErrors.ErrEmptyQuery
 	}
+	
+	logger.Debug("Starting law search for query: %s", query)
 	
 	// Create API client
 	client, err := api.NewClient()
 	if err != nil {
 		// Check if it's an API key error
-		if strings.Contains(err.Error(), "API 키") {
+		var cliErr *cliErrors.CLIError
+		if errors.As(err, &cliErr) && cliErr.Code == cliErrors.ErrCodeNoAPIKey {
 			guide := onboarding.NewGuide()
 			guide.ShowAPIKeySetup()
 			return nil // Return nil to avoid printing the error twice
 		}
-		return fmt.Errorf("API 클라이언트 생성 실패: %w", err)
+		
+		verbose, _ := cmd.Flags().GetBool("verbose")
+		logger.LogError(err, verbose)
+		return err
 	}
 	
 	// Show searching message
@@ -72,6 +81,8 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 		guide := onboarding.NewGuide()
 		guide.ShowSearchProgress(query)
 	}
+	
+	logger.Info("Searching for: %s (page: %d, size: %d)", query, pageNo, pageSize)
 	
 	// Create search request
 	req := &api.SearchRequest{
@@ -87,13 +98,34 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	
 	resp, err := client.Search(ctx, req)
 	if err != nil {
-		return fmt.Errorf("검색 실패: %w", err)
+		logger.LogError(err, verbose)
+		
+		// Show user-friendly error with hint
+		var cliErr *cliErrors.CLIError
+		if errors.As(err, &cliErr) {
+			if verbose {
+				guide := onboarding.NewGuide()
+				guide.ShowError(cliErr.DetailedError())
+			} else {
+				guide := onboarding.NewGuide()
+				guide.ShowError(err.Error())
+			}
+			return nil // Error already displayed
+		}
+		return err
 	}
+	
+	logger.Info("Search completed: %d results found", resp.TotalCount)
 	
 	// Output results
 	formatter := output.NewFormatter(outputFormat)
 	if err := formatter.FormatSearchResult(resp); err != nil {
-		return fmt.Errorf("출력 실패: %w", err)
+		logger.Error("Failed to format output: %v", err)
+		return cliErrors.Wrap(err, cliErrors.New(
+			cliErrors.ErrCodeDataFormat,
+			"출력 실패",
+			"출력 형식을 확인하세요",
+		))
 	}
 	
 	return nil
