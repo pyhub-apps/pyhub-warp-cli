@@ -31,14 +31,17 @@ var (
 
 // Initialize sets up the configuration system
 func Initialize() error {
-	// Get home directory
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get home directory: %w", err)
-	}
+	// Only set config path if it's not already set (allows for testing)
+	if configPath == "" {
+		// Get home directory
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("failed to get home directory: %w", err)
+		}
 
-	// Set config path
-	configPath = filepath.Join(homeDir, ConfigDirName)
+		// Set config path
+		configPath = filepath.Join(homeDir, ConfigDirName)
+	}
 
 	// Create config directory if it doesn't exist
 	if err := os.MkdirAll(configPath, 0755); err != nil {
