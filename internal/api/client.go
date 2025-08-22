@@ -186,18 +186,41 @@ func (c *Client) doRequest(ctx context.Context, url string) (*SearchResponse, er
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		// Do not retry on explicit context cancellation or deadline
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return nil, fmt.Errorf("요청이 취소되었거나 시간 초과되었습니다: %w", err)
+		}
+		// Treat other transport-level problems as retryable
 		return nil, &RetryableError{fmt.Errorf("네트워크 에러: %w", err)}
 	}
 	defer resp.Body.Close()
 
 	// Check HTTP status first
 	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode >= 500 {
-			// Server error - retryable
-			return nil, &RetryableError{fmt.Errorf("서버 에러: HTTP %d", resp.StatusCode)}
+		switch resp.StatusCode {
+		case http.StatusTooManyRequests: // 429
+			// Rate limit - retryable
+			return nil, &RetryableError{fmt.Errorf("레이트 리밋: HTTP 429 (잠시 후 다시 시도하세요)")}
+		case http.StatusRequestTimeout: // 408
+			// Request timeout - retryable
+			return nil, &RetryableError{fmt.Errorf("요청 타임아웃: HTTP 408")}
+		case http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout: // 502, 503, 504
+			// Server errors - retryable
+			return nil, &RetryableError{fmt.Errorf("일시적 서버 오류: HTTP %d", resp.StatusCode)}
+		case http.StatusInternalServerError: // 500
+			// Internal server error - retryable
+			return nil, &RetryableError{fmt.Errorf("내부 서버 오류: HTTP 500")}
+		case http.StatusUnauthorized, http.StatusForbidden: // 401, 403
+			// Authentication errors - not retryable
+			return nil, fmt.Errorf("인증 실패: HTTP %d - API 키를 확인하세요", resp.StatusCode)
+		default:
+			if resp.StatusCode >= 500 {
+				// Any other 5xx error - retryable
+				return nil, &RetryableError{fmt.Errorf("서버 에러: HTTP %d", resp.StatusCode)}
+			}
+			// 4xx errors - not retryable
+			return nil, fmt.Errorf("클라이언트 에러: HTTP %d", resp.StatusCode)
 		}
-		// Client error - not retryable
-		return nil, fmt.Errorf("클라이언트 에러: HTTP %d", resp.StatusCode)
 	}
 
 	// Read response body only if status is OK
@@ -248,12 +271,4 @@ func (c *Client) shouldRetry(err error) bool {
 	}
 	
 	return false
-}
-
-// min returns the minimum of two integers
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
