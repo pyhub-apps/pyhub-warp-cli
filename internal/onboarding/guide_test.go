@@ -117,7 +117,7 @@ func TestGuide_ShowSuccess(t *testing.T) {
 	if !strings.Contains(output, "Operation completed") {
 		t.Errorf("Output should contain success message")
 	}
-	if !strings.Contains(output, "✓") {
+	if !strings.Contains(output, "✅") {
 		t.Errorf("Output should contain success indicator")
 	}
 }
@@ -132,8 +132,27 @@ func TestGuide_ShowError(t *testing.T) {
 	if !strings.Contains(output, "Operation failed") {
 		t.Errorf("Output should contain error message")
 	}
-	if !strings.Contains(output, "✗") {
+	if !strings.Contains(output, "❌") {
 		t.Errorf("Output should contain error indicator")
+	}
+}
+
+func TestGuide_ShowError_Colored(t *testing.T) {
+	var buf bytes.Buffer
+	guide := NewGuideWithWriter(&buf, true)
+	
+	guide.ShowError("Operation failed")
+	
+	output := buf.String()
+	if !strings.Contains(output, "Operation failed") {
+		t.Errorf("Output should contain error message")
+	}
+	if !strings.Contains(output, "❌") {
+		t.Errorf("Output should contain error indicator")
+	}
+	// Check that ANSI color codes are present
+	if !strings.Contains(output, "\x1b[") {
+		t.Error("Colored output should contain ANSI escape codes")
 	}
 }
 

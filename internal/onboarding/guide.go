@@ -130,7 +130,7 @@ func (g *Guide) ShowSuccess(message string) {
 		green := color.New(color.FgGreen, color.Bold)
 		green.Fprintf(g.writer, "✅ %s\n", message)
 	} else {
-		fmt.Fprintf(g.writer, "✓ %s\n", message)
+		fmt.Fprintf(g.writer, "✅ %s\n", message)
 	}
 }
 
@@ -140,7 +140,7 @@ func (g *Guide) ShowError(message string) {
 		red := color.New(color.FgRed, color.Bold)
 		red.Fprintf(g.writer, "❌ %s\n", message)
 	} else {
-		fmt.Fprintf(g.writer, "✗ %s\n", message)
+		fmt.Fprintf(g.writer, "❌ %s\n", message)
 	}
 }
 
@@ -156,7 +156,12 @@ func (g *Guide) ShowWarning(message string) {
 
 // isTerminal checks if output is a terminal
 func isTerminal() bool {
-	fileInfo, _ := os.Stderr.Stat()
+	fileInfo, err := os.Stderr.Stat()
+	if err != nil {
+		// If we can't stat stderr, assume it's not a terminal
+		// This is safe because we'll just disable colors
+		return false
+	}
 	return (fileInfo.Mode() & os.ModeCharDevice) != 0
 }
 
