@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func TestLawCommand(t *testing.T) {
@@ -113,11 +112,8 @@ func TestLawCommandFlags(t *testing.T) {
 
 func TestLawCommandWithAPIKey(t *testing.T) {
 	// Setup test environment
-	tempDir, err := os.MkdirTemp("", "sejong-law-test-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
-	defer os.RemoveAll(tempDir)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-*")
+	defer cleanup()
 	
 	// Mock API server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -169,12 +165,9 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 	}))
 	defer server.Close()
 	
-	// Set API key and server URL for testing
-	os.Setenv("SEJONG_CONFIG_PATH", tempDir)
-	defer os.Unsetenv("SEJONG_CONFIG_PATH")
-	
-	// Reset viper and config
-	viper.Reset()
+	// Reset config and set test path
+	config.ResetConfig()
+	config.SetTestConfigPath(tempDir)
 	
 	// Initialize config
 	if err := config.Initialize(); err != nil {
@@ -202,7 +195,7 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 			name:       "JSON format",
 			args:       []string{"law", "개인정보", "--format", "json"},
 			format:     "json",
-			wantOutput: `"법령명한글":"개인정보 보호법"`,
+			wantOutput: `"법령명한글": "개인정보 보호법"`,
 		},
 		{
 			name:       "Default format (table)",
@@ -214,9 +207,9 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 	
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// We can't override the BaseURL constant, so skip this test for now
-			// In production, we'd need to refactor the api package to support dependency injection
-			t.Skip("Skipping test that requires API server mock - need to refactor api package")
+			// Create a mock API client with test server URL
+			testAPIClient = api.NewClientWithURL("test-api-key", server.URL)
+			defer func() { testAPIClient = nil }()
 			
 			// Create a new root command for testing
 			cmd := &cobra.Command{Use: "test"}
@@ -248,17 +241,12 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 
 func TestLawCommandNoAPIKey(t *testing.T) {
 	// Setup test environment without API key
-	tempDir, err := os.MkdirTemp("", "sejong-law-test-nokey-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
-	defer os.RemoveAll(tempDir)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-nokey-*")
+	defer cleanup()
 	
-	os.Setenv("SEJONG_CONFIG_PATH", tempDir)
-	defer os.Unsetenv("SEJONG_CONFIG_PATH")
-	
-	// Reset viper and config
-	viper.Reset()
+	// Reset config and set test path
+	config.ResetConfig()
+	config.SetTestConfigPath(tempDir)
 	
 	// Initialize config without API key
 	if err := config.Initialize(); err != nil {
@@ -277,16 +265,16 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 	// Set args
 	cmd.SetArgs([]string{"law", "개인정보"})
 	
-	// Execute command - should show API key setup guide
-	err = cmd.Execute()
-	if err != nil {
-		t.Errorf("Execute() should not error when showing guide, got %v", err)
+	// Execute command - should return error about missing API key
+	err := cmd.Execute()
+	if err == nil {
+		t.Error("Execute() should return error when API key is not set")
 	}
 	
-	// Check that API key setup guide is shown
+	// Check that error message contains API key setup instruction
 	output := buf.String()
-	if !strings.Contains(output, "API 키 설정이 필요합니다") {
-		t.Errorf("Output should contain API key setup guide, got %q", output)
+	if !strings.Contains(output, "API 키가 설정되지 않았습니다") {
+		t.Errorf("Output should contain API key error message, got %q", output)
 	}
 }
 

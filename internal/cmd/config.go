@@ -60,9 +60,9 @@ var configSetCmd = &cobra.Command{
 			if err := config.SetAPIKey(value); err != nil {
 				return fmt.Errorf("API 키 설정 실패: %w", err)
 			}
-			guide := onboarding.NewGuide()
+			guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
 			guide.ShowSuccess("API 키가 성공적으로 설정되었습니다")
-			fmt.Printf("설정 파일: %s\n", config.GetConfigPath())
+			fmt.Fprintf(cmd.OutOrStdout(), "설정 파일: %s\n", config.GetConfigPath())
 			return nil
 		}
 
@@ -72,7 +72,7 @@ var configSetCmd = &cobra.Command{
 			return fmt.Errorf("설정 저장 실패: %w", err)
 		}
 
-		guide := onboarding.NewGuide()
+		guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
 		guide.ShowSuccess(fmt.Sprintf("설정이 저장되었습니다: %s = %s", key, value))
 		return nil
 	},
@@ -102,7 +102,7 @@ var configGetCmd = &cobra.Command{
 		// Special handling for API key
 		if key == "law.key" {
 			if !config.IsAPIKeySet() {
-				guide := onboarding.NewGuide()
+				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
 				guide.ShowAPIKeySetup()
 				return nil
 			}
@@ -110,9 +110,9 @@ var configGetCmd = &cobra.Command{
 			apiKey := config.GetAPIKey()
 			// Mask API key for security (show first 10 chars only)
 			if len(apiKey) > 10 {
-				fmt.Printf("%s: %s...(%d자)\n", key, apiKey[:10], len(apiKey))
+				fmt.Fprintf(cmd.OutOrStdout(), "%s: %s...(%d자)\n", key, apiKey[:10], len(apiKey))
 			} else {
-				fmt.Printf("%s: %s\n", key, apiKey)
+				fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", key, apiKey)
 			}
 			return nil
 		}
@@ -121,16 +121,16 @@ var configGetCmd = &cobra.Command{
 		value := config.Get(key)
 		switch v := value.(type) {
 		case nil:
-			fmt.Printf("❌ 설정값이 없습니다: %s\n", key)
+			fmt.Fprintf(cmd.OutOrStdout(), "❌ 설정값이 없습니다: %s\n", key)
 			return nil
 		case string:
 			if strings.TrimSpace(v) == "" {
-				fmt.Printf("❌ 설정값이 없습니다: %s\n", key)
+				fmt.Fprintf(cmd.OutOrStdout(), "❌ 설정값이 없습니다: %s\n", key)
 				return nil
 			}
-			fmt.Printf("%s: %s\n", key, v)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", key, v)
 		default:
-			fmt.Printf("%s: %v\n", key, v)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s: %v\n", key, v)
 		}
 		return nil
 	},
@@ -143,7 +143,7 @@ var configPathCmd = &cobra.Command{
 	Long:  `설정 파일의 경로를 확인합니다.`,
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("설정 파일 경로: %s\n", config.GetConfigPath())
+		fmt.Fprintf(cmd.OutOrStdout(), "설정 파일 경로: %s\n", config.GetConfigPath())
 		return nil
 	},
 }

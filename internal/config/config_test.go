@@ -5,41 +5,17 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
 	"github.com/spf13/viper"
 )
 
-func setupTestConfig(t *testing.T) (string, func()) {
-	// Create temporary directory for test config
-	tempDir, err := os.MkdirTemp("", "sejong-config-test-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
-
-	// Store original config path and cfg
-	originalPath := configPath
-	originalCfg := cfg
-	
-	// Set test config path before Initialize is called
-	configPath = tempDir
-	
-	// Reset viper for clean state
-	viper.Reset()
-	cfg = nil
-	
-	// Cleanup function
-	cleanup := func() {
-		configPath = originalPath
-		cfg = originalCfg
-		os.RemoveAll(tempDir)
-		viper.Reset()
-	}
-	
-	return tempDir, cleanup
-}
-
 func TestInitialize(t *testing.T) {
-	tempDir, cleanup := setupTestConfig(t)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	ResetConfig()
+	SetTestConfigPath(tempDir)
 
 	// Test initialization
 	err := Initialize()
@@ -60,8 +36,12 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestInitialize_ExistingConfig(t *testing.T) {
-	tempDir, cleanup := setupTestConfig(t)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	ResetConfig()
+	SetTestConfigPath(tempDir)
 
 	// Create a config file with content
 	configFile := filepath.Join(tempDir, ConfigFileName+"."+ConfigFileType)
@@ -85,8 +65,12 @@ func TestInitialize_ExistingConfig(t *testing.T) {
 }
 
 func TestInitialize_InvalidYAML(t *testing.T) {
-	tempDir, cleanup := setupTestConfig(t)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	ResetConfig()
+	SetTestConfigPath(tempDir)
 
 	// Create an invalid YAML config file
 	configFile := filepath.Join(tempDir, ConfigFileName+"."+ConfigFileType)
@@ -146,8 +130,12 @@ func TestGetAPIKey(t *testing.T) {
 }
 
 func TestSetAPIKey(t *testing.T) {
-	tempDir, cleanup := setupTestConfig(t)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	ResetConfig()
+	SetTestConfigPath(tempDir)
 
 	// Initialize config first
 	if err := Initialize(); err != nil {
@@ -305,8 +293,12 @@ func TestSet(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
-	tempDir, cleanup := setupTestConfig(t)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	ResetConfig()
+	SetTestConfigPath(tempDir)
 
 	// Initialize config
 	if err := Initialize(); err != nil {
@@ -340,8 +332,12 @@ func TestSave(t *testing.T) {
 }
 
 func TestGetConfigPath(t *testing.T) {
-	tempDir, cleanup := setupTestConfig(t)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	ResetConfig()
+	SetTestConfigPath(tempDir)
 
 	expected := filepath.Join(tempDir, ConfigFileName+"."+ConfigFileType)
 	got := GetConfigPath()
@@ -352,8 +348,12 @@ func TestGetConfigPath(t *testing.T) {
 }
 
 func TestCreateDefaultConfig(t *testing.T) {
-	tempDir, cleanup := setupTestConfig(t)
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	ResetConfig()
+	SetTestConfigPath(tempDir)
 
 	// Create default config
 	err := createDefaultConfig()

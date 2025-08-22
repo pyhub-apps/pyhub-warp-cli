@@ -29,6 +29,20 @@ var (
 	configPath string
 )
 
+// SetTestConfigPath sets a custom config path for testing
+// This should only be used in test files
+func SetTestConfigPath(path string) {
+	configPath = path
+}
+
+// ResetConfig resets the configuration state for testing
+// This should only be used in test files
+func ResetConfig() {
+	cfg = nil
+	configPath = ""
+	viper.Reset()
+}
+
 // Initialize sets up the configuration system
 func Initialize() error {
 	// Only set config path if it's not already set (allows for testing)

@@ -2,38 +2,14 @@ package cmd
 
 import (
 	"bytes"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-func setupConfigTest(t *testing.T) func() {
-	// Create temp directory for test config
-	tempDir, err := os.MkdirTemp("", "sejong-cmd-test-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
-	
-	// Initialize config with test directory
-	// We need to use reflection or some other method to set the configPath
-	// For now, we'll use environment variable approach
-	os.Setenv("SEJONG_CONFIG_PATH", tempDir)
-	
-	// Reset viper
-	viper.Reset()
-	
-	// Cleanup function
-	return func() {
-		os.Unsetenv("SEJONG_CONFIG_PATH")
-		os.RemoveAll(tempDir)
-		viper.Reset()
-	}
-}
 
 func TestConfigCommand(t *testing.T) {
 	tests := []struct {
@@ -86,8 +62,13 @@ func TestConfigCommand(t *testing.T) {
 }
 
 func TestConfigSetCommand(t *testing.T) {
-	cleanup := setupConfigTest(t)
+	// Setup test config
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	config.ResetConfig()
+	config.SetTestConfigPath(tempDir)
 	
 	// Initialize config
 	if err := config.Initialize(); err != nil {
@@ -178,8 +159,13 @@ func TestConfigSetCommand(t *testing.T) {
 }
 
 func TestConfigGetCommand(t *testing.T) {
-	cleanup := setupConfigTest(t)
+	// Setup test config
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	config.ResetConfig()
+	config.SetTestConfigPath(tempDir)
 	
 	// Initialize config
 	if err := config.Initialize(); err != nil {
@@ -219,7 +205,7 @@ func TestConfigGetCommand(t *testing.T) {
 			},
 			args:       []string{"config", "get", "law.key"},
 			wantErr:    false,
-			wantOutput: "test-api-ke...",
+			wantOutput: "law.key: test-api-k",
 		},
 		{
 			name: "Short API key",
@@ -279,8 +265,13 @@ func TestConfigGetCommand(t *testing.T) {
 }
 
 func TestConfigPathCommand(t *testing.T) {
-	cleanup := setupConfigTest(t)
+	// Setup test config
+	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
+	
+	// Reset config and set test path
+	config.ResetConfig()
+	config.SetTestConfigPath(tempDir)
 	
 	// Initialize config
 	if err := config.Initialize(); err != nil {
