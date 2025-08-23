@@ -7,7 +7,27 @@
 [![Tests](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/test.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/test.yml)
 [![Build](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/build.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/build.yml)
 
-[한국어](#한국어) | [English](#english)
+## 📑 목차 / Table of Contents
+
+### 한국어
+- [소개](#-소개)
+- [주요 기능](#-주요-기능)
+- [설치](#-설치)
+- [빠른 시작](#-빠른-시작)
+- [명령어 가이드](#-명령어-가이드)
+- [출력 예제](#-출력-예제)
+- [개발](#️-개발)
+- [문제 해결](#-문제-해결)
+- [기여하기](#-기여하기)
+- [라이선스](#-라이선스)
+
+### English
+- [Introduction](#-introduction)
+- [Key Features](#-key-features)
+- [Installation](#-installation)
+- [Quick Start](#-quick-start)
+- [License](#-license)
+- [Acknowledgments](#-acknowledgments)
 
 ---
 
@@ -160,7 +180,7 @@ sejong config --help
 
 #### 테이블 형식 (기본)
 
-```
+```text
 총 3개의 법령을 찾았습니다.
 
 번호  법령명                                          법령구분   소관부처        시행일자
@@ -238,7 +258,7 @@ sejong config set law.key YOUR_NEW_API_KEY
 
 - 인터넷 연결 상태를 확인하세요
 - 방화벽이나 프록시 설정을 확인하세요
-- API 서버 상태를 확인하세요: https://www.law.go.kr
+- API 서버 상태를 확인하세요: [https://www.law.go.kr](https://www.law.go.kr)
 
 #### 권한 오류 (macOS/Linux)
 
@@ -295,6 +315,13 @@ tar -xzf pyhub-sejong-cli_Darwin_arm64.tar.gz
 sudo mv sejong /usr/local/bin/
 ```
 
+##### macOS (Intel)
+```bash
+curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_x86_64.tar.gz
+tar -xzf pyhub-sejong-cli_Darwin_x86_64.tar.gz
+sudo mv sejong /usr/local/bin/
+```
+
 ##### Windows
 ```powershell
 # Run in PowerShell
@@ -323,9 +350,184 @@ make install
 
 ### 🎯 Quick Start
 
-1. **Get API Key**: Register at [National Law Information Center](https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9)
-2. **Configure API Key**: `sejong config set law.key YOUR_API_KEY`
-3. **Search Laws**: `sejong law "search term"`
+#### 1. Get API Key
+
+Get your Open API authentication key from the National Law Information Center:
+👉 [https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9](https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9)
+
+#### 2. Configure API Key
+
+```bash
+sejong config set law.key YOUR_API_KEY
+```
+
+#### 3. First Search
+
+```bash
+# Search laws
+sejong law "personal information"
+
+# Output in JSON format
+sejong law "traffic law" --format json
+
+# Specify page
+sejong law "civil law" --page 2 --size 20
+```
+
+### 📚 Command Guide
+
+#### Law Search
+
+```bash
+# Basic search
+sejong law "search term"
+
+# Specify output format
+sejong law "search term" --format json  # JSON format
+sejong law "search term" --format table # Table format (default)
+
+# Pagination
+sejong law "search term" --page 2 --size 20
+
+# Verbose logging
+sejong law "search term" --verbose
+sejong law "search term" -v  # Short option
+```
+
+#### Configuration Management
+
+```bash
+# Set API key
+sejong config set law.key YOUR_API_KEY
+
+# Check API key (masked output)
+sejong config get law.key
+
+# Check configuration file path
+sejong config path
+```
+
+#### Version and Help
+
+```bash
+# Version information
+sejong version
+
+# General help
+sejong --help
+sejong -h
+
+# Command-specific help
+sejong law --help
+sejong config --help
+```
+
+### 📊 Output Examples
+
+#### Table Format (Default)
+
+```text
+Found 3 laws in total.
+
+No.   Law Name                                        Type      Department              Effective Date
+----------------------------------------------------------------------------------------------------
+1     Personal Information Protection Act             Law       Personal Information    2024-03-15
+                                                                 Protection Commission
+2     Personal Information Protection Act             Decree    Personal Information    2024-03-15
+      Enforcement Decree                                        Protection Commission
+3     Personal Information Protection Act             Rule      Personal Information    2024-03-15
+      Enforcement Rules                                         Protection Commission
+```
+
+#### JSON Format
+
+```json
+{
+  "totalCnt": 3,
+  "page": 1,
+  "law": [
+    {
+      "법령ID": "173995",
+      "법령명한글": "Personal Information Protection Act",
+      "법령구분명": "Law",
+      "소관부처명": "Personal Information Protection Commission",
+      "시행일자": "20240315"
+    }
+  ]
+}
+```
+
+### 🛠️ Development
+
+#### Development Environment Setup
+
+```bash
+# Install dependencies
+go mod download
+
+# Run tests
+make test
+
+# Test coverage
+make test-coverage
+
+# Code formatting
+make fmt
+
+# Lint check
+make lint
+```
+
+#### Build
+
+```bash
+# Build for current platform
+make build
+
+# Development build (with race detector)
+make dev
+
+# Build for all platforms (release snapshot)
+make release-snapshot
+```
+
+### 🐛 Troubleshooting
+
+#### API Key Not Set
+
+```bash
+# Check if API key is properly set
+sejong config get law.key
+
+# Reset API key
+sejong config set law.key YOUR_NEW_API_KEY
+```
+
+#### Network Errors
+
+- Check your internet connection
+- Verify firewall or proxy settings
+- Check API server status: [https://www.law.go.kr](https://www.law.go.kr)
+
+#### Permission Errors (macOS/Linux)
+
+```bash
+# Grant execution permission
+chmod +x sejong
+
+# Install to system path with sudo
+sudo mv sejong /usr/local/bin/
+```
+
+### 🤝 Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+1. Create an issue first
+2. Fork and create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Submit a Pull Request
 
 ### 📄 License
 
