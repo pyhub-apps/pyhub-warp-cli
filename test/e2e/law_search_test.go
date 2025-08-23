@@ -33,7 +33,7 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 	// Scenario 1: Search without API key - should show guidance
 	t.Run("SearchWithoutAPIKey", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "law", "개인정보 보호법")
+		cmd := exec.Command(getSejongPath(), "--lang", "ko", "law", "개인정보 보호법")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -46,7 +46,7 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 	// Scenario 2: Set API key
 	t.Run("SetAPIKey", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "config", "set", "law.key", "TEST_API_KEY")
+		cmd := exec.Command(getSejongPath(), "--lang", "ko", "config", "set", "law.key", "TEST_API_KEY")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -58,7 +58,7 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 	// Scenario 3: Verify API key is set
 	t.Run("GetAPIKey", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "config", "get", "law.key")
+		cmd := exec.Command(getSejongPath(), "--lang", "en", "config", "get", "law.key")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -231,7 +231,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 func TestE2EVersionAndHelp(t *testing.T) {
 	// Test version command
 	t.Run("VersionCommand", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "version")
+		cmd := exec.Command(getSejongPath(), "--lang", "en", "version")
 		output, err := cmd.CombinedOutput()
 		require.NoError(t, err, "Command failed: %s", string(output))
 

@@ -11,11 +11,21 @@ import (
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
 )
 
 func TestLawCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize law command
+	initLawCmd()
+
 	tests := []struct {
 		name        string
 		args        []string
@@ -82,6 +92,15 @@ func TestLawCommand(t *testing.T) {
 }
 
 func TestLawCommandFlags(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize law command
+	initLawCmd()
+
 	// Test that flags are properly registered
 	if lawCmd.Flag("format") == nil {
 		t.Error("format flag not registered")
@@ -111,6 +130,15 @@ func TestLawCommandFlags(t *testing.T) {
 }
 
 func TestLawCommandWithAPIKey(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize law command
+	initLawCmd()
+
 	// Setup test environment
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-*")
 	defer cleanup()
@@ -240,6 +268,15 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 }
 
 func TestLawCommandNoAPIKey(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize law command
+	initLawCmd()
+
 	// Setup test environment without API key
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-nokey-*")
 	defer cleanup()
@@ -279,6 +316,12 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 }
 
 func TestSearchLaws(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
 	// Test with mock client
 	mockClient := &mockAPIClient{
 		searchFunc: func(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {

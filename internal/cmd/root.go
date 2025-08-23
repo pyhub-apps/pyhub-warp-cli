@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -16,18 +17,21 @@ var (
 	Version   = "dev"
 	BuildDate = "unknown"
 	GitCommit = "unknown"
+
+	// Language flag
+	langFlag string
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "sejong",
-	Short: "한국 법령 정보 검색 CLI 도구",
-	Long: `Sejong CLI는 국가법령정보센터 오픈 API를 활용하여
-터미널에서 빠르고 쉽게 한국 법령 정보를 검색할 수 있는 도구입니다.
+var rootCmd *cobra.Command
 
-개발자, 연구원, 법률 전문가들이 효율적으로 법령 정보에
-접근할 수 있도록 설계되었습니다.`,
-	Example: `  # 법령 검색
+// initRootCmd initializes the root command with i18n support
+func initRootCmd() {
+	rootCmd = &cobra.Command{
+		Use:   "sejong",
+		Short: i18n.T("cli.short"),
+		Long:  i18n.T("cli.long"),
+		Example: `  # 법령 검색
   sejong law "개인정보 보호법"
   
   # JSON 형식으로 출력
@@ -35,31 +39,102 @@ var rootCmd = &cobra.Command{
   
   # API 키 설정
   sejong config set law.key YOUR_API_KEY`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		// If no subcommand is provided, show help
-		return cmd.Help()
-	},
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// Set language if specified
+			if langFlag != "" {
+				i18n.SetLanguage(langFlag)
+				// Re-initialize commands with new language
+				updateCommandDescriptions()
+			}
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// If no subcommand is provided, show help
+			return cmd.Help()
+		},
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately
 func Execute() {
+	// Initialize i18n first
+	if err := i18n.Init(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initialize i18n: %v\n", err)
+	}
+
+	// Initialize root command with i18n support
+	initRootCmd()
+	setupFlags()
+
+	// Initialize and add subcommands
+	initVersionCmd()
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+	initLawCmd()
+
+	// Add version command to root
+	rootCmd.AddCommand(versionCmd)
+
+	// Add config command and its subcommands
+	configCmd.SilenceUsage = true
+	configCmd.SilenceErrors = true
+	configSetCmd.SilenceUsage = true
+	configSetCmd.SilenceErrors = true
+	configGetCmd.SilenceUsage = true
+	configGetCmd.SilenceErrors = true
+	configPathCmd.SilenceUsage = true
+	configPathCmd.SilenceErrors = true
+
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+	rootCmd.AddCommand(configCmd)
+
+	// Add law command to root
+	rootCmd.AddCommand(lawCmd)
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func init() {
+func setupFlags() {
 	// Initialize configuration
 	cobra.OnInitialize(initConfig)
 
+	// Language flag
+	rootCmd.PersistentFlags().StringVar(&langFlag, "lang", "", "Language (ko, en)")
+
 	// Global flags
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "상세 로그 출력")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, i18n.T("cli.verbose"))
 
 	// Version flag
 	rootCmd.Version = fmt.Sprintf("%s (built %s, commit %s)", Version, BuildDate, GitCommit)
 	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{printf "version %s" .Version}}
 `)
+}
+
+// updateCommandDescriptions updates command descriptions after language change
+func updateCommandDescriptions() {
+	rootCmd.Short = i18n.T("cli.short")
+	rootCmd.Long = i18n.T("cli.long")
+
+	// Update verbose flag description
+	if flag := rootCmd.PersistentFlags().Lookup("verbose"); flag != nil {
+		flag.Usage = i18n.T("cli.verbose")
+	}
+
+	// Update subcommands (these will be updated in their respective files)
+	updateVersionCommand()
+	updateConfigCommand()
+	updateLawCommand()
+}
+
+func init() {
+	// Commands will be added in their respective init functions
 }
 
 // initConfig initializes the configuration
@@ -79,5 +154,5 @@ func SetVersionInfo(version, commit, date string) {
 	Version = version
 	GitCommit = commit
 	BuildDate = date
-	rootCmd.Version = fmt.Sprintf("%s (built %s, commit %s)", version, date, commit)
+	// rootCmd will be initialized later in Execute(), so we don't set Version here
 }

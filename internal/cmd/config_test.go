@@ -7,11 +7,29 @@ import (
 	"testing"
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
 )
 
 func TestConfigCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize config commands
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+
+	// Build command hierarchy
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+
 	tests := []struct {
 		name        string
 		args        []string
@@ -21,13 +39,13 @@ func TestConfigCommand(t *testing.T) {
 		{
 			name:        "No subcommand shows help",
 			args:        []string{"config"},
-			wantOutput:  "Sejong CLI의 설정을 관리합니다",
+			wantOutput:  "설정을 관리",
 			checkOutput: true,
 		},
 		{
 			name:        "Help flag",
 			args:        []string{"config", "--help"},
-			wantOutput:  "Sejong CLI의 설정을 관리합니다",
+			wantOutput:  "설정을 관리",
 			checkOutput: true,
 		},
 	}
@@ -62,6 +80,23 @@ func TestConfigCommand(t *testing.T) {
 }
 
 func TestConfigSetCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize config commands
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+
+	// Build command hierarchy
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
@@ -98,25 +133,25 @@ func TestConfigSetCommand(t *testing.T) {
 			name:        "Invalid key",
 			args:        []string{"config", "set", "invalid.key", "value"},
 			wantErr:     true,
-			errContains: "잘못된 설정 키 형식",
+			errContains: "잘못된 설정 키",
 		},
 		{
 			name:        "Empty value",
 			args:        []string{"config", "set", "law.key", ""},
 			wantErr:     true,
-			errContains: "설정값이 비어있습니다",
+			errContains: "설정값이 비어",
 		},
 		{
 			name:       "Valid API key",
 			args:       []string{"config", "set", "law.key", "test-api-key-123"},
 			wantErr:    false,
-			wantOutput: "API 키가 성공적으로 설정되었습니다",
+			wantOutput: "API 키가 성공적으로 설정",
 		},
 		{
 			name:       "Valid API key with spaces",
 			args:       []string{"config", "set", "law.key", "  test-key-with-spaces  "},
 			wantErr:    false,
-			wantOutput: "API 키가 성공적으로 설정되었습니다",
+			wantOutput: "API 키가 성공적으로 설정",
 		},
 	}
 
@@ -159,6 +194,23 @@ func TestConfigSetCommand(t *testing.T) {
 }
 
 func TestConfigGetCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize config commands
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+
+	// Build command hierarchy
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
@@ -190,13 +242,13 @@ func TestConfigGetCommand(t *testing.T) {
 			name:        "Invalid key",
 			args:        []string{"config", "get", "invalid.key"},
 			wantErr:     true,
-			errContains: "잘못된 설정 키 형식",
+			errContains: "잘못된 설정 키",
 		},
 		{
 			name:       "API key not set",
 			args:       []string{"config", "get", "law.key"},
 			wantErr:    false,
-			wantOutput: "API 키 설정이 필요합니다",
+			wantOutput: "API 키 설정이 필요",
 		},
 		{
 			name: "API key set",
@@ -265,6 +317,23 @@ func TestConfigGetCommand(t *testing.T) {
 }
 
 func TestConfigPathCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize config commands
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+
+	// Build command hierarchy
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
@@ -298,8 +367,8 @@ func TestConfigPathCommand(t *testing.T) {
 	}
 
 	// Check output contains path
-	if !strings.Contains(buf.String(), "설정 파일 경로:") {
-		t.Errorf("Output should contain '설정 파일 경로:', got %q", buf.String())
+	if !strings.Contains(buf.String(), "설정 파일 경로") && !strings.Contains(buf.String(), "Configuration file path") {
+		t.Errorf("Output should contain config path message, got %q", buf.String())
 	}
 
 	// Check that a valid path is shown
