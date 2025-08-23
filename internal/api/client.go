@@ -122,6 +122,18 @@ func NewClientWithConfig(apiKey string, timeout time.Duration) *Client {
 	}
 }
 
+// NewClientWithURL creates a new API client with custom base URL (for testing)
+func NewClientWithURL(apiKey string, baseURL string) *Client {
+	return &Client{
+		httpClient: &http.Client{
+			Timeout: DefaultTimeout,
+		},
+		baseURL:        baseURL,
+		apiKey:         apiKey,
+		retryBaseDelay: InitialRetryDelay,
+	}
+}
+
 // Search performs a law search with the given query
 func (c *Client) Search(ctx context.Context, req *SearchRequest) (*SearchResponse, error) {
 	// Set defaults

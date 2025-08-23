@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -10,7 +12,7 @@ import (
 	cliErrors "github.com/pyhub-kr/pyhub-sejong-cli/internal/errors"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/output"
+	outputPkg "github.com/pyhub-kr/pyhub-sejong-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +20,9 @@ var (
 	outputFormat string
 	pageNo       int
 	pageSize     int
+	
+	// testAPIClient allows injecting a mock client for testing
+	testAPIClient APIClient
 )
 
 // lawCmd represents the law command
@@ -49,6 +54,11 @@ func init() {
 	lawCmd.Flags().IntVarP(&pageSize, "size", "s", 10, "페이지 크기")
 }
 
+// APIClient interface for dependency injection and testing
+type APIClient interface {
+	Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
+}
+
 func runLawCommand(cmd *cobra.Command, args []string) error {
 	// Get search query
 	query := strings.TrimSpace(args[0])
@@ -59,37 +69,46 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	
 	logger.Debug("Starting law search for query: %s", query)
 	
-	// Create API client
-	client, err := api.NewClient()
-	if err != nil {
-		// Check if it's an API key error
-		var cliErr *cliErrors.CLIError
-		if errors.As(err, &cliErr) && cliErr.Code == cliErrors.ErrCodeNoAPIKey {
-			guide := onboarding.NewGuide()
-			guide.ShowAPIKeySetup()
-			return nil // Return nil to avoid printing the error twice
+	// Use test client if available (for testing)
+	var client APIClient
+	if testAPIClient != nil {
+		client = testAPIClient
+	} else {
+		// Create API client
+		apiClient, err := api.NewClient()
+		if err != nil {
+			// Check if it's an API key error
+			var cliErr *cliErrors.CLIError
+			if errors.As(err, &cliErr) && cliErr.Code == cliErrors.ErrCodeNoAPIKey {
+				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
+				guide.ShowAPIKeySetup()
+				return nil // Return nil to avoid printing the error twice
+			}
+			
+			verbose, _ := cmd.Flags().GetBool("verbose")
+			logger.LogError(err, verbose)
+			return err
 		}
-		
-		verbose, _ := cmd.Flags().GetBool("verbose")
-		logger.LogError(err, verbose)
-		return err
+		client = apiClient
 	}
 	
-	// Show searching message
+	// Get verbose flag
 	verbose, _ := cmd.Flags().GetBool("verbose")
-	if verbose {
-		guide := onboarding.NewGuide()
-		guide.ShowSearchProgress(query)
-	}
 	
-	logger.Info("Searching for: %s (page: %d, size: %d)", query, pageNo, pageSize)
+	// Use searchLaws for the actual search logic
+	return searchLaws(client, query, outputFormat, pageNo, pageSize, cmd.OutOrStdout(), verbose)
+}
+
+// searchLaws performs the actual law search - extracted for testing
+func searchLaws(client APIClient, query string, format string, page int, size int, output io.Writer, verbose bool) error {
+	logger.Info("Searching for: %s (page: %d, size: %d)", query, page, size)
 	
 	// Create search request
 	req := &api.SearchRequest{
 		Query:    query,
 		Type:     api.TypeJSON,
-		PageNo:   pageNo,
-		PageSize: pageSize,
+		PageNo:   page,
+		PageSize: size,
 	}
 	
 	// Search with timeout
@@ -103,13 +122,8 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 		// Show user-friendly error with hint
 		var cliErr *cliErrors.CLIError
 		if errors.As(err, &cliErr) {
-			if verbose {
-				guide := onboarding.NewGuide()
-				guide.ShowError(cliErr.DetailedError())
-			} else {
-				guide := onboarding.NewGuide()
-				guide.ShowError(err.Error())
-			}
+			guide := onboarding.NewGuideWithWriter(output, false)
+			guide.ShowError(err.Error())
 			return nil // Error already displayed
 		}
 		return err
@@ -117,9 +131,10 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	
 	logger.Info("Search completed: %d results found", resp.TotalCount)
 	
-	// Output results
-	formatter := output.NewFormatter(outputFormat)
-	if err := formatter.FormatSearchResult(resp); err != nil {
+	// Format and output results using the formatter package
+	formatter := outputPkg.NewFormatter(format)
+	formattedOutput, err := formatter.FormatSearchResultToString(resp)
+	if err != nil {
 		logger.Error("Failed to format output: %v", err)
 		return cliErrors.Wrap(err, cliErrors.New(
 			cliErrors.ErrCodeDataFormat,
@@ -128,5 +143,9 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 		))
 	}
 	
+	// Write formatted output
+	fmt.Fprint(output, formattedOutput)
+	
 	return nil
 }
+
