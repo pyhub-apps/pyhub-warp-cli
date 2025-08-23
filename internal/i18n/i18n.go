@@ -61,29 +61,51 @@ func detectLanguage() string {
 
 	// Priority 2: LANG environment variable
 	if envLang := os.Getenv("LANG"); envLang != "" {
-		// Extract language code from LANG (e.g., "ko_KR.UTF-8" -> "ko")
-		parts := strings.Split(envLang, "_")
-		if len(parts) > 0 {
-			lang := strings.ToLower(parts[0])
-			if lang == "ko" || lang == "en" {
-				return lang
-			}
+		lang := parseLocale(envLang)
+		if lang != "" {
+			return lang
 		}
 	}
 
 	// Priority 3: LC_ALL environment variable
 	if lcAll := os.Getenv("LC_ALL"); lcAll != "" {
-		parts := strings.Split(lcAll, "_")
-		if len(parts) > 0 {
-			lang := strings.ToLower(parts[0])
-			if lang == "ko" || lang == "en" {
-				return lang
-			}
+		lang := parseLocale(lcAll)
+		if lang != "" {
+			return lang
 		}
 	}
 
 	// Default: Korean
 	return "ko"
+}
+
+// parseLocale extracts the language code from a locale string
+// Handles formats like: en_US.UTF-8, en-US.UTF-8, ko_KR.UTF-8, C.UTF-8
+func parseLocale(locale string) string {
+	// Handle special case for C locale
+	if locale == "C" || strings.HasPrefix(locale, "C.") {
+		return "" // Use default
+	}
+
+	// Remove encoding suffix (e.g., ".UTF-8")
+	if idx := strings.Index(locale, "."); idx != -1 {
+		locale = locale[:idx]
+	}
+
+	// Replace '-' with '_' for consistency
+	locale = strings.ReplaceAll(locale, "-", "_")
+
+	// Split on '_' and take the first part
+	parts := strings.Split(locale, "_")
+	if len(parts) > 0 {
+		lang := strings.ToLower(parts[0])
+		// Only return if it's a supported language
+		if lang == "ko" || lang == "en" {
+			return lang
+		}
+	}
+
+	return "" // Use default
 }
 
 // T translates a message

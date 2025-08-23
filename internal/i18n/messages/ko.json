@@ -37,8 +37,8 @@
   "law.flag.format": "출력 형식 (table, json)",
   "law.flag.page": "페이지 번호",
   "law.flag.size": "페이지 크기",
-  "law.searching": "검색 중... (%s)",
-  "law.searchComplete": "검색 완료: %d개의 결과",
+  "law.searching": "검색 중... (검색어: %s, 페이지: %d, 크기: %d)",
+  "law.searchComplete": "검색 완료: %d개의 결과 (페이지: %d, 크기: %d)",
   "law.outputFailed": "출력 실패",
   "law.checkFormat": "출력 형식을 확인하세요",
   

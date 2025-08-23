@@ -123,7 +123,7 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 
 // searchLaws performs the actual law search - extracted for testing
 func searchLaws(client APIClient, query string, format string, page int, size int, output io.Writer, verbose bool) error {
-	logger.Info(fmt.Sprintf(i18n.T("law.searching"), query))
+	logger.Info(i18n.Tf("law.searching", query, page, size))
 
 	// Create search request
 	req := &api.SearchRequest{
@@ -151,7 +151,7 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 		return err
 	}
 
-	logger.Info(fmt.Sprintf(i18n.T("law.searchComplete"), resp.TotalCount))
+	logger.Info(i18n.Tf("law.searchComplete", resp.TotalCount, page, size))
 
 	// Format and output results using the formatter package
 	formatter := outputPkg.NewFormatter(format)

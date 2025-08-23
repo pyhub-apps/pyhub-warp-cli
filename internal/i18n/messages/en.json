@@ -37,8 +37,8 @@
   "law.flag.format": "Output format (table, json)",
   "law.flag.page": "Page number",
   "law.flag.size": "Page size",
-  "law.searching": "Searching... (%s)",
-  "law.searchComplete": "Search complete: %d results",
+  "law.searching": "Searching... (query: %s, page: %d, size: %d)",
+  "law.searchComplete": "Search complete: %d results (page: %d, size: %d)",
   "law.outputFailed": "Output failed",
   "law.checkFormat": "Please check the output format",
   
