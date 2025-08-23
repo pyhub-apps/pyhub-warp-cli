@@ -80,6 +80,23 @@ func TestConfigCommand(t *testing.T) {
 }
 
 func TestConfigSetCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize config commands
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+
+	// Build command hierarchy
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
@@ -177,6 +194,23 @@ func TestConfigSetCommand(t *testing.T) {
 }
 
 func TestConfigGetCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize config commands
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+
+	// Build command hierarchy
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
@@ -283,6 +317,23 @@ func TestConfigGetCommand(t *testing.T) {
 }
 
 func TestConfigPathCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+
+	// Initialize config commands
+	initConfigCmd()
+	initConfigSetCmd()
+	initConfigGetCmd()
+	initConfigPathCmd()
+
+	// Build command hierarchy
+	configCmd.AddCommand(configSetCmd)
+	configCmd.AddCommand(configGetCmd)
+	configCmd.AddCommand(configPathCmd)
+
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()

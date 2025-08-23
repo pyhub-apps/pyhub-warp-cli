@@ -18,17 +18,10 @@ var configCmd *cobra.Command
 // initConfigCmd initializes the config command
 func initConfigCmd() {
 	configCmd = &cobra.Command{
-		Use:   "config",
-		Short: i18n.T("config.short"),
-		Long:  i18n.T("config.long"),
-		Example: `  # API 키 설정
-  sejong config set law.key YOUR_API_KEY
-  
-  # API 키 확인
-  sejong config get law.key
-  
-  # 설정 파일 경로 확인
-  sejong config path`,
+		Use:     "config",
+		Short:   i18n.T("config.short"),
+		Long:    i18n.T("config.long"),
+		Example: i18n.T("config.example"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// If no subcommand is provided, show help
 			return cmd.Help()
@@ -42,11 +35,10 @@ var configSetCmd *cobra.Command
 // initConfigSetCmd initializes the config set command
 func initConfigSetCmd() {
 	configSetCmd = &cobra.Command{
-		Use:   "set <key> <value>",
-		Short: i18n.T("config.set.short"),
-		Long:  i18n.T("config.set.long"),
-		Example: `  # API 키 설정
-  sejong config set law.key YOUR_API_KEY`,
+		Use:     "set <key> <value>",
+		Short:   i18n.T("config.set.short"),
+		Long:    i18n.T("config.set.long"),
+		Example: i18n.T("config.set.example"),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			key := strings.TrimSpace(args[0])
@@ -92,11 +84,10 @@ var configGetCmd *cobra.Command
 // initConfigGetCmd initializes the config get command
 func initConfigGetCmd() {
 	configGetCmd = &cobra.Command{
-		Use:   "get <key>",
-		Short: i18n.T("config.get.short"),
-		Long:  i18n.T("config.get.long"),
-		Example: `  # API 키 확인
-  sejong config get law.key`,
+		Use:     "get <key>",
+		Short:   i18n.T("config.get.short"),
+		Long:    i18n.T("config.get.long"),
+		Example: i18n.T("config.get.example"),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			key := strings.TrimSpace(args[0])
@@ -191,14 +182,17 @@ func updateConfigCommand() {
 	if configCmd != nil {
 		configCmd.Short = i18n.T("config.short")
 		configCmd.Long = i18n.T("config.long")
+		configCmd.Example = i18n.T("config.example")
 	}
 	if configSetCmd != nil {
 		configSetCmd.Short = i18n.T("config.set.short")
 		configSetCmd.Long = i18n.T("config.set.long")
+		configSetCmd.Example = i18n.T("config.set.example")
 	}
 	if configGetCmd != nil {
 		configGetCmd.Short = i18n.T("config.get.short")
 		configGetCmd.Long = i18n.T("config.get.long")
+		configGetCmd.Example = i18n.T("config.get.example")
 	}
 	if configPathCmd != nil {
 		configPathCmd.Short = i18n.T("config.path.short")
