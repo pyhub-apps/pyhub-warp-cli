@@ -20,7 +20,7 @@ func initVersionCmd() {
 		Long:  i18n.T("version.long"),
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Fprintln(cmd.OutOrStdout(), i18n.T("version.output.title"))
-			
+
 			// Get the label width for proper alignment
 			// We need to calculate the maximum label width for alignment
 			labels := []string{
@@ -30,7 +30,7 @@ func initVersionCmd() {
 				i18n.T("version.output.goversion"),
 				i18n.T("version.output.platform"),
 			}
-			
+
 			// Remove the %s placeholder from labels to get actual label text
 			maxWidth := 0
 			for _, label := range labels {
@@ -47,10 +47,10 @@ func initVersionCmd() {
 					}
 				}
 			}
-			
+
 			// Add padding for better alignment
 			maxWidth += 2
-			
+
 			// Format and print with proper alignment
 			fmt.Fprintf(cmd.OutOrStdout(), "  %-*s %s\n", maxWidth, getLabel(i18n.T("version.output.version")), Version)
 			fmt.Fprintf(cmd.OutOrStdout(), "  %-*s %s\n", maxWidth, getLabel(i18n.T("version.output.commit")), GitCommit)

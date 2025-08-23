@@ -39,7 +39,7 @@ func initConfigSetCmd() {
 		Short:   i18n.T("config.set.short"),
 		Long:    i18n.T("config.set.long"),
 		Example: i18n.T("config.set.example"),
-		Args: cobra.ExactArgs(2),
+		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			key := strings.TrimSpace(args[0])
 			value := strings.TrimSpace(args[1])
@@ -88,7 +88,7 @@ func initConfigGetCmd() {
 		Short:   i18n.T("config.get.short"),
 		Long:    i18n.T("config.get.long"),
 		Example: i18n.T("config.get.example"),
-		Args: cobra.ExactArgs(1),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			key := strings.TrimSpace(args[0])
 
