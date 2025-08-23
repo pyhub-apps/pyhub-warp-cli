@@ -33,7 +33,7 @@ test-coverage:
 # Install the binary to $GOPATH/bin
 install: build
 	@echo "Installing sejong to GOPATH/bin..."
-	go install $(LDFLAGS) ./cmd/sejong
+	cp sejong $(shell go env GOPATH)/bin/sejong
 
 # Clean build artifacts
 clean:
