@@ -46,7 +46,7 @@ func initLawCmd() {
 		Args: cobra.ExactArgs(1),
 		RunE: runLawCommand,
 	}
-	
+
 	// Flags
 	lawCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", i18n.T("law.flag.format"))
 	lawCmd.Flags().IntVarP(&pageNo, "page", "p", 1, i18n.T("law.flag.page"))
@@ -58,7 +58,7 @@ func updateLawCommand() {
 	if lawCmd != nil {
 		lawCmd.Short = i18n.T("law.short")
 		lawCmd.Long = i18n.T("law.long")
-		
+
 		// Update flag descriptions
 		if flag := lawCmd.Flags().Lookup("format"); flag != nil {
 			flag.Usage = i18n.T("law.flag.format")

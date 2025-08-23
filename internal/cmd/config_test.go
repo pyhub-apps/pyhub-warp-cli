@@ -18,18 +18,18 @@ func TestConfigCommand(t *testing.T) {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
 	i18n.SetLanguage("ko")
-	
+
 	// Initialize config commands
 	initConfigCmd()
 	initConfigSetCmd()
 	initConfigGetCmd()
 	initConfigPathCmd()
-	
+
 	// Build command hierarchy
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configPathCmd)
-	
+
 	tests := []struct {
 		name        string
 		args        []string

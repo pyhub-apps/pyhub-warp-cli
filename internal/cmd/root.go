@@ -17,7 +17,7 @@ var (
 	Version   = "dev"
 	BuildDate = "unknown"
 	GitCommit = "unknown"
-	
+
 	// Language flag
 	langFlag string
 )
@@ -61,11 +61,11 @@ func Execute() {
 	if err := i18n.Init(); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize i18n: %v\n", err)
 	}
-	
+
 	// Initialize root command with i18n support
 	initRootCmd()
 	setupFlags()
-	
+
 	// Initialize and add subcommands
 	initVersionCmd()
 	initConfigCmd()
@@ -73,10 +73,10 @@ func Execute() {
 	initConfigGetCmd()
 	initConfigPathCmd()
 	initLawCmd()
-	
+
 	// Add version command to root
 	rootCmd.AddCommand(versionCmd)
-	
+
 	// Add config command and its subcommands
 	configCmd.SilenceUsage = true
 	configCmd.SilenceErrors = true
@@ -86,15 +86,15 @@ func Execute() {
 	configGetCmd.SilenceErrors = true
 	configPathCmd.SilenceUsage = true
 	configPathCmd.SilenceErrors = true
-	
+
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configPathCmd)
 	rootCmd.AddCommand(configCmd)
-	
+
 	// Add law command to root
 	rootCmd.AddCommand(lawCmd)
-	
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -121,12 +121,12 @@ func setupFlags() {
 func updateCommandDescriptions() {
 	rootCmd.Short = i18n.T("cli.short")
 	rootCmd.Long = i18n.T("cli.long")
-	
+
 	// Update verbose flag description
 	if flag := rootCmd.PersistentFlags().Lookup("verbose"); flag != nil {
 		flag.Usage = i18n.T("cli.verbose")
 	}
-	
+
 	// Update subcommands (these will be updated in their respective files)
 	updateVersionCommand()
 	updateConfigCommand()

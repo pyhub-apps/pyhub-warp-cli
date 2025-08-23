@@ -15,11 +15,11 @@ func TestRootCommand(t *testing.T) {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
 	i18n.SetLanguage("ko")
-	
+
 	// Initialize root command
 	initRootCmd()
 	setupFlags()
-	
+
 	// Initialize and add subcommands for testing
 	initConfigCmd()
 	initLawCmd()
@@ -27,7 +27,7 @@ func TestRootCommand(t *testing.T) {
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(lawCmd)
 	rootCmd.AddCommand(versionCmd)
-	
+
 	tests := []struct {
 		name        string
 		args        []string
@@ -98,7 +98,7 @@ func TestRootCommandVerboseFlag(t *testing.T) {
 	}
 	initRootCmd()
 	setupFlags()
-	
+
 	// Test that verbose flag is properly registered
 	if rootCmd.PersistentFlags().Lookup("verbose") == nil {
 		t.Error("verbose flag not registered")

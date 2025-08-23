@@ -22,10 +22,10 @@ func TestLawCommand(t *testing.T) {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
 	i18n.SetLanguage("ko")
-	
+
 	// Initialize law command
 	initLawCmd()
-	
+
 	tests := []struct {
 		name        string
 		args        []string
