@@ -11,11 +11,21 @@ import (
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
 )
 
 func TestLawCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+	
+	// Initialize law command
+	initLawCmd()
+	
 	tests := []struct {
 		name        string
 		args        []string

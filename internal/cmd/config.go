@@ -6,20 +6,22 @@ import (
 
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
 	cliErrors "github.com/pyhub-kr/pyhub-sejong-cli/internal/errors"
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
 	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
 	"github.com/spf13/cobra"
 )
 
 // configCmd represents the config command
-var configCmd = &cobra.Command{
-	Use:   "config",
-	Short: "설정 관리",
-	Long: `Sejong CLI의 설정을 관리합니다.
+var configCmd *cobra.Command
 
-API 키와 같은 설정값을 저장하고 조회할 수 있습니다.
-설정 파일 위치는 'sejong config path' 명령으로 확인할 수 있습니다.`,
-	Example: `  # API 키 설정
+// initConfigCmd initializes the config command
+func initConfigCmd() {
+	configCmd = &cobra.Command{
+		Use:   "config",
+		Short: i18n.T("config.short"),
+		Long:  i18n.T("config.long"),
+		Example: `  # API 키 설정
   sejong config set law.key YOUR_API_KEY
   
   # API 키 확인
@@ -27,125 +29,141 @@ API 키와 같은 설정값을 저장하고 조회할 수 있습니다.
   
   # 설정 파일 경로 확인
   sejong config path`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		// If no subcommand is provided, show help
-		return cmd.Help()
-	},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// If no subcommand is provided, show help
+			return cmd.Help()
+		},
+	}
 }
 
 // configSetCmd represents the config set command
-var configSetCmd = &cobra.Command{
-	Use:   "set <key> <value>",
-	Short: "설정값 저장",
-	Long:  `지정한 키에 값을 저장합니다.`,
-	Example: `  # API 키 설정
+var configSetCmd *cobra.Command
+
+// initConfigSetCmd initializes the config set command
+func initConfigSetCmd() {
+	configSetCmd = &cobra.Command{
+		Use:   "set <key> <value>",
+		Short: i18n.T("config.set.short"),
+		Long:  i18n.T("config.set.long"),
+		Example: `  # API 키 설정
   sejong config set law.key YOUR_API_KEY`,
-	Args: cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		key := strings.TrimSpace(args[0])
-		value := strings.TrimSpace(args[1])
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			key := strings.TrimSpace(args[0])
+			value := strings.TrimSpace(args[1])
 
-		// Validate key format
-		if !isValidConfigKey(key) {
-			return fmt.Errorf("잘못된 설정 키 형식: %s (허용: law.key)", key)
-		}
-
-		// Validate value is not empty
-		if value == "" {
-			return fmt.Errorf("설정값이 비어있습니다")
-		}
-
-		// Special handling for API key
-		if key == "law.key" {
-			if err := config.SetAPIKey(value); err != nil {
-				return fmt.Errorf("API 키 설정 실패: %w", err)
+			// Validate key format
+			if !isValidConfigKey(key) {
+				return fmt.Errorf(i18n.T("config.set.invalidKey"), key)
 			}
+
+			// Validate value is not empty
+			if value == "" {
+				return fmt.Errorf(i18n.T("config.set.emptyValue"))
+			}
+
+			// Special handling for API key
+			if key == "law.key" {
+				if err := config.SetAPIKey(value); err != nil {
+					return fmt.Errorf(i18n.T("config.set.failed"), err)
+				}
+				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
+				guide.ShowSuccess(i18n.T("config.set.apiKeySuccess"))
+				fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", i18n.T("config.path.output"), config.GetConfigPath())
+				return nil
+			}
+
+			// Generic config set
+			config.Set(key, value)
+			if err := config.Save(); err != nil {
+				return fmt.Errorf(i18n.T("config.set.saveFailed"), err)
+			}
+
 			guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
-			guide.ShowSuccess("API 키가 성공적으로 설정되었습니다")
-			fmt.Fprintf(cmd.OutOrStdout(), "설정 파일: %s\n", config.GetConfigPath())
+			guide.ShowSuccess(fmt.Sprintf(i18n.T("config.set.success"), key, value))
 			return nil
-		}
-
-		// Generic config set
-		config.Set(key, value)
-		if err := config.Save(); err != nil {
-			return fmt.Errorf("설정 저장 실패: %w", err)
-		}
-
-		guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
-		guide.ShowSuccess(fmt.Sprintf("설정이 저장되었습니다: %s = %s", key, value))
-		return nil
-	},
+		},
+	}
 }
 
 // configGetCmd represents the config get command
-var configGetCmd = &cobra.Command{
-	Use:   "get <key>",
-	Short: "설정값 조회",
-	Long:  `지정한 키의 값을 조회합니다.`,
-	Example: `  # API 키 확인
+var configGetCmd *cobra.Command
+
+// initConfigGetCmd initializes the config get command
+func initConfigGetCmd() {
+	configGetCmd = &cobra.Command{
+		Use:   "get <key>",
+		Short: i18n.T("config.get.short"),
+		Long:  i18n.T("config.get.long"),
+		Example: `  # API 키 확인
   sejong config get law.key`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		key := strings.TrimSpace(args[0])
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			key := strings.TrimSpace(args[0])
 
-		// Validate key format
-		if !isValidConfigKey(key) {
-			logger.Error("Invalid config key format: %s", key)
-			return cliErrors.New(
-				cliErrors.ErrCodeInvalidInput,
-				fmt.Sprintf("잘못된 설정 키 형식: %s", key),
-				"현재 law.key만 지원됩니다",
-			)
-		}
+			// Validate key format
+			if !isValidConfigKey(key) {
+				logger.Error("Invalid config key format: %s", key)
+				return cliErrors.New(
+					cliErrors.ErrCodeInvalidInput,
+					fmt.Sprintf(i18n.T("config.get.invalidKey"), key),
+					i18n.T("config.get.apiKeyHelp"),
+				)
+			}
 
-		// Special handling for API key
-		if key == "law.key" {
-			if !config.IsAPIKeySet() {
-				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
-				guide.ShowAPIKeySetup()
+			// Special handling for API key
+			if key == "law.key" {
+				if !config.IsAPIKeySet() {
+					guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
+					guide.ShowAPIKeySetup()
+					return nil
+				}
+
+				apiKey := config.GetAPIKey()
+				// Mask API key for security (show first 10 chars only)
+				if len(apiKey) > 10 {
+					fmt.Fprintf(cmd.OutOrStdout(), "%s: %s...(%d자)\n", key, apiKey[:10], len(apiKey))
+				} else {
+					fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", key, apiKey)
+				}
 				return nil
 			}
 
-			apiKey := config.GetAPIKey()
-			// Mask API key for security (show first 10 chars only)
-			if len(apiKey) > 10 {
-				fmt.Fprintf(cmd.OutOrStdout(), "%s: %s...(%d자)\n", key, apiKey[:10], len(apiKey))
-			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", key, apiKey)
-			}
-			return nil
-		}
-
-		// Generic config get
-		value := config.Get(key)
-		switch v := value.(type) {
-		case nil:
-			fmt.Fprintf(cmd.OutOrStdout(), "❌ 설정값이 없습니다: %s\n", key)
-			return nil
-		case string:
-			if strings.TrimSpace(v) == "" {
-				fmt.Fprintf(cmd.OutOrStdout(), "❌ 설정값이 없습니다: %s\n", key)
+			// Generic config get
+			value := config.Get(key)
+			switch v := value.(type) {
+			case nil:
+				fmt.Fprintf(cmd.OutOrStdout(), "❌ %s\n", fmt.Sprintf(i18n.T("config.get.notFound"), key))
 				return nil
+			case string:
+				if strings.TrimSpace(v) == "" {
+					fmt.Fprintf(cmd.OutOrStdout(), "❌ %s\n", fmt.Sprintf(i18n.T("config.get.notFound"), key))
+					return nil
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", key, v)
+			default:
+				fmt.Fprintf(cmd.OutOrStdout(), "%s: %v\n", key, v)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", key, v)
-		default:
-			fmt.Fprintf(cmd.OutOrStdout(), "%s: %v\n", key, v)
-		}
-		return nil
-	},
+			return nil
+		},
+	}
 }
 
 // configPathCmd represents the config path command
-var configPathCmd = &cobra.Command{
-	Use:   "path",
-	Short: "설정 파일 경로 확인",
-	Long:  `설정 파일의 경로를 확인합니다.`,
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Fprintf(cmd.OutOrStdout(), "설정 파일 경로: %s\n", config.GetConfigPath())
-		return nil
-	},
+var configPathCmd *cobra.Command
+
+// initConfigPathCmd initializes the config path command
+func initConfigPathCmd() {
+	configPathCmd = &cobra.Command{
+		Use:   "path",
+		Short: i18n.T("config.path.short"),
+		Long:  i18n.T("config.path.long"),
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", fmt.Sprintf(i18n.T("config.path.output"), config.GetConfigPath()))
+			return nil
+		},
+	}
 }
 
 // isValidConfigKey validates the configuration key format
@@ -168,22 +186,26 @@ func isValidConfigKey(key string) bool {
 	return false
 }
 
+// updateConfigCommand updates config command descriptions
+func updateConfigCommand() {
+	if configCmd != nil {
+		configCmd.Short = i18n.T("config.short")
+		configCmd.Long = i18n.T("config.long")
+	}
+	if configSetCmd != nil {
+		configSetCmd.Short = i18n.T("config.set.short")
+		configSetCmd.Long = i18n.T("config.set.long")
+	}
+	if configGetCmd != nil {
+		configGetCmd.Short = i18n.T("config.get.short")
+		configGetCmd.Long = i18n.T("config.get.long")
+	}
+	if configPathCmd != nil {
+		configPathCmd.Short = i18n.T("config.path.short")
+		configPathCmd.Long = i18n.T("config.path.long")
+	}
+}
+
 func init() {
-	// Add subcommands to config
-	// Avoid printing usage on handled errors
-	configCmd.SilenceUsage = true
-	configCmd.SilenceErrors = true
-	configSetCmd.SilenceUsage = true
-	configSetCmd.SilenceErrors = true
-	configGetCmd.SilenceUsage = true
-	configGetCmd.SilenceErrors = true
-	configPathCmd.SilenceUsage = true
-	configPathCmd.SilenceErrors = true
-
-	configCmd.AddCommand(configSetCmd)
-	configCmd.AddCommand(configGetCmd)
-	configCmd.AddCommand(configPathCmd)
-
-	// Add config command to root
-	rootCmd.AddCommand(configCmd)
+	// Config commands will be initialized and added in Execute()
 }

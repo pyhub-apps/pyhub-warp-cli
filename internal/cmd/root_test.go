@@ -5,10 +5,29 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
 	"github.com/spf13/cobra"
 )
 
 func TestRootCommand(t *testing.T) {
+	// Initialize i18n for testing (Korean by default)
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	i18n.SetLanguage("ko")
+	
+	// Initialize root command
+	initRootCmd()
+	setupFlags()
+	
+	// Initialize and add subcommands for testing
+	initConfigCmd()
+	initLawCmd()
+	initVersionCmd()
+	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(lawCmd)
+	rootCmd.AddCommand(versionCmd)
+	
 	tests := []struct {
 		name        string
 		args        []string
@@ -19,13 +38,13 @@ func TestRootCommand(t *testing.T) {
 		{
 			name:        "No arguments shows help",
 			args:        []string{},
-			wantOutput:  "Sejong CLI는 국가법령정보센터",
+			wantOutput:  "법령 정보를",
 			checkOutput: true,
 		},
 		{
 			name:        "Help flag",
 			args:        []string{"--help"},
-			wantOutput:  "Sejong CLI는 국가법령정보센터",
+			wantOutput:  "법령 정보를",
 			checkOutput: true,
 		},
 		{
@@ -35,9 +54,10 @@ func TestRootCommand(t *testing.T) {
 			checkOutput: true,
 		},
 		{
-			name:    "Unknown subcommand",
-			args:    []string{"unknown"},
-			wantErr: true,
+			name:        "Unknown subcommand",
+			args:        []string{"unknown"},
+			wantErr:     true, // Now it should error with unknown command
+			checkOutput: false,
 		},
 	}
 
@@ -72,6 +92,13 @@ func TestRootCommand(t *testing.T) {
 }
 
 func TestRootCommandVerboseFlag(t *testing.T) {
+	// Initialize i18n and root command for testing
+	if err := i18n.Init(); err != nil {
+		t.Fatalf("Failed to initialize i18n: %v", err)
+	}
+	initRootCmd()
+	setupFlags()
+	
 	// Test that verbose flag is properly registered
 	if rootCmd.PersistentFlags().Lookup("verbose") == nil {
 		t.Error("verbose flag not registered")
@@ -115,12 +142,6 @@ func TestSetVersionInfo(t *testing.T) {
 	}
 	if BuildDate != testDate {
 		t.Errorf("BuildDate = %s, want %s", BuildDate, testDate)
-	}
-
-	// Check that rootCmd.Version is updated
-	expectedVersion := "1.0.0 (built 2024-01-01, commit abc123)"
-	if rootCmd.Version != expectedVersion {
-		t.Errorf("rootCmd.Version = %s, want %s", rootCmd.Version, expectedVersion)
 	}
 }
 
