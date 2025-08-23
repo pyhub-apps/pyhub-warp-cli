@@ -50,6 +50,46 @@ func (f *Formatter) FormatSearchResultToString(resp *api.SearchResponse) (string
 	}
 }
 
+// FormatDetailToString formats law detail and returns as string
+func (f *Formatter) FormatDetailToString(detail *api.LawDetail) (string, error) {
+	if detail == nil {
+		return "", fmt.Errorf("법령 상세 정보가 없습니다")
+	}
+
+	switch f.format {
+	case "json":
+		data, err := json.MarshalIndent(detail, "", "  ")
+		if err != nil {
+			return "", fmt.Errorf("JSON 변환 실패: %w", err)
+		}
+		return string(data) + "\n", nil
+	case "table", "":
+		return f.formatDetailTable(detail), nil
+	default:
+		return "", fmt.Errorf("지원하지 않는 출력 형식: %s (table, json 중 선택)", f.format)
+	}
+}
+
+// FormatHistoryToString formats law history and returns as string
+func (f *Formatter) FormatHistoryToString(history *api.LawHistory) (string, error) {
+	if history == nil {
+		return "", fmt.Errorf("법령 이력 정보가 없습니다")
+	}
+
+	switch f.format {
+	case "json":
+		data, err := json.MarshalIndent(history, "", "  ")
+		if err != nil {
+			return "", fmt.Errorf("JSON 변환 실패: %w", err)
+		}
+		return string(data) + "\n", nil
+	case "table", "":
+		return f.formatHistoryTable(history), nil
+	default:
+		return "", fmt.Errorf("지원하지 않는 출력 형식: %s (table, json 중 선택)", f.format)
+	}
+}
+
 // formatJSON outputs results in JSON format
 func (f *Formatter) formatJSON(resp *api.SearchResponse) error {
 	encoder := json.NewEncoder(os.Stdout)
@@ -195,4 +235,117 @@ func truncateString(s string, maxLen int) string {
 	}
 
 	return string(runes[:maxLen-3]) + "..."
+}
+
+// formatDetailTable formats law detail as a table
+func (f *Formatter) formatDetailTable(detail *api.LawDetail) string {
+	var buf bytes.Buffer
+
+	// Basic information
+	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n")
+	fmt.Fprintf(&buf, " 법령 상세 정보\n")
+	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n\n")
+	
+	fmt.Fprintf(&buf, "법령ID:       %s\n", detail.ID)
+	fmt.Fprintf(&buf, "법령명:       %s\n", detail.Name)
+	if detail.NameAbbrev != "" {
+		fmt.Fprintf(&buf, "약칭:         %s\n", detail.NameAbbrev)
+	}
+	fmt.Fprintf(&buf, "법령구분:     %s\n", detail.LawType)
+	fmt.Fprintf(&buf, "소관부처:     %s\n", detail.Department)
+	fmt.Fprintf(&buf, "공포일자:     %s\n", formatDate(detail.PromulDate))
+	fmt.Fprintf(&buf, "공포번호:     %s\n", detail.PromulNo)
+	fmt.Fprintf(&buf, "시행일자:     %s\n", formatDate(detail.EffectDate))
+	fmt.Fprintf(&buf, "제개정구분:   %s\n", detail.Category)
+
+	// Articles if present
+	if len(detail.Articles) > 0 {
+		fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
+		fmt.Fprintf(&buf, " 조문 (%d개)\n", len(detail.Articles))
+		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
+		
+		for _, article := range detail.Articles {
+			fmt.Fprintf(&buf, "%s", article.Number)
+			if article.Title != "" {
+				fmt.Fprintf(&buf, " (%s)", article.Title)
+			}
+			fmt.Fprintf(&buf, "\n")
+			
+			// Clean and format content
+			content := strings.TrimSpace(article.Content)
+			content = strings.ReplaceAll(content, "\r\n", "\n")
+			lines := strings.Split(content, "\n")
+			for _, line := range lines {
+				if strings.TrimSpace(line) != "" {
+					fmt.Fprintf(&buf, "  %s\n", line)
+				}
+			}
+			fmt.Fprintf(&buf, "\n")
+		}
+	}
+
+	// Related laws if present
+	if len(detail.RelatedLaws) > 0 {
+		fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
+		fmt.Fprintf(&buf, " 관련 법령\n")
+		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
+		for _, law := range detail.RelatedLaws {
+			fmt.Fprintf(&buf, "  • %s\n", law)
+		}
+	}
+
+	// Attachments if present
+	if len(detail.Attachments) > 0 {
+		fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
+		fmt.Fprintf(&buf, " 첨부 파일\n")
+		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
+		for _, file := range detail.Attachments {
+			fmt.Fprintf(&buf, "  • %s\n", file)
+		}
+	}
+
+	fmt.Fprintf(&buf, "\n═══════════════════════════════════════════════════════════\n")
+
+	return buf.String()
+}
+
+// formatHistoryTable formats law history as a table
+func (f *Formatter) formatHistoryTable(history *api.LawHistory) string {
+	var buf bytes.Buffer
+
+	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n")
+	fmt.Fprintf(&buf, " 법령 제/개정 이력\n")
+	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n\n")
+	
+	if history.LawName != "" {
+		fmt.Fprintf(&buf, "법령명: %s\n", history.LawName)
+	}
+	if history.LawID != "" {
+		fmt.Fprintf(&buf, "법령ID: %s\n", history.LawID)
+	}
+	
+	if len(history.Histories) == 0 {
+		fmt.Fprintf(&buf, "\n이력이 없습니다.\n")
+	} else {
+		fmt.Fprintf(&buf, "\n총 %d개의 이력\n", len(history.Histories))
+		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
+		
+		for i, record := range history.Histories {
+			fmt.Fprintf(&buf, "[%d] %s - %s\n", i+1, formatDate(record.Date), record.Type)
+			if record.PromulNo != "" {
+				fmt.Fprintf(&buf, "    공포번호: %s\n", record.PromulNo)
+			}
+			if record.EffectDate != "" {
+				fmt.Fprintf(&buf, "    시행일자: %s\n", formatDate(record.EffectDate))
+			}
+			if record.Reason != "" {
+				fmt.Fprintf(&buf, "    개정이유: %s\n", record.Reason)
+			}
+			fmt.Fprintf(&buf, "\n")
+		}
+	}
+
+	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n")
+
+	return buf.String()
 }
