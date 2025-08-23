@@ -47,7 +47,7 @@ jobs:
         ./sejong-${{ matrix.os }}-${{ matrix.go-version }} --help
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sejong-${{ matrix.os }}-go${{ matrix.go-version }}
         path: sejong-${{ matrix.os }}-${{ matrix.go-version }}*
