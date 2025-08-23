@@ -31,7 +31,7 @@ type Logger struct {
 	output   io.Writer
 	useColor bool
 	prefix   string
-	
+
 	// Color functions
 	debugColor *color.Color
 	infoColor  *color.Color
@@ -100,10 +100,10 @@ func (l *Logger) log(level Level, levelStr string, colorFunc *color.Color, forma
 	if level < l.level {
 		return
 	}
-	
+
 	msg := fmt.Sprintf(format, args...)
 	formattedMsg := l.formatMessage(levelStr, msg)
-	
+
 	if l.useColor && colorFunc != nil {
 		colorFunc.Fprintln(l.output, formattedMsg)
 	} else {
@@ -169,7 +169,7 @@ func LogError(err error, verbose bool) {
 	if err == nil {
 		return
 	}
-	
+
 	if verbose {
 		// In verbose mode, show full error details
 		Error("Error occurred: %+v", err)

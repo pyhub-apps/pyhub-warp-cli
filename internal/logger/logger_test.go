@@ -9,13 +9,13 @@ import (
 func TestLogger_Levels(t *testing.T) {
 	var buf bytes.Buffer
 	logger := New(InfoLevel, &buf, false)
-	
+
 	// Debug should not be logged at INFO level
 	logger.Debug("debug message")
 	if buf.String() != "" {
 		t.Error("Debug message should not be logged at INFO level")
 	}
-	
+
 	// Info should be logged
 	buf.Reset()
 	logger.Info("info message")
@@ -25,7 +25,7 @@ func TestLogger_Levels(t *testing.T) {
 	if !strings.Contains(buf.String(), "[INFO]") {
 		t.Error("Info message should contain [INFO] tag")
 	}
-	
+
 	// Warn should be logged
 	buf.Reset()
 	logger.Warn("warning message")
@@ -35,7 +35,7 @@ func TestLogger_Levels(t *testing.T) {
 	if !strings.Contains(buf.String(), "[WARN]") {
 		t.Error("Warning message should contain [WARN] tag")
 	}
-	
+
 	// Error should be logged
 	buf.Reset()
 	logger.Error("error message")
@@ -50,13 +50,13 @@ func TestLogger_Levels(t *testing.T) {
 func TestLogger_DebugLevel(t *testing.T) {
 	var buf bytes.Buffer
 	logger := New(DebugLevel, &buf, false)
-	
+
 	// All messages should be logged at DEBUG level
 	logger.Debug("debug message")
 	if !strings.Contains(buf.String(), "debug message") {
 		t.Error("Debug message should be logged at DEBUG level")
 	}
-	
+
 	buf.Reset()
 	logger.Info("info message")
 	if !strings.Contains(buf.String(), "info message") {
@@ -67,7 +67,7 @@ func TestLogger_DebugLevel(t *testing.T) {
 func TestLogger_ErrorLevel(t *testing.T) {
 	var buf bytes.Buffer
 	logger := New(ErrorLevel, &buf, false)
-	
+
 	// Debug and Info should not be logged
 	logger.Debug("debug message")
 	logger.Info("info message")
@@ -75,7 +75,7 @@ func TestLogger_ErrorLevel(t *testing.T) {
 	if buf.String() != "" {
 		t.Error("Debug/Info/Warn messages should not be logged at ERROR level")
 	}
-	
+
 	// Error should be logged
 	buf.Reset()
 	logger.Error("error message")
@@ -87,14 +87,14 @@ func TestLogger_ErrorLevel(t *testing.T) {
 func TestLogger_Formatting(t *testing.T) {
 	var buf bytes.Buffer
 	logger := New(InfoLevel, &buf, false)
-	
+
 	logger.Info("test %s %d", "string", 42)
 	output := buf.String()
-	
+
 	if !strings.Contains(output, "test string 42") {
 		t.Error("Logger should support printf-style formatting")
 	}
-	
+
 	// Check timestamp format (HH:MM:SS)
 	if !strings.Contains(output, ":") {
 		t.Error("Logger output should contain timestamp")
@@ -104,10 +104,10 @@ func TestLogger_Formatting(t *testing.T) {
 func TestLogger_ColorOutput(t *testing.T) {
 	var buf bytes.Buffer
 	logger := New(InfoLevel, &buf, true)
-	
+
 	logger.Info("colored message")
 	output := buf.String()
-	
+
 	// When color is enabled, ANSI codes should be present
 	// The actual presence of ANSI codes depends on the terminal detection
 	// but we can check that the message is still there
@@ -120,13 +120,13 @@ func TestSetVerbose(t *testing.T) {
 	var buf bytes.Buffer
 	SetOutput(&buf)
 	SetLevel(InfoLevel)
-	
+
 	// Debug should not be logged initially
 	Debug("debug message")
 	if buf.String() != "" {
 		t.Error("Debug should not be logged at INFO level")
 	}
-	
+
 	// Enable verbose mode
 	buf.Reset()
 	SetVerbose(true)
@@ -134,7 +134,7 @@ func TestSetVerbose(t *testing.T) {
 	if !strings.Contains(buf.String(), "debug message") {
 		t.Error("Debug should be logged when verbose is enabled")
 	}
-	
+
 	// Disable verbose mode
 	buf.Reset()
 	SetVerbose(false)
@@ -163,7 +163,7 @@ func TestParseLevel(t *testing.T) {
 		{"FATAL", FatalLevel},
 		{"unknown", InfoLevel}, // Default to INFO
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
 			got := ParseLevel(tt.input)
@@ -178,13 +178,13 @@ func TestLogError(t *testing.T) {
 	var buf bytes.Buffer
 	SetOutput(&buf)
 	SetLevel(InfoLevel)
-	
+
 	// Test with nil error
 	LogError(nil, false)
 	if buf.String() != "" {
 		t.Error("LogError should not log nil errors")
 	}
-	
+
 	// Test with non-verbose mode
 	buf.Reset()
 	err := &testError{msg: "test error"}
@@ -192,7 +192,7 @@ func TestLogError(t *testing.T) {
 	if !strings.Contains(buf.String(), "test error") {
 		t.Error("LogError should log error message")
 	}
-	
+
 	// Test with verbose mode
 	buf.Reset()
 	LogError(err, true)

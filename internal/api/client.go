@@ -18,20 +18,20 @@ import (
 const (
 	// BaseURL is the National Law Information Center API endpoint
 	BaseURL = "https://www.law.go.kr/DRF/lawSearch.do"
-	
+
 	// Default timeout for HTTP requests
 	DefaultTimeout = 10 * time.Second
-	
+
 	// Maximum retry attempts
 	MaxRetries = 3
-	
+
 	// Initial retry delay
 	InitialRetryDelay = 1 * time.Second
-	
+
 	// Supported response types
 	TypeJSON = "JSON"
 	TypeXML  = "XML"
-	
+
 	// Default target for API requests
 	DefaultTarget = "law"
 )
@@ -46,32 +46,32 @@ type Client struct {
 
 // SearchRequest represents the search request parameters
 type SearchRequest struct {
-	Query      string `json:"query"`
-	Type       string `json:"type"`       // "XML" or "JSON"
-	PageNo     int    `json:"page_no"`
-	PageSize   int    `json:"page_size"`
+	Query    string `json:"query"`
+	Type     string `json:"type"` // "XML" or "JSON"
+	PageNo   int    `json:"page_no"`
+	PageSize int    `json:"page_size"`
 }
 
 // SearchResponse represents the search response
 type SearchResponse struct {
-	TotalCount int         `json:"totalCnt" xml:"totalCnt"`
-	Page       int         `json:"page" xml:"page"`
-	Laws       []LawInfo   `json:"law" xml:"law"`
-	Error      *ErrorInfo  `json:"error,omitempty" xml:"error,omitempty"`
+	TotalCount int        `json:"totalCnt" xml:"totalCnt"`
+	Page       int        `json:"page" xml:"page"`
+	Laws       []LawInfo  `json:"law" xml:"law"`
+	Error      *ErrorInfo `json:"error,omitempty" xml:"error,omitempty"`
 }
 
 // LawInfo represents individual law information
 type LawInfo struct {
-	ID           string `json:"법령ID" xml:"법령ID"`
-	Name         string `json:"법령명한글" xml:"법령명한글"`
-	NameAbbrev   string `json:"법령명약칭" xml:"법령명약칭"`
-	SerialNo     string `json:"법령일련번호" xml:"법령일련번호"`
-	PromulDate   string `json:"공포일자" xml:"공포일자"`
-	PromulNo     string `json:"공포번호" xml:"공포번호"`
-	Category     string `json:"제개정구분명" xml:"제개정구분명"`
-	Department   string `json:"소관부처명" xml:"소관부처명"`
-	EffectDate   string `json:"시행일자" xml:"시행일자"`
-	LawType      string `json:"법령구분명" xml:"법령구분명"`
+	ID         string `json:"법령ID" xml:"법령ID"`
+	Name       string `json:"법령명한글" xml:"법령명한글"`
+	NameAbbrev string `json:"법령명약칭" xml:"법령명약칭"`
+	SerialNo   string `json:"법령일련번호" xml:"법령일련번호"`
+	PromulDate string `json:"공포일자" xml:"공포일자"`
+	PromulNo   string `json:"공포번호" xml:"공포번호"`
+	Category   string `json:"제개정구분명" xml:"제개정구분명"`
+	Department string `json:"소관부처명" xml:"소관부처명"`
+	EffectDate string `json:"시행일자" xml:"시행일자"`
+	LawType    string `json:"법령구분명" xml:"법령구분명"`
 }
 
 // ErrorInfo represents API error information
@@ -244,7 +244,7 @@ func (c *Client) doRequest(ctx context.Context, url string) (*SearchResponse, er
 	// Parse response based on content type
 	var searchResp SearchResponse
 	contentType := resp.Header.Get("Content-Type")
-	
+
 	if strings.Contains(contentType, "json") {
 		if err := json.Unmarshal(body, &searchResp); err != nil {
 			return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
@@ -275,12 +275,12 @@ func (c *Client) shouldRetry(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	// Check if it's a RetryableError
 	var retryableErr *RetryableError
 	if errors.As(err, &retryableErr) {
 		return true
 	}
-	
+
 	return false
 }

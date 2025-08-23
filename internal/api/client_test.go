@@ -168,7 +168,7 @@ func TestClient_SearchTimeout(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected timeout error, got nil")
 	}
-	
+
 	// Check if it's a timeout error
 	if !isTimeoutError(err) {
 		t.Errorf("Expected timeout error, got: %v", err)
@@ -180,18 +180,18 @@ func isTimeoutError(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	// Check for net.Error timeout
 	var netErr net.Error
 	if errors.As(err, &netErr) && netErr.Timeout() {
 		return true
 	}
-	
+
 	// Check for context deadline exceeded
 	if errors.Is(err, context.DeadlineExceeded) {
 		return true
 	}
-	
+
 	return false
 }
 
@@ -209,7 +209,7 @@ func TestClient_SearchWithCancel(t *testing.T) {
 
 	// Create cancellable context
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// Cancel immediately
 	cancel()
 
@@ -222,7 +222,7 @@ func TestClient_SearchWithCancel(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected context cancellation error, got nil")
 	}
-	
+
 	// Check if it's a context canceled error
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("Expected context.Canceled error, got: %v", err)

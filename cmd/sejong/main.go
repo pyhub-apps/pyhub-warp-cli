@@ -16,7 +16,7 @@ var (
 func main() {
 	// Set version information
 	cmd.SetVersionInfo(version, gitCommit, buildDate)
-	
+
 	// Execute the root command
 	cmd.Execute()
 }

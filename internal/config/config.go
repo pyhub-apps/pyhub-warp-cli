@@ -98,7 +98,7 @@ func Initialize() error {
 // createDefaultConfig creates a default configuration file
 func createDefaultConfig() error {
 	configFile := filepath.Join(configPath, ConfigFileName+"."+ConfigFileType)
-	
+
 	// Default configuration content
 	defaultConfig := `# Sejong CLI Configuration
 # 세종 CLI 설정 파일

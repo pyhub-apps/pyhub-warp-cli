@@ -12,7 +12,7 @@ import (
 func TestInitialize(t *testing.T) {
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	ResetConfig()
 	SetTestConfigPath(tempDir)
@@ -38,7 +38,7 @@ func TestInitialize(t *testing.T) {
 func TestInitialize_ExistingConfig(t *testing.T) {
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	ResetConfig()
 	SetTestConfigPath(tempDir)
@@ -47,7 +47,7 @@ func TestInitialize_ExistingConfig(t *testing.T) {
 	configFile := filepath.Join(tempDir, ConfigFileName+"."+ConfigFileType)
 	content := `law:
   key: "test-api-key"`
-	
+
 	if err := os.WriteFile(configFile, []byte(content), 0600); err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
@@ -67,7 +67,7 @@ func TestInitialize_ExistingConfig(t *testing.T) {
 func TestInitialize_InvalidYAML(t *testing.T) {
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	ResetConfig()
 	SetTestConfigPath(tempDir)
@@ -76,7 +76,7 @@ func TestInitialize_InvalidYAML(t *testing.T) {
 	configFile := filepath.Join(tempDir, ConfigFileName+"."+ConfigFileType)
 	content := `law:
   key: [invalid yaml`
-	
+
 	if err := os.WriteFile(configFile, []byte(content), 0600); err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
@@ -132,7 +132,7 @@ func TestGetAPIKey(t *testing.T) {
 func TestSetAPIKey(t *testing.T) {
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	ResetConfig()
 	SetTestConfigPath(tempDir)
@@ -165,11 +165,11 @@ func TestSetAPIKey(t *testing.T) {
 	viper.SetConfigName(ConfigFileName)
 	viper.SetConfigType(ConfigFileType)
 	viper.AddConfigPath(tempDir)
-	
+
 	if err := viper.ReadInConfig(); err != nil {
 		t.Fatalf("Failed to read saved config: %v", err)
 	}
-	
+
 	savedKey := viper.GetString("law.key")
 	if savedKey != testKey {
 		t.Errorf("Saved API key = %q, want %q", savedKey, testKey)
@@ -295,7 +295,7 @@ func TestSet(t *testing.T) {
 func TestSave(t *testing.T) {
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	ResetConfig()
 	SetTestConfigPath(tempDir)
@@ -319,7 +319,7 @@ func TestSave(t *testing.T) {
 	viper.SetConfigName(ConfigFileName)
 	viper.SetConfigType(ConfigFileType)
 	viper.AddConfigPath(tempDir)
-	
+
 	if err := viper.ReadInConfig(); err != nil {
 		t.Fatalf("Failed to read saved config: %v", err)
 	}
@@ -334,14 +334,14 @@ func TestSave(t *testing.T) {
 func TestGetConfigPath(t *testing.T) {
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	ResetConfig()
 	SetTestConfigPath(tempDir)
 
 	expected := filepath.Join(tempDir, ConfigFileName+"."+ConfigFileType)
 	got := GetConfigPath()
-	
+
 	if got != expected {
 		t.Errorf("GetConfigPath() = %q, want %q", got, expected)
 	}
@@ -350,7 +350,7 @@ func TestGetConfigPath(t *testing.T) {
 func TestCreateDefaultConfig(t *testing.T) {
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	ResetConfig()
 	SetTestConfigPath(tempDir)

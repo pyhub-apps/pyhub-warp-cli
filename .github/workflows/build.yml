@@ -1,0 +1,56 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: ['1.21', '1.22']
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    
+    - name: Set up Go
+      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache: true
+    
+    - name: Install dependencies
+      run: go mod download
+    
+    - name: Get headver version
+      id: headver
+      shell: bash
+      run: |
+        chmod +x scripts/headver.sh
+        VERSION=$(scripts/headver.sh)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Building version: $VERSION"
+        # Set build date in a cross-platform way
+        BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+    
+    - name: Build
+      run: |
+        go build -ldflags "-X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.Version=${{ steps.headver.outputs.version }} -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.GitCommit=${{ github.sha }} -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.BuildDate=${{ steps.headver.outputs.build_date }}" -o sejong-${{ matrix.os }}-${{ matrix.go-version }} ./cmd/sejong
+    
+    - name: Test binary
+      run: |
+        ./sejong-${{ matrix.os }}-${{ matrix.go-version }} version
+        ./sejong-${{ matrix.os }}-${{ matrix.go-version }} --help
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: sejong-${{ matrix.os }}-go${{ matrix.go-version }}
+        path: sejong-${{ matrix.os }}-${{ matrix.go-version }}*

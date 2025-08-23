@@ -52,10 +52,10 @@ func Execute() {
 func init() {
 	// Initialize configuration
 	cobra.OnInitialize(initConfig)
-	
+
 	// Global flags
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "상세 로그 출력")
-	
+
 	// Version flag
 	rootCmd.Version = fmt.Sprintf("%s (built %s, commit %s)", Version, BuildDate, GitCommit)
 	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{printf "version %s" .Version}}
@@ -68,7 +68,7 @@ func initConfig() {
 	if verbose, _ := rootCmd.PersistentFlags().GetBool("verbose"); verbose {
 		logger.SetVerbose(true)
 	}
-	
+
 	if err := config.Initialize(); err != nil {
 		logger.Warn("Failed to initialize config: %v", err)
 	}

@@ -37,22 +37,22 @@ func TestConfigCommand(t *testing.T) {
 			// Create a new root command for testing
 			cmd := &cobra.Command{Use: "test"}
 			cmd.AddCommand(configCmd)
-			
+
 			// Capture output
 			var buf bytes.Buffer
 			cmd.SetOut(&buf)
 			cmd.SetErr(&buf)
-			
+
 			// Set args
 			cmd.SetArgs(tt.args)
-			
+
 			// Execute command
 			err := cmd.Execute()
 			if err != nil {
 				t.Errorf("Execute() error = %v", err)
 				return
 			}
-			
+
 			// Check output if needed
 			if tt.checkOutput && !strings.Contains(buf.String(), tt.wantOutput) {
 				t.Errorf("Output should contain %q, got %q", tt.wantOutput, buf.String())
@@ -65,16 +65,16 @@ func TestConfigSetCommand(t *testing.T) {
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	config.ResetConfig()
 	config.SetTestConfigPath(tempDir)
-	
+
 	// Initialize config
 	if err := config.Initialize(); err != nil {
 		t.Fatalf("Failed to initialize config: %v", err)
 	}
-	
+
 	tests := []struct {
 		name        string
 		args        []string
@@ -125,30 +125,30 @@ func TestConfigSetCommand(t *testing.T) {
 			// Create a new root command for testing
 			cmd := &cobra.Command{Use: "test"}
 			cmd.AddCommand(configCmd)
-			
+
 			// Capture output
 			var buf bytes.Buffer
 			cmd.SetOut(&buf)
 			cmd.SetErr(&buf)
-			
+
 			// Set args
 			cmd.SetArgs(tt.args)
-			
+
 			// Execute command
 			err := cmd.Execute()
-			
+
 			// Check error
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if err != nil && tt.errContains != "" {
 				if !strings.Contains(err.Error(), tt.errContains) {
 					t.Errorf("Error should contain %q, got %q", tt.errContains, err.Error())
 				}
 			}
-			
+
 			if !tt.wantErr && tt.wantOutput != "" {
 				if !strings.Contains(buf.String(), tt.wantOutput) {
 					t.Errorf("Output should contain %q, got %q", tt.wantOutput, buf.String())
@@ -162,16 +162,16 @@ func TestConfigGetCommand(t *testing.T) {
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	config.ResetConfig()
 	config.SetTestConfigPath(tempDir)
-	
+
 	// Initialize config
 	if err := config.Initialize(); err != nil {
 		t.Fatalf("Failed to initialize config: %v", err)
 	}
-	
+
 	tests := []struct {
 		name        string
 		setup       func()
@@ -224,40 +224,40 @@ func TestConfigGetCommand(t *testing.T) {
 			if tt.setup != nil {
 				tt.setup()
 			}
-			
+
 			// Create a new root command for testing
 			cmd := &cobra.Command{Use: "test"}
 			cmd.AddCommand(configCmd)
-			
+
 			// Capture output
 			var buf bytes.Buffer
 			cmd.SetOut(&buf)
 			cmd.SetErr(&buf)
-			
+
 			// Set args
 			cmd.SetArgs(tt.args)
-			
+
 			// Execute command
 			err := cmd.Execute()
-			
+
 			// Check error
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if err != nil && tt.errContains != "" {
 				if !strings.Contains(err.Error(), tt.errContains) {
 					t.Errorf("Error should contain %q, got %q", tt.errContains, err.Error())
 				}
 			}
-			
+
 			if !tt.wantErr && tt.wantOutput != "" {
 				if !strings.Contains(buf.String(), tt.wantOutput) {
 					t.Errorf("Output should contain %q, got %q", tt.wantOutput, buf.String())
 				}
 			}
-			
+
 			// Reset for next test
 			config.SetAPIKey("")
 		})
@@ -268,40 +268,40 @@ func TestConfigPathCommand(t *testing.T) {
 	// Setup test config
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-cmd-test-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	config.ResetConfig()
 	config.SetTestConfigPath(tempDir)
-	
+
 	// Initialize config
 	if err := config.Initialize(); err != nil {
 		t.Fatalf("Failed to initialize config: %v", err)
 	}
-	
+
 	// Create a new root command for testing
 	cmd := &cobra.Command{Use: "test"}
 	cmd.AddCommand(configCmd)
-	
+
 	// Capture output
 	var buf bytes.Buffer
 	cmd.SetOut(&buf)
 	cmd.SetErr(&buf)
-	
+
 	// Set args
 	cmd.SetArgs([]string{"config", "path"})
-	
+
 	// Execute command
 	err := cmd.Execute()
 	if err != nil {
 		t.Errorf("Execute() error = %v", err)
 		return
 	}
-	
+
 	// Check output contains path
 	if !strings.Contains(buf.String(), "설정 파일 경로:") {
 		t.Errorf("Output should contain '설정 파일 경로:', got %q", buf.String())
 	}
-	
+
 	// Check that a valid path is shown
 	if !strings.Contains(buf.String(), filepath.Join("config.yaml")) && !strings.Contains(buf.String(), filepath.Join("config", "yaml")) {
 		t.Errorf("Output should contain valid config path, got %q", buf.String())

@@ -49,7 +49,7 @@ var configSetCmd = &cobra.Command{
 		if !isValidConfigKey(key) {
 			return fmt.Errorf("잘못된 설정 키 형식: %s (허용: law.key)", key)
 		}
-		
+
 		// Validate value is not empty
 		if value == "" {
 			return fmt.Errorf("설정값이 비어있습니다")
@@ -106,7 +106,7 @@ var configGetCmd = &cobra.Command{
 				guide.ShowAPIKeySetup()
 				return nil
 			}
-			
+
 			apiKey := config.GetAPIKey()
 			// Mask API key for security (show first 10 chars only)
 			if len(apiKey) > 10 {
@@ -179,7 +179,7 @@ func init() {
 	configGetCmd.SilenceErrors = true
 	configPathCmd.SilenceUsage = true
 	configPathCmd.SilenceErrors = true
-	
+
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configPathCmd)

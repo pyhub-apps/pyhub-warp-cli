@@ -39,7 +39,7 @@ func (f *Formatter) FormatSearchResultToString(resp *api.SearchResponse) (string
 	if resp == nil {
 		return "", fmt.Errorf("검색 결과가 없습니다")
 	}
-	
+
 	switch f.format {
 	case "json":
 		return f.formatJSONToString(resp)
@@ -61,27 +61,27 @@ func (f *Formatter) formatJSON(resp *api.SearchResponse) error {
 func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 	// Show summary
 	fmt.Printf("총 %d개의 법령을 찾았습니다.\n\n", resp.TotalCount)
-	
+
 	// If no results, return early
 	if len(resp.Laws) == 0 {
 		fmt.Println("검색 결과가 없습니다.")
 		return nil
 	}
-	
+
 	// Create simple table output
 	// Print header
 	fmt.Printf("%-5s %-45s %-10s %-15s %-12s\n", "번호", "법령명", "법령구분", "소관부처", "시행일자")
 	fmt.Println(strings.Repeat("-", 100))
-	
+
 	// Add data rows
 	for i, law := range resp.Laws {
 		// Format dates (YYYYMMDD -> YYYY-MM-DD)
 		effectDate := formatDate(law.EffectDate)
-		
+
 		// Truncate long names for better display
 		name := truncateString(law.Name, 40)
 		dept := truncateString(law.Department, 13)
-		
+
 		fmt.Printf("%-5d %-45s %-10s %-15s %-12s\n",
 			i+1,
 			name,
@@ -90,7 +90,7 @@ func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 			effectDate,
 		)
 	}
-	
+
 	// Show pagination info if there are more results
 	if resp.TotalCount > len(resp.Laws) {
 		currentPage := resp.Page
@@ -102,7 +102,7 @@ func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 		totalPages := (resp.TotalCount + pageSize - 1) / pageSize
 		fmt.Printf("\n페이지 %d/%d (--page 옵션으로 다른 페이지 조회 가능)\n", currentPage, totalPages)
 	}
-	
+
 	return nil
 }
 
@@ -128,30 +128,30 @@ func (f *Formatter) formatJSONToString(resp *api.SearchResponse) (string, error)
 // formatTableToString formats results in table format and returns as string
 func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error) {
 	var buf bytes.Buffer
-	
+
 	// Show summary
 	fmt.Fprintf(&buf, "총 %d개의 법령을 찾았습니다.\n\n", resp.TotalCount)
-	
+
 	// If no results, return early
 	if len(resp.Laws) == 0 {
 		fmt.Fprintln(&buf, "검색 결과가 없습니다.")
 		return buf.String(), nil
 	}
-	
+
 	// Create simple table output
 	// Print header
 	fmt.Fprintf(&buf, "%-5s %-45s %-10s %-15s %-12s\n", "번호", "법령명", "법령구분", "소관부처", "시행일자")
 	fmt.Fprintln(&buf, strings.Repeat("-", 100))
-	
+
 	// Add data rows
 	for i, law := range resp.Laws {
 		// Format dates (YYYYMMDD -> YYYY-MM-DD)
 		effectDate := formatDate(law.EffectDate)
-		
+
 		// Truncate long names for better display
 		name := truncateString(law.Name, 40)
 		dept := truncateString(law.Department, 13)
-		
+
 		fmt.Fprintf(&buf, "%-5d %-45s %-10s %-15s %-12s\n",
 			i+1,
 			name,
@@ -160,7 +160,7 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 			effectDate,
 		)
 	}
-	
+
 	// Show pagination info if there are more results
 	if resp.TotalCount > len(resp.Laws) {
 		currentPage := resp.Page
@@ -172,7 +172,7 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 		totalPages := (resp.TotalCount + pageSize - 1) / pageSize
 		fmt.Fprintf(&buf, "\n페이지 %d/%d (--page 옵션으로 다른 페이지 조회 가능)\n", currentPage, totalPages)
 	}
-	
+
 	return buf.String(), nil
 }
 
@@ -181,18 +181,18 @@ func truncateString(s string, maxLen int) string {
 	if maxLen <= 0 {
 		return ""
 	}
-	
+
 	// Handle Unicode characters properly by using rune slice
 	runes := []rune(s)
 	if len(runes) <= maxLen {
 		return s
 	}
-	
+
 	// Ensure we don't underflow when adding ellipsis
 	if maxLen <= 3 {
 		// Return just ellipsis dots up to maxLen
 		return "..."[:maxLen]
 	}
-	
+
 	return string(runes[:maxLen-3]) + "..."
 }

@@ -76,7 +76,7 @@ func TestFormatSearchResult_JSON(t *testing.T) {
 		f := NewFormatter("json")
 		err = f.FormatSearchResult(resp)
 	})
-	
+
 	if err != nil {
 		t.Fatalf("FormatSearchResult failed: %v", err)
 	}
@@ -117,7 +117,7 @@ func TestFormatSearchResult_Table(t *testing.T) {
 		f := NewFormatter("table")
 		err = f.FormatSearchResult(resp)
 	})
-	
+
 	if err != nil {
 		t.Fatalf("FormatSearchResult failed: %v", err)
 	}
@@ -147,7 +147,7 @@ func TestFormatSearchResult_EmptyResult(t *testing.T) {
 		f := NewFormatter("table")
 		err = f.FormatSearchResult(resp)
 	})
-	
+
 	if err != nil {
 		t.Fatalf("FormatSearchResult failed: %v", err)
 	}
@@ -177,8 +177,8 @@ func TestFormatDate(t *testing.T) {
 	}{
 		{"20231201", "2023-12-01"},
 		{"20200805", "2020-08-05"},
-		{"2023", "2023"},        // Invalid format, return as-is
-		{"", ""},                 // Empty string
+		{"2023", "2023"},             // Invalid format, return as-is
+		{"", ""},                     // Empty string
 		{"not-a-date", "not-a-date"}, // Invalid input
 	}
 
@@ -252,11 +252,11 @@ func TestFormatSearchResultToString(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		format     string
-		resp       *api.SearchResponse
-		wantErr    bool
-		contains   []string
+		name     string
+		format   string
+		resp     *api.SearchResponse
+		wantErr  bool
+		contains []string
 	}{
 		{
 			name:    "Table format",

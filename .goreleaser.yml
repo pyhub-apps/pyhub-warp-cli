@@ -1,0 +1,128 @@
+# GoReleaser configuration
+# Documentation: https://goreleaser.com
+
+# Set version using headver
+version: 2
+
+before:
+  hooks:
+    # Set version from headver
+    - sh -c 'echo "Using version $(./scripts/headver.sh)"'
+    # Run tests before building
+    - go test ./...
+    # Tidy go modules
+    - go mod tidy
+
+builds:
+  - id: sejong
+    main: ./cmd/sejong
+    binary: sejong
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    # Skip unsupported combinations
+    ignore:
+      - goos: linux
+        goarch: arm64
+      - goos: windows
+        goarch: arm64
+    # Inject version information at build time
+    ldflags:
+      - -s -w
+      - -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.Version={{.Version}}
+      - -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.GitCommit={{.Commit}}
+      - -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.BuildDate={{.Date}}
+    # Custom build tags
+    tags:
+      - netgo
+      - osusergo
+
+archives:
+  - id: default
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: '🚀 Features'
+      regexp: '^feat'
+    - title: '🐛 Bug Fixes'
+      regexp: '^fix'
+    - title: '⚡ Performance'
+      regexp: '^perf'
+    - title: '♻️ Refactoring'
+      regexp: '^refactor'
+
+release:
+  github:
+    owner: pyhub-kr
+    name: pyhub-sejong-cli
+  
+  # Release name template
+  name_template: "{{.ProjectName}} v{{.Version}}"
+  
+  # Publish release (set to false for draft releases)
+  draft: false
+  
+  # Mark as prerelease for non-stable versions
+  prerelease: auto
+  
+  # Release notes
+  footer: |
+    ## 설치 방법
+    
+    ### macOS (Apple Silicon)
+    ```bash
+    curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Darwin_arm64.tar.gz
+    tar -xzf sejong_{{ .Version }}_Darwin_arm64.tar.gz
+    sudo mv sejong /usr/local/bin/
+    ```
+    
+    ### Windows
+    ```powershell
+    # PowerShell
+    Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Windows_x86_64.zip -OutFile sejong.zip
+    Expand-Archive -Path sejong.zip -DestinationPath .
+    # Add to PATH or move to desired location
+    ```
+    
+    ### Linux
+    ```bash
+    curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Linux_x86_64.tar.gz
+    tar -xzf sejong_{{ .Version }}_Linux_x86_64.tar.gz
+    sudo mv sejong /usr/local/bin/
+    ```

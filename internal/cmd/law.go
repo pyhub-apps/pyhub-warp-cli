@@ -20,7 +20,7 @@ var (
 	outputFormat string
 	pageNo       int
 	pageSize     int
-	
+
 	// testAPIClient allows injecting a mock client for testing
 	testAPIClient APIClient
 )
@@ -47,7 +47,7 @@ var lawCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(lawCmd)
-	
+
 	// Flags
 	lawCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", "출력 형식 (table, json)")
 	lawCmd.Flags().IntVarP(&pageNo, "page", "p", 1, "페이지 번호")
@@ -66,9 +66,9 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 		logger.Debug("Empty query provided")
 		return cliErrors.ErrEmptyQuery
 	}
-	
+
 	logger.Debug("Starting law search for query: %s", query)
-	
+
 	// Use test client if available (for testing)
 	var client APIClient
 	if testAPIClient != nil {
@@ -84,17 +84,17 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 				guide.ShowAPIKeySetup()
 				return nil // Return nil to avoid printing the error twice
 			}
-			
+
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			logger.LogError(err, verbose)
 			return err
 		}
 		client = apiClient
 	}
-	
+
 	// Get verbose flag
 	verbose, _ := cmd.Flags().GetBool("verbose")
-	
+
 	// Use searchLaws for the actual search logic
 	return searchLaws(client, query, outputFormat, pageNo, pageSize, cmd.OutOrStdout(), verbose)
 }
@@ -102,7 +102,7 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 // searchLaws performs the actual law search - extracted for testing
 func searchLaws(client APIClient, query string, format string, page int, size int, output io.Writer, verbose bool) error {
 	logger.Info("Searching for: %s (page: %d, size: %d)", query, page, size)
-	
+
 	// Create search request
 	req := &api.SearchRequest{
 		Query:    query,
@@ -110,15 +110,15 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 		PageNo:   page,
 		PageSize: size,
 	}
-	
+
 	// Search with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	
+
 	resp, err := client.Search(ctx, req)
 	if err != nil {
 		logger.LogError(err, verbose)
-		
+
 		// Show user-friendly error with hint
 		var cliErr *cliErrors.CLIError
 		if errors.As(err, &cliErr) {
@@ -128,9 +128,9 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 		}
 		return err
 	}
-	
+
 	logger.Info("Search completed: %d results found", resp.TotalCount)
-	
+
 	// Format and output results using the formatter package
 	formatter := outputPkg.NewFormatter(format)
 	formattedOutput, err := formatter.FormatSearchResultToString(resp)
@@ -142,10 +142,9 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 			"출력 형식을 확인하세요",
 		))
 	}
-	
+
 	// Write formatted output
 	fmt.Fprint(output, formattedOutput)
-	
+
 	return nil
 }
-

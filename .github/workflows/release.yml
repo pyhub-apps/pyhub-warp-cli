@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.2534.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      with:
+        fetch-depth: 0  # Required for changelog generation
+    
+    - name: Set up Go
+      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      with:
+        go-version: '1.21'
+        cache: true
+    
+    - name: Install GoReleaser
+      uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
+      with:
+        install-only: true
+        version: latest
+    
+    - name: Get headver version
+      id: headver
+      run: |
+        chmod +x scripts/headver.sh
+        VERSION=$(scripts/headver.sh)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Building release version: $VERSION"
+    
+    - name: Create temporary tag if workflow_dispatch
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        # Check if tag already exists
+        if git rev-parse ${{ github.event.inputs.tag }} >/dev/null 2>&1; then
+          echo "Tag ${{ github.event.inputs.tag }} already exists"
+          exit 1
+        fi
+        git tag -a ${{ github.event.inputs.tag }} -m "Release ${{ github.event.inputs.tag }}"
+    
+    - name: Run GoReleaser
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Set version from headver
+        export VERSION=${{ steps.headver.outputs.version }}
+        goreleaser release --clean
