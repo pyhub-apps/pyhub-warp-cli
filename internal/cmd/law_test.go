@@ -236,7 +236,8 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a mock API client with test server URL
-			testAPIClient = api.NewClientWithURL("test-api-key", server.URL)
+			legacyClient := api.NewClientWithURL("test-api-key", server.URL)
+			testAPIClient = &api.LegacyClientWrapper{Client: legacyClient}
 			defer func() { testAPIClient = nil }()
 
 			// Create a new root command for testing
@@ -324,7 +325,7 @@ func TestSearchLaws(t *testing.T) {
 
 	// Test with mock client
 	mockClient := &mockAPIClient{
-		searchFunc: func(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
+		searchFunc: func(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error) {
 			return &api.SearchResponse{
 				TotalCount: 1,
 				Page:       1,
@@ -377,10 +378,10 @@ func TestSearchLaws(t *testing.T) {
 
 // Mock API client for testing
 type mockAPIClient struct {
-	searchFunc func(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
+	searchFunc func(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error)
 }
 
-func (m *mockAPIClient) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
+func (m *mockAPIClient) Search(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error) {
 	if m.searchFunc != nil {
 		return m.searchFunc(ctx, req)
 	}

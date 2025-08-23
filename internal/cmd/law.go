@@ -78,7 +78,7 @@ func init() {
 
 // APIClient interface for dependency injection and testing
 type APIClient interface {
-	Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
+	Search(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error)
 }
 
 func runLawCommand(cmd *cobra.Command, args []string) error {
@@ -96,8 +96,8 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	if testAPIClient != nil {
 		client = testAPIClient
 	} else {
-		// Create API client
-		apiClient, err := api.NewClient()
+		// Create API client using the new factory
+		apiClient, err := api.CreateDefaultClient()
 		if err != nil {
 			// Check if it's an API key error
 			var cliErr *cliErrors.CLIError
@@ -126,9 +126,9 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 	logger.Info(i18n.Tf("law.searching", query, page, size))
 
 	// Create search request
-	req := &api.SearchRequest{
+	req := &api.UnifiedSearchRequest{
 		Query:    query,
-		Type:     api.TypeJSON,
+		Type:     "JSON",
 		PageNo:   page,
 		PageSize: size,
 	}

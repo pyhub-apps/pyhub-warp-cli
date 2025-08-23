@@ -15,8 +15,8 @@ func CreateClient(apiType APIType) (ClientInterface, error) {
 		if apiKey == "" {
 			return nil, fmt.Errorf("NLIC API 키가 설정되지 않았습니다. 'sejong config set law.nlic.key YOUR_KEY' 명령으로 설정하세요")
 		}
-		// For now, return a wrapped legacy client
-		// TODO: Replace with dedicated NLIC client in Phase 2
+		// For now, use the legacy client wrapped with new interface
+		// TODO: Phase 2 - Replace with dedicated NLIC implementation
 		legacyClient := NewClientWithURL(apiKey, BaseURL)
 		return &LegacyClientWrapper{Client: legacyClient}, nil
 		
