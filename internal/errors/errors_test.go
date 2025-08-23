@@ -52,7 +52,7 @@ func TestCLIError_DetailedError(t *testing.T) {
 		}
 
 		detailed := err.DetailedError()
-		
+
 		// Check for all expected parts
 		if !strings.Contains(detailed, "[NET002]") {
 			t.Error("DetailedError should contain error code")
@@ -76,7 +76,7 @@ func TestCLIError_DetailedError(t *testing.T) {
 		}
 
 		detailed := err.DetailedError()
-		
+
 		// Check that it contains expected parts
 		if !strings.Contains(detailed, "[VAL001]") {
 			t.Error("DetailedError should contain error code")
@@ -97,7 +97,7 @@ func TestCLIError_DetailedError(t *testing.T) {
 func TestWrap(t *testing.T) {
 	underlying := errors.New("connection refused")
 	wrapped := Wrap(underlying, ErrNoNetwork)
-	
+
 	if wrapped.Underlying != underlying {
 		t.Error("Wrap should preserve underlying error")
 	}
@@ -107,7 +107,7 @@ func TestWrap(t *testing.T) {
 	if wrapped.Message != ErrNoNetwork.Message {
 		t.Error("Wrap should preserve message")
 	}
-	
+
 	// Test unwrap
 	if errors.Unwrap(wrapped) != underlying {
 		t.Error("Unwrap should return underlying error")
@@ -120,10 +120,10 @@ func TestWithHint(t *testing.T) {
 		Message: "Invalid input",
 		Hint:    "Original hint",
 	}
-	
+
 	newHint := "New hint"
 	modified := WithHint(original, newHint)
-	
+
 	if modified.Hint != newHint {
 		t.Errorf("WithHint should update hint, got %q, want %q", modified.Hint, newHint)
 	}
@@ -147,7 +147,7 @@ func TestCommonErrors(t *testing.T) {
 		ErrJSONParse,
 		ErrEmptyQuery,
 	}
-	
+
 	for _, err := range commonErrors {
 		if err.Code == "" {
 			t.Errorf("Error %v should have a code", err)
@@ -164,7 +164,7 @@ func TestCommonErrors(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	err := New(ErrCodeConfigRead, "Cannot read config", "Check file permissions")
-	
+
 	if err.Code != ErrCodeConfigRead {
 		t.Error("New should set error code")
 	}

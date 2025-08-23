@@ -19,11 +19,11 @@ func TestNewGuide(t *testing.T) {
 func TestGuide_ShowAPIKeySetup_Plain(t *testing.T) {
 	var buf bytes.Buffer
 	guide := NewGuideWithWriter(&buf, false)
-	
+
 	guide.ShowAPIKeySetup()
-	
+
 	output := buf.String()
-	
+
 	// Check for required elements
 	expectedStrings := []string{
 		"API 키 설정이 필요합니다",
@@ -35,7 +35,7 @@ func TestGuide_ShowAPIKeySetup_Plain(t *testing.T) {
 		"sejong config set law.key",
 		"팁: 위 명령어를 복사하여 사용하세요",
 	}
-	
+
 	for _, expected := range expectedStrings {
 		if !strings.Contains(output, expected) {
 			t.Errorf("Output should contain %q", expected)
@@ -46,11 +46,11 @@ func TestGuide_ShowAPIKeySetup_Plain(t *testing.T) {
 func TestGuide_ShowAPIKeySetup_Colored(t *testing.T) {
 	var buf bytes.Buffer
 	guide := NewGuideWithWriter(&buf, true)
-	
+
 	guide.ShowAPIKeySetup()
-	
+
 	output := buf.String()
-	
+
 	// Check for required content (color codes will be present but we check the text)
 	expectedStrings := []string{
 		"API 키 설정이 필요합니다",
@@ -58,13 +58,13 @@ func TestGuide_ShowAPIKeySetup_Colored(t *testing.T) {
 		"인증키 발급받기",
 		"인증키 설정하기",
 	}
-	
+
 	for _, expected := range expectedStrings {
 		if !strings.Contains(output, expected) {
 			t.Errorf("Output should contain %q", expected)
 		}
 	}
-	
+
 	// Check that ANSI color codes are present
 	if !strings.Contains(output, "\x1b[") {
 		t.Error("Colored output should contain ANSI escape codes")
@@ -91,14 +91,14 @@ func TestGuide_ShowSearchProgress(t *testing.T) {
 			expected: "검색 중... (test query)",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			guide := NewGuideWithWriter(&buf, tt.useColor)
-			
+
 			guide.ShowSearchProgress(tt.query)
-			
+
 			output := buf.String()
 			if !strings.Contains(output, tt.expected) {
 				t.Errorf("Output should contain %q, got %q", tt.expected, output)
@@ -110,9 +110,9 @@ func TestGuide_ShowSearchProgress(t *testing.T) {
 func TestGuide_ShowSuccess(t *testing.T) {
 	var buf bytes.Buffer
 	guide := NewGuideWithWriter(&buf, false)
-	
+
 	guide.ShowSuccess("Operation completed")
-	
+
 	output := buf.String()
 	if !strings.Contains(output, "Operation completed") {
 		t.Errorf("Output should contain success message")
@@ -125,9 +125,9 @@ func TestGuide_ShowSuccess(t *testing.T) {
 func TestGuide_ShowError(t *testing.T) {
 	var buf bytes.Buffer
 	guide := NewGuideWithWriter(&buf, false)
-	
+
 	guide.ShowError("Operation failed")
-	
+
 	output := buf.String()
 	if !strings.Contains(output, "Operation failed") {
 		t.Errorf("Output should contain error message")
@@ -140,9 +140,9 @@ func TestGuide_ShowError(t *testing.T) {
 func TestGuide_ShowError_Colored(t *testing.T) {
 	var buf bytes.Buffer
 	guide := NewGuideWithWriter(&buf, true)
-	
+
 	guide.ShowError("Operation failed")
-	
+
 	output := buf.String()
 	if !strings.Contains(output, "Operation failed") {
 		t.Errorf("Output should contain error message")
@@ -159,9 +159,9 @@ func TestGuide_ShowError_Colored(t *testing.T) {
 func TestGuide_ShowWarning(t *testing.T) {
 	var buf bytes.Buffer
 	guide := NewGuideWithWriter(&buf, false)
-	
+
 	guide.ShowWarning("This is a warning")
-	
+
 	output := buf.String()
 	if !strings.Contains(output, "This is a warning") {
 		t.Errorf("Output should contain warning message")
@@ -174,16 +174,16 @@ func TestGuide_ShowWarning(t *testing.T) {
 func TestGuide_PlatformSpecificCopyHint(t *testing.T) {
 	var buf bytes.Buffer
 	guide := NewGuideWithWriter(&buf, false)
-	
+
 	guide.ShowAPIKeySetup()
-	
+
 	output := buf.String()
-	
+
 	// Should contain at least one of the platform-specific copy hints
-	hasCopyHint := strings.Contains(output, "Cmd+C") || 
+	hasCopyHint := strings.Contains(output, "Cmd+C") ||
 		strings.Contains(output, "Ctrl+C") ||
 		strings.Contains(output, "Ctrl+Shift+C")
-	
+
 	if !hasCopyHint {
 		t.Error("Output should contain platform-specific copy hint")
 	}

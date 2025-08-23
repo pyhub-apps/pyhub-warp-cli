@@ -11,14 +11,14 @@ import (
 
 // Guide provides user onboarding assistance
 type Guide struct {
-	writer io.Writer
+	writer   io.Writer
 	useColor bool
 }
 
 // NewGuide creates a new onboarding guide
 func NewGuide() *Guide {
 	return &Guide{
-		writer: os.Stderr,
+		writer:   os.Stderr,
 		useColor: isTerminal() && !isColorDisabled(),
 	}
 }
@@ -26,7 +26,7 @@ func NewGuide() *Guide {
 // NewGuideWithWriter creates a guide with custom writer (for testing)
 func NewGuideWithWriter(w io.Writer, useColor bool) *Guide {
 	return &Guide{
-		writer: w,
+		writer:   w,
 		useColor: useColor,
 	}
 }
@@ -47,40 +47,40 @@ func (g *Guide) showColoredAPIKeySetup() {
 	green := color.New(color.FgGreen)
 	cyan := color.New(color.FgCyan)
 	bold := color.New(color.Bold)
-	
+
 	// Ensure color output is used
 	if g.useColor {
 		color.NoColor = false
 	}
-	
+
 	// Header
 	red.Fprintln(g.writer, "🔐 API 키 설정이 필요합니다")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "국가법령정보센터 오픈 API를 사용하려면 인증키가 필요합니다.")
 	fmt.Fprintln(g.writer)
-	
+
 	// Steps
 	bold.Fprintln(g.writer, "📋 설정 방법:")
 	fmt.Fprintln(g.writer)
-	
+
 	// Step 1
 	yellow.Fprint(g.writer, "1️⃣  인증키 발급받기")
 	fmt.Fprintln(g.writer)
 	fmt.Fprint(g.writer, "   → ")
 	cyan.Fprintln(g.writer, "https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9")
 	fmt.Fprintln(g.writer)
-	
+
 	// Step 2
 	yellow.Fprint(g.writer, "2️⃣  인증키 설정하기")
 	fmt.Fprintln(g.writer)
 	fmt.Fprint(g.writer, "   → ")
 	green.Fprintln(g.writer, "sejong config set law.key <발급받은_인증키>")
 	fmt.Fprintln(g.writer)
-	
+
 	// Tip
 	fmt.Fprint(g.writer, "💡 ")
 	bold.Fprintln(g.writer, "팁: 위 명령어를 복사하여 사용하세요!")
-	
+
 	// Platform-specific copy hint
 	g.showCopyHint()
 }
@@ -99,7 +99,7 @@ func (g *Guide) showPlainAPIKeySetup() {
 	fmt.Fprintln(g.writer, "   → sejong config set law.key <발급받은_인증키>")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "💡 팁: 위 명령어를 복사하여 사용하세요!")
-	
+
 	g.showCopyHint()
 }
 

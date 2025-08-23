@@ -10,11 +10,11 @@ import (
 
 func TestRootCommand(t *testing.T) {
 	tests := []struct {
-		name           string
-		args           []string
-		wantOutput     string
-		wantErr        bool
-		checkOutput    bool
+		name        string
+		args        []string
+		wantOutput  string
+		wantErr     bool
+		checkOutput bool
 	}{
 		{
 			name:        "No arguments shows help",
@@ -45,24 +45,24 @@ func TestRootCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a new root command for testing
 			cmd := rootCmd
-			
+
 			// Capture output
 			var buf bytes.Buffer
 			cmd.SetOut(&buf)
 			cmd.SetErr(&buf)
-			
+
 			// Set args
 			cmd.SetArgs(tt.args)
-			
+
 			// Execute command
 			err := cmd.Execute()
-			
+
 			// Check error
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			// Check output if needed
 			if tt.checkOutput && !strings.Contains(buf.String(), tt.wantOutput) {
 				t.Errorf("Output should contain %q, got %q", tt.wantOutput, buf.String())
@@ -76,12 +76,12 @@ func TestRootCommandVerboseFlag(t *testing.T) {
 	if rootCmd.PersistentFlags().Lookup("verbose") == nil {
 		t.Error("verbose flag not registered")
 	}
-	
+
 	// Test short flag
 	if rootCmd.PersistentFlags().ShorthandLookup("v") == nil {
 		t.Error("verbose short flag 'v' not registered")
 	}
-	
+
 	// Test default value
 	verboseFlag := rootCmd.PersistentFlags().Lookup("verbose")
 	if verboseFlag.DefValue != "false" {
@@ -99,14 +99,14 @@ func TestSetVersionInfo(t *testing.T) {
 		GitCommit = origCommit
 		BuildDate = origDate
 	}()
-	
+
 	// Test SetVersionInfo
 	testVersion := "1.0.0"
 	testCommit := "abc123"
 	testDate := "2024-01-01"
-	
+
 	SetVersionInfo(testVersion, testCommit, testDate)
-	
+
 	if Version != testVersion {
 		t.Errorf("Version = %s, want %s", Version, testVersion)
 	}
@@ -116,7 +116,7 @@ func TestSetVersionInfo(t *testing.T) {
 	if BuildDate != testDate {
 		t.Errorf("BuildDate = %s, want %s", BuildDate, testDate)
 	}
-	
+
 	// Check that rootCmd.Version is updated
 	expectedVersion := "1.0.0 (built 2024-01-01, commit abc123)"
 	if rootCmd.Version != expectedVersion {
@@ -132,20 +132,20 @@ func TestInitConfig(t *testing.T) {
 			t.Errorf("initConfig() panicked: %v", r)
 		}
 	}()
-	
+
 	initConfig()
 }
 
 func TestExecuteFunction(t *testing.T) {
 	// This test is tricky because Execute() calls os.Exit on error
 	// We'll test the success case
-	
+
 	// Save original rootCmd
 	origCmd := rootCmd
 	defer func() {
 		rootCmd = origCmd
 	}()
-	
+
 	// Create a test command that doesn't exit
 	testCmd := &cobra.Command{
 		Use: "test",
@@ -154,13 +154,13 @@ func TestExecuteFunction(t *testing.T) {
 		},
 	}
 	rootCmd = testCmd
-	
+
 	// Capture output
 	var buf bytes.Buffer
 	rootCmd.SetOut(&buf)
 	rootCmd.SetErr(&buf)
 	rootCmd.SetArgs([]string{})
-	
+
 	// This should not panic or exit
 	Execute()
 }

@@ -114,7 +114,7 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 	// Setup test environment
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-*")
 	defer cleanup()
-	
+
 	// Mock API server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check API key
@@ -122,7 +122,7 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		
+
 		// Return mock response
 		response := api.SearchResponse{
 			TotalCount: 2,
@@ -154,7 +154,7 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 				},
 			},
 		}
-		
+
 		// Check format type
 		if r.URL.Query().Get("type") == "JSON" {
 			w.Header().Set("Content-Type", "application/json")
@@ -164,21 +164,21 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 		}
 	}))
 	defer server.Close()
-	
+
 	// Reset config and set test path
 	config.ResetConfig()
 	config.SetTestConfigPath(tempDir)
-	
+
 	// Initialize config
 	if err := config.Initialize(); err != nil {
 		t.Fatalf("Failed to initialize config: %v", err)
 	}
-	
+
 	// Set test API key
 	if err := config.SetAPIKey("test-api-key"); err != nil {
 		t.Fatalf("Failed to set API key: %v", err)
 	}
-	
+
 	tests := []struct {
 		name       string
 		args       []string
@@ -204,32 +204,32 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 			wantOutput: "개인정보 보호법",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a mock API client with test server URL
 			testAPIClient = api.NewClientWithURL("test-api-key", server.URL)
 			defer func() { testAPIClient = nil }()
-			
+
 			// Create a new root command for testing
 			cmd := &cobra.Command{Use: "test"}
 			cmd.AddCommand(lawCmd)
-			
+
 			// Capture output
 			var buf bytes.Buffer
 			cmd.SetOut(&buf)
 			cmd.SetErr(&buf)
-			
+
 			// Set args
 			cmd.SetArgs(tt.args)
-			
+
 			// Execute command
 			err := cmd.Execute()
 			if err != nil {
 				t.Errorf("Execute() error = %v", err)
 				return
 			}
-			
+
 			// Check output
 			output := buf.String()
 			if !strings.Contains(output, tt.wantOutput) {
@@ -243,34 +243,34 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 	// Setup test environment without API key
 	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-nokey-*")
 	defer cleanup()
-	
+
 	// Reset config and set test path
 	config.ResetConfig()
 	config.SetTestConfigPath(tempDir)
-	
+
 	// Initialize config without API key
 	if err := config.Initialize(); err != nil {
 		t.Fatalf("Failed to initialize config: %v", err)
 	}
-	
+
 	// Create a new root command for testing
 	cmd := &cobra.Command{Use: "test"}
 	cmd.AddCommand(lawCmd)
-	
+
 	// Capture output
 	var buf bytes.Buffer
 	cmd.SetOut(&buf)
 	cmd.SetErr(&buf)
-	
+
 	// Set args
 	cmd.SetArgs([]string{"law", "개인정보"})
-	
+
 	// Execute command - should return error about missing API key
 	err := cmd.Execute()
 	if err == nil {
 		t.Error("Execute() should return error when API key is not set")
 	}
-	
+
 	// Check that error message contains API key setup instruction
 	output := buf.String()
 	if !strings.Contains(output, "API 키가 설정되지 않았습니다") {
@@ -302,26 +302,26 @@ func TestSearchLaws(t *testing.T) {
 			}, nil
 		},
 	}
-	
+
 	// Test table output
 	var buf bytes.Buffer
 	err := searchLaws(mockClient, "테스트", "table", 1, 10, &buf, false)
 	if err != nil {
 		t.Errorf("searchLaws() error = %v", err)
 	}
-	
+
 	output := buf.String()
 	if !strings.Contains(output, "테스트 법률") {
 		t.Errorf("Table output should contain law name, got %q", output)
 	}
-	
+
 	// Test JSON output
 	buf.Reset()
 	err = searchLaws(mockClient, "테스트", "json", 1, 10, &buf, false)
 	if err != nil {
 		t.Errorf("searchLaws() error = %v", err)
 	}
-	
+
 	output = buf.String()
 	var result api.SearchResponse
 	if err := json.Unmarshal([]byte(output), &result); err != nil {
