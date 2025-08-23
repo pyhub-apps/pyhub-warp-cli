@@ -17,18 +17,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// getSejongPath returns the path to the sejong binary, checking env var first
+func getSejongPath() string {
+	if path := os.Getenv("SEJONG_BINARY_PATH"); path != "" {
+		return path
+	}
+	return "../../sejong"
+}
+
 // TestE2EFirstUserScenario tests the first-time user experience
 func TestE2EFirstUserScenario(t *testing.T) {
 	// Setup
 	tempDir := setupTestEnvironment(t)
 	defer os.RemoveAll(tempDir)
 
-	mockServer := testutil.NewMockServer()
-	defer mockServer.Close()
-
 	// Scenario 1: Search without API key - should show guidance
 	t.Run("SearchWithoutAPIKey", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "law", "개인정보 보호법")
+		cmd := exec.Command(getSejongPath(), "law", "개인정보 보호법")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -41,7 +46,7 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 	// Scenario 2: Set API key
 	t.Run("SetAPIKey", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "config", "set", "law.key", "TEST_API_KEY")
+		cmd := exec.Command(getSejongPath(), "config", "set", "law.key", "TEST_API_KEY")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -53,7 +58,7 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 	// Scenario 3: Verify API key is set
 	t.Run("GetAPIKey", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "config", "get", "law.key")
+		cmd := exec.Command(getSejongPath(), "config", "get", "law.key")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -84,7 +89,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 1: Normal search with table output
 	t.Run("NormalSearchTableOutput", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "law", "개인정보 보호법")
+		cmd := exec.Command(getSejongPath(), "law", "개인정보 보호법")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -102,7 +107,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 2: Search with JSON output
 	t.Run("SearchWithJSONOutput", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "law", "도로교통법", "--format", "json")
+		cmd := exec.Command(getSejongPath(), "law", "도로교통법", "--format", "json")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -125,7 +130,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 3: Empty result handling
 	t.Run("EmptyResultHandling", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "law", "없는법령")
+		cmd := exec.Command(getSejongPath(), "law", "없는법령")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -140,7 +145,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 4: Pagination test
 	t.Run("PaginationTest", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "law", "개인정보 보호법", "--page", "2", "--size", "10")
+		cmd := exec.Command(getSejongPath(), "law", "개인정보 보호법", "--page", "2", "--size", "10")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -169,7 +174,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 	t.Run("InvalidAPIKey", func(t *testing.T) {
 		setupConfig(t, tempDir, "INVALID_KEY", mockServer.GetSearchURL())
 
-		cmd := exec.Command("../../sejong", "law", "개인정보")
+		cmd := exec.Command(getSejongPath(), "law", "개인정보")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -186,7 +191,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 	t.Run("ServerError", func(t *testing.T) {
 		setupConfig(t, tempDir, "TEST_API_KEY", mockServer.GetSearchURL())
 
-		cmd := exec.Command("../../sejong", "law", "error")
+		cmd := exec.Command(getSejongPath(), "law", "error")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -201,12 +206,12 @@ func TestE2EErrorScenarios(t *testing.T) {
 
 	// Scenario 3: Network timeout (simulated with non-existent server)
 	t.Run("NetworkTimeout", func(t *testing.T) {
-		setupConfig(t, tempDir, "TEST_API_KEY", "http://localhost:99999/api")
+		setupConfig(t, tempDir, "TEST_API_KEY", "http://127.0.0.1:1/api")
 
-		cmd := exec.Command("../../sejong", "law", "test")
+		cmd := exec.Command(getSejongPath(), "law", "test")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
-			fmt.Sprintf("LAW_API_URL=http://localhost:99999/api"),
+			fmt.Sprintf("LAW_API_URL=http://127.0.0.1:1/api"),
 		)
 
 		output, err := cmd.CombinedOutput()
@@ -226,7 +231,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 func TestE2EVersionAndHelp(t *testing.T) {
 	// Test version command
 	t.Run("VersionCommand", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "version")
+		cmd := exec.Command(getSejongPath(), "version")
 		output, err := cmd.CombinedOutput()
 		require.NoError(t, err, "Command failed: %s", string(output))
 
@@ -237,7 +242,7 @@ func TestE2EVersionAndHelp(t *testing.T) {
 
 	// Test help command
 	t.Run("HelpCommand", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "--help")
+		cmd := exec.Command(getSejongPath(), "--help")
 		output, err := cmd.CombinedOutput()
 		require.NoError(t, err, "Command failed: %s", string(output))
 
@@ -250,7 +255,7 @@ func TestE2EVersionAndHelp(t *testing.T) {
 
 	// Test law subcommand help
 	t.Run("LawHelpCommand", func(t *testing.T) {
-		cmd := exec.Command("../../sejong", "law", "--help")
+		cmd := exec.Command(getSejongPath(), "law", "--help")
 		output, err := cmd.CombinedOutput()
 		require.NoError(t, err, "Command failed: %s", string(output))
 
@@ -265,6 +270,7 @@ func TestE2EVersionAndHelp(t *testing.T) {
 // Helper functions
 
 func setupTestEnvironment(t *testing.T) string {
+	t.Helper()
 	tempDir, err := os.MkdirTemp("", "sejong-e2e-test-*")
 	require.NoError(t, err)
 
@@ -277,6 +283,7 @@ func setupTestEnvironment(t *testing.T) string {
 }
 
 func setupConfig(t *testing.T, homeDir, apiKey, apiURL string) {
+	t.Helper()
 	configDir := filepath.Join(homeDir, ".sejong")
 	err := os.MkdirAll(configDir, 0755)
 	require.NoError(t, err)
@@ -287,6 +294,6 @@ func setupConfig(t *testing.T, homeDir, apiKey, apiURL string) {
   url: %s
 `, apiKey, apiURL)
 
-	err = os.WriteFile(configFile, []byte(configContent), 0644)
+	err = os.WriteFile(configFile, []byte(configContent), 0600)
 	require.NoError(t, err)
 }
