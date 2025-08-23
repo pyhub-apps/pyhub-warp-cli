@@ -20,7 +20,13 @@ const (
 // Config holds the application configuration
 type Config struct {
 	Law struct {
-		Key string `mapstructure:"key"`
+		Key  string `mapstructure:"key"`  // Legacy: NLIC API key
+		NLIC struct {
+			Key string `mapstructure:"key"` // National Law Information Center API key
+		} `mapstructure:"nlic"`
+		ELIS struct {
+			Key string `mapstructure:"key"` // Local Regulations Information System API key
+		} `mapstructure:"elis"`
 	} `mapstructure:"law"`
 }
 
@@ -69,6 +75,8 @@ func Initialize() error {
 
 	// Set defaults
 	viper.SetDefault("law.key", "")
+	viper.SetDefault("law.nlic.key", "")
+	viper.SetDefault("law.elis.key", "")
 
 	// Try to read config file
 	if err := viper.ReadInConfig(); err != nil {
@@ -103,11 +111,22 @@ func createDefaultConfig() error {
 	defaultConfig := `# Sejong CLI Configuration
 # 세종 CLI 설정 파일
 
-# 국가법령정보센터 API 설정
+# 법령 정보 API 설정
 law:
-  # API 인증키
-  # https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9 에서 발급
+  # 기본 API 키 (NLIC와 호환)
   key: ""
+  
+  # 국가법령정보센터 (National Law Information Center) API
+  nlic:
+    # API 인증키
+    # https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9 에서 발급
+    key: ""
+  
+  # 자치법규정보시스템 (Local Regulations Information System) API
+  elis:
+    # API 인증키
+    # https://www.elis.go.kr 에서 발급
+    key: ""
 `
 
 	// Write default config
@@ -138,30 +157,104 @@ func Save() error {
 	return viper.WriteConfig()
 }
 
-// GetAPIKey returns the configured API key
+// GetAPIKey returns the configured API key (backward compatibility - returns NLIC key)
 func GetAPIKey() string {
 	if cfg == nil {
 		return ""
 	}
+	// First check NLIC-specific key
+	if cfg.Law.NLIC.Key != "" {
+		return cfg.Law.NLIC.Key
+	}
+	// Fall back to legacy key
 	return cfg.Law.Key
 }
 
-// SetAPIKey sets the API key and saves the configuration
+// SetAPIKey sets the API key and saves the configuration (backward compatibility - sets NLIC key)
 func SetAPIKey(key string) error {
+	// Set both legacy and NLIC keys for compatibility
 	Set("law.key", key)
+	Set("law.nlic.key", key)
 	if err := Save(); err != nil {
 		return fmt.Errorf("failed to save config: %w", err)
 	}
 	// Update in-memory config
 	if cfg != nil {
 		cfg.Law.Key = key
+		cfg.Law.NLIC.Key = key
 	}
 	return nil
 }
 
-// IsAPIKeySet checks if an API key is configured
+// IsAPIKeySet checks if an API key is configured (backward compatibility - checks NLIC key)
 func IsAPIKeySet() bool {
 	key := GetAPIKey()
+	return key != ""
+}
+
+// GetNLICAPIKey returns the NLIC API key
+func GetNLICAPIKey() string {
+	if cfg == nil {
+		return ""
+	}
+	// First check NLIC-specific key
+	if cfg.Law.NLIC.Key != "" {
+		return cfg.Law.NLIC.Key
+	}
+	// Fall back to legacy key
+	return cfg.Law.Key
+}
+
+// SetNLICAPIKey sets the NLIC API key
+func SetNLICAPIKey(key string) error {
+	Set("law.nlic.key", key)
+	// Also set legacy key for backward compatibility if it's empty
+	if GetString("law.key") == "" {
+		Set("law.key", key)
+	}
+	if err := Save(); err != nil {
+		return fmt.Errorf("failed to save config: %w", err)
+	}
+	// Update in-memory config
+	if cfg != nil {
+		cfg.Law.NLIC.Key = key
+		if cfg.Law.Key == "" {
+			cfg.Law.Key = key
+		}
+	}
+	return nil
+}
+
+// IsNLICAPIKeySet checks if NLIC API key is configured
+func IsNLICAPIKeySet() bool {
+	key := GetNLICAPIKey()
+	return key != ""
+}
+
+// GetELISAPIKey returns the ELIS API key
+func GetELISAPIKey() string {
+	if cfg == nil {
+		return ""
+	}
+	return cfg.Law.ELIS.Key
+}
+
+// SetELISAPIKey sets the ELIS API key
+func SetELISAPIKey(key string) error {
+	Set("law.elis.key", key)
+	if err := Save(); err != nil {
+		return fmt.Errorf("failed to save config: %w", err)
+	}
+	// Update in-memory config
+	if cfg != nil {
+		cfg.Law.ELIS.Key = key
+	}
+	return nil
+}
+
+// IsELISAPIKeySet checks if ELIS API key is configured
+func IsELISAPIKeySet() bool {
+	key := GetELISAPIKey()
 	return key != ""
 }
 
