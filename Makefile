@@ -9,7 +9,7 @@ LDFLAGS := -ldflags "-s -w \
 	-X main.gitCommit=$(GIT_COMMIT) \
 	-X main.buildDate=$(BUILD_DATE)"
 
-.PHONY: all build test clean install release-snapshot release version
+.PHONY: all build test clean install release-snapshot release version test-e2e test-integration
 
 all: test build
 
@@ -85,3 +85,17 @@ bump-head:
 set-head:
 	@read -p "Enter new head version: " version; \
 	./scripts/headver.sh --set-head $$version
+
+# Run integration tests
+test-integration:
+	@echo "Running integration tests..."
+	go test -v -tags=integration ./test/integration/...
+
+# Run E2E tests
+test-e2e: build
+	@echo "Running E2E tests..."
+	go test -v -tags=e2e ./test/e2e/...
+
+# Run all tests (unit, integration, and E2E)
+test-all: test test-integration test-e2e
+	@echo "All tests completed!"
