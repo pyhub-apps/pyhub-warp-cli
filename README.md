@@ -1,30 +1,71 @@
-# Sejong-CLI
+# Sejong CLI
 
 > 🏛️ 터미널에서 빠르게 검색하는 대한민국 법령 정보
 
-[![Go Version](https://img.shields.io/badge/Go-1.20%2B-00ADD8?logo=go)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.21%2B-00ADD8?logo=go)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/badge/Release-1.2534.6--dev-orange)](https://github.com/pyhub-kr/pyhub-sejong-cli/releases)
+[![Tests](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/test.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/test.yml)
+[![Build](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/build.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/build.yml)
 
-## 📖 소개
+[한국어](#한국어) | [English](#english)
 
-**Sejong-CLI**는 국가법령정보센터 오픈 API를 활용하여 터미널에서 한국 법령 정보를 빠르고 쉽게 검색할 수 있는 명령줄 도구입니다.
+---
+
+## 한국어
+
+### 📖 소개
+
+**Sejong CLI**는 국가법령정보센터 오픈 API를 활용하여 터미널에서 한국 법령 정보를 빠르고 쉽게 검색할 수 있는 명령줄 도구입니다.
 
 ### ✨ 주요 기능
 
 - 🔍 **빠른 법령 검색**: 터미널에서 즉시 법령 정보 조회
 - 📋 **다양한 출력 형식**: 테이블 형식 또는 JSON 형식 지원
 - ⚡ **간편한 설정**: 한 번의 API 키 설정으로 계속 사용
+- 📄 **페이지네이션**: 대량의 검색 결과를 페이지별로 조회
+- 🎯 **스마트 온보딩**: 처음 사용자를 위한 친절한 안내
+- 🔄 **자동 재시도**: 네트워크 오류 시 자동 재시도
+- 🌈 **컬러 출력**: 가독성 높은 컬러 터미널 출력
 
-### 👥 이런 분들께 추천합니다
+### 🚀 설치
 
-- 법률/규제 관련 서비스를 개발하는 **개발자**
-- 법령 데이터를 분석하는 **연구원**
-- 법령 정보를 자주 확인하는 **법률 전문가**
+#### 바이너리 다운로드 (권장)
 
-## 🚀 설치
+최신 릴리스는 [Releases](https://github.com/pyhub-kr/pyhub-sejong-cli/releases) 페이지에서 다운로드할 수 있습니다.
 
-### Go 빌드 (개발 버전)
+##### macOS (Apple Silicon)
+```bash
+# 최신 버전 다운로드
+curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_arm64.tar.gz
+tar -xzf pyhub-sejong-cli_Darwin_arm64.tar.gz
+sudo mv sejong /usr/local/bin/
+```
+
+##### macOS (Intel)
+```bash
+curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_x86_64.tar.gz
+tar -xzf pyhub-sejong-cli_Darwin_x86_64.tar.gz
+sudo mv sejong /usr/local/bin/
+```
+
+##### Windows
+```powershell
+# PowerShell에서 실행
+Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Windows_x86_64.zip -OutFile sejong.zip
+Expand-Archive -Path sejong.zip -DestinationPath .
+# sejong.exe를 PATH에 추가하거나 원하는 위치로 이동
+```
+
+##### Linux
+```bash
+curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Linux_x86_64.tar.gz
+tar -xzf pyhub-sejong-cli_Linux_x86_64.tar.gz
+sudo mv sejong /usr/local/bin/
+```
+
+#### 소스에서 빌드
+
+Go 1.21 이상이 필요합니다.
 
 ```bash
 # 저장소 클론
@@ -32,30 +73,29 @@ git clone https://github.com/pyhub-kr/pyhub-sejong-cli.git
 cd pyhub-sejong-cli
 
 # 빌드
-go build -o sejong cmd/sejong/main.go
+make build
 
-# 실행
-./sejong --help
+# 또는 직접 빌드
+go build -o sejong ./cmd/sejong
+
+# 설치
+make install
 ```
 
-### 바이너리 다운로드 (예정)
+### 🎯 빠른 시작
 
-향후 [Releases](https://github.com/pyhub-kr/pyhub-sejong-cli/releases) 페이지에서 각 OS별 바이너리를 다운로드할 수 있습니다.
-
-## 🎯 빠른 시작
-
-### 1. API 키 발급
+#### 1. API 키 발급
 
 국가법령정보센터에서 오픈 API 인증키를 발급받으세요:
 👉 [https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9](https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9)
 
-### 2. API 키 설정
+#### 2. API 키 설정
 
 ```bash
 sejong config set law.key YOUR_API_KEY
 ```
 
-### 3. 첫 검색
+#### 3. 첫 검색
 
 ```bash
 # 법령 검색
@@ -63,103 +103,240 @@ sejong law "개인정보 보호법"
 
 # JSON 형식으로 출력
 sejong law "도로교통법" --format json
+
+# 페이지 지정
+sejong law "민법" --page 2 --size 20
 ```
 
-## 📚 사용법
-
-### 기본 명령어 구조
-
-```
-sejong [command] [arguments] [flags]
-```
-
-### 주요 명령어
+### 📚 명령어 가이드
 
 #### 법령 검색
+
 ```bash
 # 기본 검색
 sejong law "검색어"
 
-# JSON 출력
-sejong law "검색어" --format json
+# 출력 형식 지정
+sejong law "검색어" --format json  # JSON 형식
+sejong law "검색어" --format table # 테이블 형식 (기본값)
+
+# 페이지네이션
+sejong law "검색어" --page 2 --size 20
 
 # 상세 로그 출력
 sejong law "검색어" --verbose
+sejong law "검색어" -v  # 단축 옵션
 ```
 
 #### 설정 관리
+
 ```bash
 # API 키 설정
 sejong config set law.key YOUR_API_KEY
 
-# API 키 확인
+# API 키 확인 (마스킹된 출력)
 sejong config get law.key
+
+# 설정 파일 경로 확인
+sejong config path
 ```
 
-#### 도움말
+#### 버전 및 도움말
+
 ```bash
+# 버전 정보
+sejong version
+
 # 전체 도움말
 sejong --help
+sejong -h
 
-# 버전 확인
-sejong --version
+# 명령별 도움말
+sejong law --help
+sejong config --help
 ```
 
-## 📊 개발 상태
+### 📊 출력 예제
 
-### 구현 완료 ✅
-- [x] 프로젝트 초기 구조 설정
-- [x] Cobra 기반 CLI 프레임워크
-- [x] 기본 명령어 구조
+#### 테이블 형식 (기본)
 
-### 개발 중 🚧
-- [ ] Viper 기반 설정 관리
-- [ ] 국가법령정보센터 API 연동
-- [ ] 법령 검색 기능
+```
+총 3개의 법령을 찾았습니다.
 
-### 계획됨 📋
-- [ ] 테이블/JSON 출력 포맷터
-- [ ] 에러 처리 및 로깅 개선
-- [ ] 단위 테스트 및 통합 테스트
-- [ ] GitHub Actions CI/CD
-- [ ] 멀티 플랫폼 바이너리 릴리스
+번호  법령명                                          법령구분   소관부처        시행일자
+----------------------------------------------------------------------------------------------------
+1     개인정보 보호법                                  법률      개인정보보호위원회  2024-03-15
+2     개인정보 보호법 시행령                            대통령령   개인정보보호위원회  2024-03-15
+3     개인정보 보호법 시행규칙                          부령      개인정보보호위원회  2024-03-15
+```
 
-전체 개발 계획은 [Issues](https://github.com/pyhub-kr/pyhub-sejong-cli/issues)에서 확인할 수 있습니다.
+#### JSON 형식
 
-## 🤝 기여하기
+```json
+{
+  "totalCnt": 3,
+  "page": 1,
+  "law": [
+    {
+      "법령ID": "173995",
+      "법령명한글": "개인정보 보호법",
+      "법령구분명": "법률",
+      "소관부처명": "개인정보보호위원회",
+      "시행일자": "20240315"
+    }
+  ]
+}
+```
 
-Sejong-CLI는 오픈소스 프로젝트입니다. 기여를 환영합니다!
+### 🛠️ 개발
 
-### 기여 방법
-
-1. 이슈를 먼저 등록해주세요
-2. Fork 후 feature 브랜치 생성
-3. 변경사항 커밋
-4. Pull Request 제출
-
-### 개발 환경 설정
+#### 개발 환경 설정
 
 ```bash
 # 의존성 설치
 go mod download
 
 # 테스트 실행
-go test ./...
+make test
 
-# 빌드
-go build -o sejong cmd/sejong/main.go
+# 테스트 커버리지
+make test-coverage
+
+# 코드 포맷팅
+make fmt
+
+# 린트 검사
+make lint
 ```
 
-## 📄 라이선스
+#### 빌드
+
+```bash
+# 현재 플랫폼용 빌드
+make build
+
+# 개발 빌드 (race detector 포함)
+make dev
+
+# 모든 플랫폼용 빌드 (릴리스 스냅샷)
+make release-snapshot
+```
+
+### 🐛 문제 해결
+
+#### API 키가 설정되지 않음
+
+```bash
+# API 키가 올바르게 설정되었는지 확인
+sejong config get law.key
+
+# API 키 재설정
+sejong config set law.key YOUR_NEW_API_KEY
+```
+
+#### 네트워크 오류
+
+- 인터넷 연결 상태를 확인하세요
+- 방화벽이나 프록시 설정을 확인하세요
+- API 서버 상태를 확인하세요: https://www.law.go.kr
+
+#### 권한 오류 (macOS/Linux)
+
+```bash
+# 실행 권한 부여
+chmod +x sejong
+
+# sudo를 사용하여 시스템 경로에 설치
+sudo mv sejong /usr/local/bin/
+```
+
+### 🤝 기여하기
+
+기여를 환영합니다! [CONTRIBUTING.md](CONTRIBUTING.md)를 참조하세요.
+
+1. 이슈를 먼저 등록해주세요
+2. Fork 후 feature 브랜치 생성 (`git checkout -b feature/AmazingFeature`)
+3. 변경사항 커밋 (`git commit -m 'Add some AmazingFeature'`)
+4. 브랜치에 Push (`git push origin feature/AmazingFeature`)
+5. Pull Request 제출
+
+### 📄 라이선스
 
 이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
-## 🙏 감사의 말
+---
 
-- [국가법령정보센터](https://www.law.go.kr) - 오픈 API 제공
-- [Cobra](https://github.com/spf13/cobra) - CLI 프레임워크
-- [Viper](https://github.com/spf13/viper) - 설정 관리
-- [tablewriter](https://github.com/olekukonko/tablewriter) - 테이블 출력
+## English
+
+### 📖 Introduction
+
+**Sejong CLI** is a command-line tool that allows you to quickly and easily search Korean law information from the terminal using the National Law Information Center Open API.
+
+### ✨ Key Features
+
+- 🔍 **Fast Law Search**: Instantly search law information from terminal
+- 📋 **Multiple Output Formats**: Support for table and JSON formats
+- ⚡ **Simple Configuration**: One-time API key setup for continuous use
+- 📄 **Pagination**: Browse large search results page by page
+- 🎯 **Smart Onboarding**: Friendly guidance for first-time users
+- 🔄 **Auto Retry**: Automatic retry on network errors
+- 🌈 **Color Output**: Readable colored terminal output
+
+### 🚀 Installation
+
+#### Download Binary (Recommended)
+
+Download the latest release from the [Releases](https://github.com/pyhub-kr/pyhub-sejong-cli/releases) page.
+
+##### macOS (Apple Silicon)
+```bash
+curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_arm64.tar.gz
+tar -xzf pyhub-sejong-cli_Darwin_arm64.tar.gz
+sudo mv sejong /usr/local/bin/
+```
+
+##### Windows
+```powershell
+# Run in PowerShell
+Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Windows_x86_64.zip -OutFile sejong.zip
+Expand-Archive -Path sejong.zip -DestinationPath .
+# Add sejong.exe to PATH or move to desired location
+```
+
+##### Linux
+```bash
+curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Linux_x86_64.tar.gz
+tar -xzf pyhub-sejong-cli_Linux_x86_64.tar.gz
+sudo mv sejong /usr/local/bin/
+```
+
+#### Build from Source
+
+Requires Go 1.21 or higher.
+
+```bash
+git clone https://github.com/pyhub-kr/pyhub-sejong-cli.git
+cd pyhub-sejong-cli
+make build
+make install
+```
+
+### 🎯 Quick Start
+
+1. **Get API Key**: Register at [National Law Information Center](https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9)
+2. **Configure API Key**: `sejong config set law.key YOUR_API_KEY`
+3. **Search Laws**: `sejong law "search term"`
+
+### 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+### 🙏 Acknowledgments
+
+- [National Law Information Center](https://www.law.go.kr) - Open API Provider
+- [Cobra](https://github.com/spf13/cobra) - CLI Framework
+- [Viper](https://github.com/spf13/viper) - Configuration Management
+- [tablewriter](https://github.com/olekukonko/tablewriter) - Table Output
 
 ---
 
