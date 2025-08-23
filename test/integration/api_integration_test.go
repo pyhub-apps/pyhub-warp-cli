@@ -182,7 +182,7 @@ func TestRetryMechanism(t *testing.T) {
 	// This test simulates network errors and retry behavior
 	// Since our current API client doesn't have built-in retry logic,
 	// we'll test the basic error handling
-	
+
 	client := api.NewClientWithURL("TEST_API_KEY", "http://localhost:99999/api")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -211,7 +211,7 @@ func TestPaginationIntegration(t *testing.T) {
 	// Test with default mock responses
 	t.Run("DefaultPagination", func(t *testing.T) {
 		ctx := context.Background()
-		
+
 		// Page 1 should return results
 		req := &api.SearchRequest{
 			Query:    "개인정보 보호법",
@@ -224,7 +224,7 @@ func TestPaginationIntegration(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Equal(t, 3, result.TotalCount)
 		assert.Len(t, result.Laws, 3)
-		
+
 		// Different query
 		req = &api.SearchRequest{
 			Query:    "도로교통법",
