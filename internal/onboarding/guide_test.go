@@ -30,7 +30,7 @@ func TestGuide_ShowAPIKeySetup_Plain(t *testing.T) {
 		"국가법령정보센터 오픈 API",
 		"설정 방법:",
 		"인증키 발급받기",
-		"https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9",
+		"https://open.law.go.kr/LSO/openApi/cuAskList.do",
 		"인증키 설정하기",
 		"sejong config set law.key",
 		"팁: 위 명령어를 복사하여 사용하세요",

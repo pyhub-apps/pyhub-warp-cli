@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
 	"github.com/spf13/cobra"
 )
 

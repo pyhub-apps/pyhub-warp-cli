@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
 )
 
 // Formatter handles output formatting
@@ -179,9 +179,23 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 	}
 
 	// Create simple table output
+	// Check if we have source information (unified search)
+	hasSource := false
+	for _, law := range resp.Laws {
+		if law.Source != "" {
+			hasSource = true
+			break
+		}
+	}
+
 	// Print header
-	fmt.Fprintf(&buf, "%-5s %-45s %-10s %-15s %-12s\n", "번호", "법령명", "법령구분", "소관부처", "시행일자")
-	fmt.Fprintln(&buf, strings.Repeat("-", 100))
+	if hasSource {
+		fmt.Fprintf(&buf, "%-5s %-40s %-10s %-10s %-15s %-12s\n", "번호", "법령명", "구분", "출처", "소관부처", "시행일자")
+		fmt.Fprintln(&buf, strings.Repeat("-", 107))
+	} else {
+		fmt.Fprintf(&buf, "%-5s %-45s %-10s %-15s %-12s\n", "번호", "법령명", "법령구분", "소관부처", "시행일자")
+		fmt.Fprintln(&buf, strings.Repeat("-", 100))
+	}
 
 	// Add data rows
 	for i, law := range resp.Laws {
@@ -189,16 +203,34 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 		effectDate := formatDate(law.EffectDate)
 
 		// Truncate long names for better display
-		name := truncateString(law.Name, 40)
-		dept := truncateString(law.Department, 13)
+		if hasSource {
+			name := truncateString(law.Name, 38)
+			dept := truncateString(law.Department, 13)
+			source := law.Source
+			if source == "" {
+				source = "-"
+			}
 
-		fmt.Fprintf(&buf, "%-5d %-45s %-10s %-15s %-12s\n",
-			i+1,
-			name,
-			law.LawType,
-			dept,
-			effectDate,
-		)
+			fmt.Fprintf(&buf, "%-5d %-40s %-10s %-10s %-15s %-12s\n",
+				i+1,
+				name,
+				law.LawType,
+				source,
+				dept,
+				effectDate,
+			)
+		} else {
+			name := truncateString(law.Name, 40)
+			dept := truncateString(law.Department, 13)
+
+			fmt.Fprintf(&buf, "%-5d %-45s %-10s %-15s %-12s\n",
+				i+1,
+				name,
+				law.LawType,
+				dept,
+				effectDate,
+			)
+		}
 	}
 
 	// Show pagination info if there are more results
@@ -245,7 +277,7 @@ func (f *Formatter) formatDetailTable(detail *api.LawDetail) string {
 	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n")
 	fmt.Fprintf(&buf, " 법령 상세 정보\n")
 	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n\n")
-	
+
 	fmt.Fprintf(&buf, "법령ID:       %s\n", detail.ID)
 	fmt.Fprintf(&buf, "법령명:       %s\n", detail.Name)
 	if detail.NameAbbrev != "" {
@@ -263,14 +295,14 @@ func (f *Formatter) formatDetailTable(detail *api.LawDetail) string {
 		fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
 		fmt.Fprintf(&buf, " 조문 (%d개)\n", len(detail.Articles))
 		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
-		
+
 		for _, article := range detail.Articles {
 			fmt.Fprintf(&buf, "%s", article.Number)
 			if article.Title != "" {
 				fmt.Fprintf(&buf, " (%s)", article.Title)
 			}
 			fmt.Fprintf(&buf, "\n")
-			
+
 			// Clean and format content
 			content := strings.TrimSpace(article.Content)
 			content = strings.ReplaceAll(content, "\r\n", "\n")
@@ -316,20 +348,20 @@ func (f *Formatter) formatHistoryTable(history *api.LawHistory) string {
 	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n")
 	fmt.Fprintf(&buf, " 법령 제/개정 이력\n")
 	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n\n")
-	
+
 	if history.LawName != "" {
 		fmt.Fprintf(&buf, "법령명: %s\n", history.LawName)
 	}
 	if history.LawID != "" {
 		fmt.Fprintf(&buf, "법령ID: %s\n", history.LawID)
 	}
-	
+
 	if len(history.Histories) == 0 {
 		fmt.Fprintf(&buf, "\n이력이 없습니다.\n")
 	} else {
 		fmt.Fprintf(&buf, "\n총 %d개의 이력\n", len(history.Histories))
 		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
-		
+
 		for i, record := range history.Histories {
 			fmt.Fprintf(&buf, "[%d] %s - %s\n", i+1, formatDate(record.Date), record.Type)
 			if record.PromulNo != "" {

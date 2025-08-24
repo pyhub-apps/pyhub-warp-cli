@@ -46,7 +46,7 @@
     *   API 키가 설정되어 있지 않으면, 에러와 함께 친절한 안내 메시지를 출력합니다.
     *   메시지에는 다음 내용이 반드시 포함되어야 합니다.
         1.  **필요성:** "국가법령정보센터 오픈 API 이용을 위해 인증키가 필요합니다."
-        2.  **발급처:** 키를 발급받을 수 있는 URL 안내 (예: `https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9`)
+        2.  **발급처:** 키를 발급받을 수 있는 URL 안내 (예: `https://open.law.go.kr/LSO/openApi/cuAskList.do`)
         3.  **설정 방법:** 키를 설정하는 정확한 명령어 안내 (예: `sejong config set law.key <발급받은_인증키>`)
 *   **설정 명령어:**
     *   `sejong config set law.key <YOUR_API_KEY>`: 사용자가 발급받은 API 키를 로컬 설정 파일에 저장합니다.

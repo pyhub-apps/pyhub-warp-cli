@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-apps/sejong-cli/internal/config"
 )
 
 // CreateClient creates an API client for the specified type
@@ -17,10 +17,47 @@ func CreateClient(apiType APIType) (ClientInterface, error) {
 		}
 		// Use the dedicated NLIC client
 		return NewNLICClient(apiKey), nil
-		
+
 	case APITypeELIS:
-		return nil, fmt.Errorf("ELIS API는 아직 구현되지 않았습니다")
-		
+		// ELIS uses the same API key as NLIC (both from law.go.kr)
+		apiKey := config.GetNLICAPIKey()
+		if apiKey == "" {
+			// Try ELIS-specific key first
+			apiKey = config.GetString("law.elis.key")
+			if apiKey == "" {
+				return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+			}
+		}
+		return NewELISClient(apiKey), nil
+
+	case APITypeAll:
+		// Unified client for searching both NLIC and ELIS
+		return NewUnifiedClient()
+
+	case APITypePrec:
+		// Precedent API client (판례)
+		apiKey := config.GetNLICAPIKey()
+		if apiKey == "" {
+			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+		}
+		return NewPrecClient(apiKey), nil
+
+	case APITypeAdmrul:
+		// Administrative Rule API client (행정규칙)
+		apiKey := config.GetNLICAPIKey()
+		if apiKey == "" {
+			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+		}
+		return NewAdmrulClient(apiKey), nil
+
+	case APITypeExpc:
+		// Legal Interpretation API client (법령해석례)
+		apiKey := config.GetNLICAPIKey()
+		if apiKey == "" {
+			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+		}
+		return NewExpcClient(apiKey), nil
+
 	default:
 		return nil, fmt.Errorf("알 수 없는 API 타입: %s", apiType)
 	}

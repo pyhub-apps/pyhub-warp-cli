@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
+	"github.com/pyhub-apps/sejong-cli/internal/config"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
 )
 
@@ -31,12 +31,13 @@ func TestLawCommand(t *testing.T) {
 		args        []string
 		wantErr     bool
 		errContains string
+		wantOutput  string
 	}{
 		{
-			name:        "No arguments",
-			args:        []string{},
-			wantErr:     true,
-			errContains: "accepts 1 arg(s), received 0",
+			name:       "No arguments shows help",
+			args:       []string{},
+			wantErr:    false,
+			wantOutput: "국가법령정보센터에서 법령 정보를 검색하고 상세 정보를 조회합니다", // Should show help text
 		},
 		{
 			name:        "Empty search query",
@@ -45,10 +46,10 @@ func TestLawCommand(t *testing.T) {
 			errContains: "검색어를 입력해주세요",
 		},
 		{
-			name:        "Multiple arguments",
-			args:        []string{"arg1", "arg2"},
-			wantErr:     true,
-			errContains: "accepts 1 arg(s), received 2",
+			name:       "Multiple arguments",
+			args:       []string{"arg1", "arg2"},
+			wantErr:    false, // Shows API key guide for search with "arg1"
+			wantOutput: "API 키 설정이 필요합니다",
 		},
 		{
 			name:        "Whitespace only query",
@@ -85,6 +86,14 @@ func TestLawCommand(t *testing.T) {
 			if err != nil && tt.errContains != "" {
 				if !strings.Contains(err.Error(), tt.errContains) {
 					t.Errorf("Error should contain %q, got %q", tt.errContains, err.Error())
+				}
+			}
+
+			// Check output if expected
+			if tt.wantOutput != "" {
+				output := buf.String()
+				if !strings.Contains(output, tt.wantOutput) {
+					t.Errorf("Output should contain %q, got %q", tt.wantOutput, output)
 				}
 			}
 		})
@@ -303,16 +312,16 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 	// Set args
 	cmd.SetArgs([]string{"law", "개인정보"})
 
-	// Execute command - should return error about missing API key
+	// Execute command - should show API key setup guide (no error)
 	err := cmd.Execute()
-	if err == nil {
-		t.Error("Execute() should return error when API key is not set")
+	if err != nil {
+		t.Errorf("Execute() should not return error when showing API key guide, got: %v", err)
 	}
 
-	// Check that error message contains API key setup instruction
+	// Check that output contains API key setup instruction
 	output := buf.String()
-	if !strings.Contains(output, "API 키가 설정되지 않았습니다") {
-		t.Errorf("Output should contain API key error message, got %q", output)
+	if !strings.Contains(output, "API 키 설정이 필요합니다") {
+		t.Errorf("Output should contain API key setup message, got %q", output)
 	}
 }
 

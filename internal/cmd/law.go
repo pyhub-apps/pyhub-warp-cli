@@ -5,11 +5,11 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
-	cliErrors "github.com/pyhub-kr/pyhub-sejong-cli/internal/errors"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
+	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +17,7 @@ var (
 	outputFormat string
 	pageNo       int
 	pageSize     int
+	sourceFlag   string // "all", "nlic", "elis"
 
 	// testAPIClient allows injecting a mock client for testing
 	testAPIClient APIClient
@@ -65,6 +66,7 @@ func initLawCmd() {
 	lawCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", i18n.T("law.flag.format"))
 	lawCmd.Flags().IntVarP(&pageNo, "page", "p", 1, i18n.T("law.flag.page"))
 	lawCmd.Flags().IntVarP(&pageSize, "size", "s", 10, i18n.T("law.flag.size"))
+	lawCmd.Flags().StringVar(&sourceFlag, "source", "nlic", i18n.T("law.flag.source"))
 }
 
 // updateLawCommand updates law command descriptions
@@ -83,7 +85,7 @@ func updateLawCommand() {
 		if flag := lawCmd.Flags().Lookup("size"); flag != nil {
 			flag.Usage = i18n.T("law.flag.size")
 		}
-		
+
 		// Update subcommands
 		updateLawSearchCommand()
 		updateLawDetailCommand()
@@ -115,12 +117,32 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	if testAPIClient != nil {
 		client = testAPIClient
 	} else {
-		// Create API client using the new factory
-		apiClient, err := api.CreateDefaultClient()
+		// Determine which API to use based on source flag
+		var apiType api.APIType
+		switch sourceFlag {
+		case "all":
+			apiType = api.APITypeAll
+		case "elis":
+			apiType = api.APITypeELIS
+		case "nlic":
+			fallthrough
+		default:
+			apiType = api.APITypeNLIC
+		}
+
+		// Create API client using the factory
+		apiClient, err := api.CreateClient(apiType)
 		if err != nil {
-			// Check if it's an API key error
+			// Check if it's an API key error (either CLIError or regular error with API key message)
 			var cliErr *cliErrors.CLIError
 			if errors.As(err, &cliErr) && cliErr.Code == cliErrors.ErrCodeNoAPIKey {
+				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
+				guide.ShowAPIKeySetup()
+				return nil // Return nil to avoid printing the error twice
+			}
+
+			// Also check for direct API key error message from factory
+			if strings.Contains(err.Error(), "API 키가 설정되지 않았습니다") {
 				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
 				guide.ShowAPIKeySetup()
 				return nil // Return nil to avoid printing the error twice
@@ -139,4 +161,3 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	// Use searchLaws for the actual search logic
 	return searchLaws(client, query, outputFormat, pageNo, pageSize, cmd.OutOrStdout(), verbose)
 }
-

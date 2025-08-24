@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/pyhub-apps/sejong-cli/internal/logger"
 )
 
 // NLICClient represents the National Law Information Center API client
@@ -90,6 +92,7 @@ func (c *NLICClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	}
 
 	fullURL := fmt.Sprintf("%s?%s", c.baseURL, params.Encode())
+	logger.Debug("API Request URL: %s", fullURL)
 
 	// Perform request with retries
 	body, err := c.doRequestWithRetry(ctx, fullURL)
@@ -101,7 +104,24 @@ func (c *NLICClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	var searchResp SearchResponse
 	if req.Type == "JSON" {
 		if err := json.Unmarshal(body, &searchResp); err != nil {
-			return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
+			// Check if response is HTML (error page)
+			bodyStr := string(body)
+			if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
+				// Parse HTML error message
+				errorMsg := c.parseHTMLError(bodyStr)
+				logger.Debug("HTML error response detected: %s", errorMsg)
+				// Check if it's an API key error
+				if strings.Contains(errorMsg, "API 인증 실패") || strings.Contains(errorMsg, "API 키") {
+					return nil, &APIKeyError{Message: errorMsg}
+				}
+				return nil, fmt.Errorf("%s", errorMsg)
+			}
+			// Log non-HTML parsing errors for debugging
+			if len(bodyStr) > 500 {
+				bodyStr = bodyStr[:500] + "..."
+			}
+			logger.Debug("API Response (first 500 chars): %s", bodyStr)
+			return nil, fmt.Errorf("응답 데이터 파싱 실패: %w", err)
 		}
 	} else {
 		if err := xml.Unmarshal(body, &searchResp); err != nil {
@@ -122,7 +142,7 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 	params := url.Values{}
 	params.Set("OC", c.apiKey)
 	params.Set("target", "law")
-	params.Set("MST", lawID)  // 법령일련번호
+	params.Set("MST", lawID) // 법령일련번호
 	params.Set("type", "JSON")
 
 	fullURL := fmt.Sprintf("%s?%s", c.detailURL, params.Encode())
@@ -136,12 +156,23 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 	var wrapper struct {
 		Law *LawDetail `json:"법령" xml:"법령"`
 	}
-	
+
 	if err := json.Unmarshal(body, &wrapper); err != nil {
+		// Check if response is HTML (error page)
+		bodyStr := string(body)
+		if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
+			errorMsg := c.parseHTMLError(bodyStr)
+			logger.Debug("HTML error response detected: %s", errorMsg)
+			// Check if it's an API key error
+			if strings.Contains(errorMsg, "API 인증 실패") || strings.Contains(errorMsg, "API 키") {
+				return nil, &APIKeyError{Message: errorMsg}
+			}
+			return nil, fmt.Errorf("%s", errorMsg)
+		}
 		// Try direct unmarshal if wrapper fails
 		var detail LawDetail
 		if err2 := json.Unmarshal(body, &detail); err2 != nil {
-			return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
+			return nil, fmt.Errorf("응답 데이터 파싱 실패: %w", err)
 		}
 		return &detail, nil
 	}
@@ -158,7 +189,7 @@ func (c *NLICClient) GetHistory(ctx context.Context, lawID string) (*LawHistory,
 	params := url.Values{}
 	params.Set("OC", c.apiKey)
 	params.Set("target", "law")
-	params.Set("MST", lawID)  // 법령일련번호
+	params.Set("MST", lawID) // 법령일련번호
 	params.Set("type", "JSON")
 
 	fullURL := fmt.Sprintf("%s?%s", c.historyURL, params.Encode())
@@ -171,12 +202,23 @@ func (c *NLICClient) GetHistory(ctx context.Context, lawID string) (*LawHistory,
 	// Parse the response
 	var history LawHistory
 	if err := json.Unmarshal(body, &history); err != nil {
+		// Check if response is HTML (error page)
+		bodyStr := string(body)
+		if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
+			errorMsg := c.parseHTMLError(bodyStr)
+			logger.Debug("HTML error response detected: %s", errorMsg)
+			// Check if it's an API key error
+			if strings.Contains(errorMsg, "API 인증 실패") || strings.Contains(errorMsg, "API 키") {
+				return nil, &APIKeyError{Message: errorMsg}
+			}
+			return nil, fmt.Errorf("%s", errorMsg)
+		}
 		// Try parsing as a wrapper
 		var wrapper struct {
 			History *LawHistory `json:"연혁" xml:"연혁"`
 		}
 		if err2 := json.Unmarshal(body, &wrapper); err2 != nil {
-			return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
+			return nil, fmt.Errorf("응답 데이터 파싱 실패: %w", err)
 		}
 		if wrapper.History != nil {
 			return wrapper.History, nil
@@ -308,9 +350,9 @@ func (c *NLICClient) hasAPIError(body []byte) bool {
 // parseAPIError extracts API error from response body
 func (c *NLICClient) parseAPIError(body []byte) error {
 	var errResp struct {
-		Error *ErrorInfo `json:"error" xml:"error"`
-		ErrorMsg string `json:"errorMsg" xml:"errorMsg"`
-		ErrorCode string `json:"errorCode" xml:"errorCode"`
+		Error     *ErrorInfo `json:"error" xml:"error"`
+		ErrorMsg  string     `json:"errorMsg" xml:"errorMsg"`
+		ErrorCode string     `json:"errorCode" xml:"errorCode"`
 	}
 
 	// Try JSON first
@@ -324,4 +366,85 @@ func (c *NLICClient) parseAPIError(body []byte) error {
 	}
 
 	return fmt.Errorf("알 수 없는 API 에러")
+}
+
+// parseHTMLError extracts meaningful error message from HTML error page
+func (c *NLICClient) parseHTMLError(html string) string {
+	// Common patterns for error messages in HTML pages
+	patterns := []struct {
+		start string
+		end   string
+	}{
+		// Look for error messages in common formats
+		{"<title>", "</title>"},
+		{"<h1>", "</h1>"},
+		{"<h2>", "</h2>"},
+		{"class=\"error\"", "</"},
+		{"class=\"message\"", "</"},
+		{"오류", "</"},
+		{"에러", "</"},
+		{"Error", "</"},
+		{"인증", "</"},
+	}
+
+	htmlLower := strings.ToLower(html)
+
+	// Check for authentication/key related issues
+	if strings.Contains(htmlLower, "인증") || strings.Contains(htmlLower, "auth") ||
+		strings.Contains(htmlLower, "key") || strings.Contains(htmlLower, "키") {
+		return "API 인증 실패: API 키가 유효하지 않거나 만료되었습니다. 'sejong config set law.key YOUR_API_KEY' 명령으로 올바른 API 키를 설정하세요"
+	}
+
+	// Check for rate limit
+	if strings.Contains(htmlLower, "limit") || strings.Contains(htmlLower, "제한") {
+		return "API 호출 제한 초과: 일일 호출 한도를 초과했습니다. 잠시 후 다시 시도하세요"
+	}
+
+	// Check for service unavailable
+	if strings.Contains(htmlLower, "maintenance") || strings.Contains(htmlLower, "점검") {
+		return "서비스 점검 중: 국가법령정보센터 API가 현재 점검 중입니다"
+	}
+
+	// Try to extract error message from patterns
+	for _, pattern := range patterns {
+		startIdx := strings.Index(htmlLower, pattern.start)
+		if startIdx != -1 {
+			startIdx += len(pattern.start)
+			endIdx := strings.Index(htmlLower[startIdx:], pattern.end)
+			if endIdx != -1 {
+				msg := html[startIdx : startIdx+endIdx]
+				msg = strings.TrimSpace(msg)
+				// Remove any remaining HTML tags
+				msg = stripHTMLTags(msg)
+				if len(msg) > 10 && len(msg) < 200 {
+					// Check if it's just a generic title
+					if strings.Contains(msg, "국가법령정보") && !strings.Contains(msg, "오류") {
+						// Generic title, return more specific message
+						return "API 인증 실패: API 키가 올바르지 않습니다. 'sejong config set law.key YOUR_API_KEY' 명령으로 유효한 API 키를 설정하세요"
+					}
+					return fmt.Sprintf("API 오류: %s", msg)
+				}
+			}
+		}
+	}
+
+	// Default message if no specific error found
+	return "API 요청 실패: 서버가 예상하지 못한 응답을 반환했습니다. API 키를 확인하거나 잠시 후 다시 시도하세요"
+}
+
+// stripHTMLTags removes HTML tags from a string
+func stripHTMLTags(s string) string {
+	// Simple regex-like approach to remove HTML tags
+	result := ""
+	inTag := false
+	for _, ch := range s {
+		if ch == '<' {
+			inTag = true
+		} else if ch == '>' {
+			inTag = false
+		} else if !inTag {
+			result += string(ch)
+		}
+	}
+	return strings.TrimSpace(result)
 }

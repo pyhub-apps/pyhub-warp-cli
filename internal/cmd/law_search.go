@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
-	cliErrors "github.com/pyhub-kr/pyhub-sejong-cli/internal/errors"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
-	outputPkg "github.com/pyhub-kr/pyhub-sejong-cli/internal/output"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
+	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
+	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -43,6 +43,7 @@ func initLawSearchCmd() {
 	lawSearchCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", i18n.T("law.flag.format"))
 	lawSearchCmd.Flags().IntVarP(&pageNo, "page", "p", 1, i18n.T("law.flag.page"))
 	lawSearchCmd.Flags().IntVarP(&pageSize, "size", "s", 10, i18n.T("law.flag.size"))
+	lawSearchCmd.Flags().StringVar(&sourceFlag, "source", "nlic", i18n.T("law.flag.source"))
 }
 
 // updateLawSearchCommand updates law search command descriptions
@@ -82,9 +83,16 @@ func runLawSearchCommand(cmd *cobra.Command, args []string) error {
 		// Create API client using the new factory
 		apiClient, err := api.CreateDefaultClient()
 		if err != nil {
-			// Check if it's an API key error
+			// Check if it's an API key error (either CLIError or regular error with API key message)
 			var cliErr *cliErrors.CLIError
 			if errors.As(err, &cliErr) && cliErr.Code == cliErrors.ErrCodeNoAPIKey {
+				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
+				guide.ShowAPIKeySetup()
+				return nil // Return nil to avoid printing the error twice
+			}
+
+			// Also check for direct API key error message from factory
+			if strings.Contains(err.Error(), "API 키가 설정되지 않았습니다") {
 				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
 				guide.ShowAPIKeySetup()
 				return nil // Return nil to avoid printing the error twice
@@ -122,6 +130,15 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 
 	resp, err := client.Search(ctx, req)
 	if err != nil {
+		// Check if it's an API key error
+		var apiKeyErr *api.APIKeyError
+		if errors.As(err, &apiKeyErr) {
+			// Print error message without help
+			fmt.Fprintln(output, err.Error())
+			// Return nil to suppress both error message and help
+			return nil
+		}
+
 		logger.LogError(err, verbose)
 
 		// Show user-friendly error with hint

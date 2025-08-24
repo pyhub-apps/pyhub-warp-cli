@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-apps/sejong-cli/internal/config"
 )
 
 const (
@@ -72,6 +72,7 @@ type LawInfo struct {
 	Department string `json:"소관부처명" xml:"소관부처명"`
 	EffectDate string `json:"시행일자" xml:"시행일자"`
 	LawType    string `json:"법령구분명" xml:"법령구분명"`
+	Source     string `json:"출처,omitempty" xml:"출처,omitempty"` // "국가법령" or "자치법규"
 }
 
 // ErrorInfo represents API error information
@@ -91,6 +92,15 @@ func (e *RetryableError) Error() string {
 
 func (e *RetryableError) Unwrap() error {
 	return e.Err
+}
+
+// APIKeyError indicates an API key authentication failure
+type APIKeyError struct {
+	Message string
+}
+
+func (e *APIKeyError) Error() string {
+	return e.Message
 }
 
 // NewClient creates a new API client

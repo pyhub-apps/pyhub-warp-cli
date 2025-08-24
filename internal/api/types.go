@@ -12,6 +12,14 @@ const (
 	APITypeNLIC APIType = "nlic"
 	// APITypeELIS represents Local Regulations Information System API (자치법규정보시스템)
 	APITypeELIS APIType = "elis"
+	// APITypeAll represents all APIs combined (통합 검색)
+	APITypeAll APIType = "all"
+	// APITypePrec represents Precedent API (판례)
+	APITypePrec APIType = "prec"
+	// APITypeAdmrul represents Administrative Rule API (행정규칙)
+	APITypeAdmrul APIType = "admrul"
+	// APITypeExpc represents Legal Interpretation API (법령해석례)
+	APITypeExpc APIType = "expc"
 )
 
 // ClientInterface represents a unified API client interface for law information
@@ -44,10 +52,10 @@ type UnifiedSearchRequest struct {
 // LawDetail represents detailed law information
 type LawDetail struct {
 	LawInfo
-	Content     string      `json:"조문내용" xml:"조문내용"`
-	Articles    []Article   `json:"조문" xml:"조문"`
-	Attachments []string    `json:"첨부파일" xml:"첨부파일"`
-	RelatedLaws []string    `json:"관련법령" xml:"관련법령"`
+	Content     string    `json:"조문내용" xml:"조문내용"`
+	Articles    []Article `json:"조문" xml:"조문"`
+	Attachments []string  `json:"첨부파일" xml:"첨부파일"`
+	RelatedLaws []string  `json:"관련법령" xml:"관련법령"`
 }
 
 // Article represents a law article

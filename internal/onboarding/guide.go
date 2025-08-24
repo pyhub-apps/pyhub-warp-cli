@@ -67,7 +67,7 @@ func (g *Guide) showColoredAPIKeySetup() {
 	yellow.Fprint(g.writer, "1️⃣  인증키 발급받기")
 	fmt.Fprintln(g.writer)
 	fmt.Fprint(g.writer, "   → ")
-	cyan.Fprintln(g.writer, "https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9")
+	cyan.Fprintln(g.writer, "https://open.law.go.kr/LSO/openApi/cuAskList.do")
 	fmt.Fprintln(g.writer)
 
 	// Step 2
@@ -93,7 +93,7 @@ func (g *Guide) showPlainAPIKeySetup() {
 	fmt.Fprintln(g.writer, "📋 설정 방법:")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "1. 인증키 발급받기")
-	fmt.Fprintln(g.writer, "   → https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9")
+	fmt.Fprintln(g.writer, "   → https://open.law.go.kr/LSO/openApi/cuAskList.do")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "2. 인증키 설정하기")
 	fmt.Fprintln(g.writer, "   → sejong config set law.key <발급받은_인증키>")

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd"
+	"github.com/pyhub-apps/sejong-cli/internal/cmd"
 )
 
 // Build variables - will be set during build

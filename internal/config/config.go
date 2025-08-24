@@ -20,7 +20,7 @@ const (
 // Config holds the application configuration
 type Config struct {
 	Law struct {
-		Key  string `mapstructure:"key"`  // Legacy: NLIC API key
+		Key  string `mapstructure:"key"` // Legacy: NLIC API key
 		NLIC struct {
 			Key string `mapstructure:"key"` // National Law Information Center API key
 		} `mapstructure:"nlic"`
@@ -119,7 +119,7 @@ law:
   # 국가법령정보센터 (National Law Information Center) API
   nlic:
     # API 인증키
-    # https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9 에서 발급
+    # https://open.law.go.kr/LSO/openApi/cuAskList.do 에서 발급
     key: ""
   
   # 자치법규정보시스템 (Local Regulations Information System) API

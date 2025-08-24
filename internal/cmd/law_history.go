@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-kr/pyhub-sejong-cli/internal/output"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -79,6 +80,15 @@ func runLawHistoryCommand(cmd *cobra.Command, args []string) error {
 
 	history, err := client.GetHistory(ctx, lawID)
 	if err != nil {
+		// Check if it's an API key error
+		var apiKeyErr *api.APIKeyError
+		if errors.As(err, &apiKeyErr) {
+			// Print error message without help
+			fmt.Fprintln(cmd.OutOrStdout(), err.Error())
+			// Return nil to suppress both error message and help
+			return nil
+		}
+
 		logger.Error("Failed to get law history: %v", err)
 		return fmt.Errorf(i18n.T("law.history.error.failed"), err)
 	}
