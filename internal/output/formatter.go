@@ -29,8 +29,14 @@ func (f *Formatter) FormatSearchResult(resp *api.SearchResponse) error {
 		return f.formatJSON(resp)
 	case "table", "":
 		return f.formatTable(resp)
+	case "markdown", "md":
+		return f.formatMarkdown(resp)
+	case "csv":
+		return f.formatCSV(resp)
+	case "html":
+		return f.formatHTML(resp)
 	default:
-		return fmt.Errorf("지원하지 않는 출력 형식: %s (table, json 중 선택)", f.format)
+		return fmt.Errorf("지원하지 않는 출력 형식: %s (table, json, markdown, csv, html 중 선택)", f.format)
 	}
 }
 
@@ -45,8 +51,14 @@ func (f *Formatter) FormatSearchResultToString(resp *api.SearchResponse) (string
 		return f.formatJSONToString(resp)
 	case "table", "":
 		return f.formatTableToString(resp)
+	case "markdown", "md":
+		return f.formatMarkdownToString(resp)
+	case "csv":
+		return f.formatCSVToString(resp)
+	case "html":
+		return f.formatHTMLToString(resp)
 	default:
-		return "", fmt.Errorf("지원하지 않는 출력 형식: %s (table, json 중 선택)", f.format)
+		return "", fmt.Errorf("지원하지 않는 출력 형식: %s (table, json, markdown, csv, html 중 선택)", f.format)
 	}
 }
 
@@ -102,59 +114,13 @@ func (f *Formatter) formatJSON(resp *api.SearchResponse) error {
 	return encoder.Encode(resp)
 }
 
-// formatTable outputs results in table format
+// formatTable outputs results in table format using tablewriter
 func (f *Formatter) formatTable(resp *api.SearchResponse) error {
-	// Show summary
-	fmt.Printf("총 %d개의 법령을 찾았습니다.\n\n", resp.TotalCount)
-
-	// If no results, return early
-	if len(resp.Laws) == 0 {
-		fmt.Println("검색 결과가 없습니다.")
-		return nil
+	result, err := f.formatTableToString(resp)
+	if err != nil {
+		return err
 	}
-
-	// Create simple table output
-	// Print header
-	fmt.Printf("%-5s %-8s %-40s %-10s %-15s %-12s\n", "번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자")
-	fmt.Println(strings.Repeat("-", 100))
-
-	// Add data rows
-	for i, law := range resp.Laws {
-		// Format dates (YYYYMMDD -> YYYY-MM-DD)
-		// Use EffectDate if available, otherwise use PromulDate (for interpretations, precedents)
-		dateToShow := law.EffectDate
-		if dateToShow == "" && law.PromulDate != "" {
-			dateToShow = law.PromulDate
-		}
-		effectDate := formatDate(dateToShow)
-
-		// Truncate long names for better display
-		name := truncateString(law.Name, 35)
-		dept := truncateString(law.Department, 13)
-		lawID := truncateString(law.ID, 8)
-
-		fmt.Printf("%-5d %-8s %-40s %-10s %-15s %-12s\n",
-			i+1,
-			lawID,
-			name,
-			law.LawType,
-			dept,
-			effectDate,
-		)
-	}
-
-	// Show pagination info if there are more results
-	if resp.TotalCount > len(resp.Laws) {
-		currentPage := resp.Page
-		// Use a default page size of 10 if not enough items to determine
-		pageSize := 10
-		if len(resp.Laws) > 0 {
-			pageSize = len(resp.Laws)
-		}
-		totalPages := (resp.TotalCount + pageSize - 1) / pageSize
-		fmt.Printf("\n페이지 %d/%d (--page 옵션으로 다른 페이지 조회 가능)\n", currentPage, totalPages)
-	}
-
+	fmt.Print(result)
 	return nil
 }
 
@@ -196,7 +162,6 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 		return buf.String(), nil
 	}
 
-	// Create simple table output
 	// Check if we have source information (unified search)
 	hasSource := false
 	for _, law := range resp.Laws {
@@ -206,52 +171,55 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 		}
 	}
 
-	// Print header
+	// Prepare headers and rows
+	var headers []string
+	var rows [][]string
+
 	if hasSource {
-		fmt.Fprintf(&buf, "%-5s %-40s %-10s %-10s %-15s %-12s\n", "번호", "법령명", "구분", "출처", "소관부처", "시행일자")
-		fmt.Fprintln(&buf, strings.Repeat("-", 107))
+		headers = []string{"번호", "법령명", "구분", "출처", "소관부처", "시행일자"}
 	} else {
-		fmt.Fprintf(&buf, "%-5s %-8s %-40s %-10s %-15s %-12s\n", "번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자")
-		fmt.Fprintln(&buf, strings.Repeat("-", 108))
+		headers = []string{"번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자"}
 	}
 
 	// Add data rows
 	for i, law := range resp.Laws {
 		// Format dates (YYYYMMDD -> YYYY-MM-DD)
 		effectDate := formatDate(law.EffectDate)
+		if effectDate == "" && law.PromulDate != "" {
+			effectDate = formatDate(law.PromulDate)
+		}
 
-		// Truncate long names for better display
+		var row []string
 		if hasSource {
-			name := truncateString(law.Name, 38)
-			dept := truncateString(law.Department, 13)
 			source := law.Source
 			if source == "" {
 				source = "-"
 			}
-
-			fmt.Fprintf(&buf, "%-5d %-40s %-10s %-10s %-15s %-12s\n",
-				i+1,
-				name,
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.Name,
 				law.LawType,
 				source,
-				dept,
+				law.Department,
 				effectDate,
-			)
+			}
 		} else {
-			name := truncateString(law.Name, 35)
-			dept := truncateString(law.Department, 13)
-			lawID := truncateString(law.ID, 8)
-
-			fmt.Fprintf(&buf, "%-5d %-8s %-40s %-10s %-15s %-12s\n",
-				i+1,
-				lawID,
-				name,
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.ID,
+				law.Name,
 				law.LawType,
-				dept,
+				law.Department,
 				effectDate,
-			)
+			}
 		}
+		rows = append(rows, row)
 	}
+
+	// Use the new table writer
+	style := GetDefaultTableStyle()
+	tableStr := RenderTable(headers, rows, style)
+	fmt.Fprint(&buf, tableStr)
 
 	// Show pagination info if there are more results
 	if resp.TotalCount > len(resp.Laws) {
@@ -527,4 +495,281 @@ func (f *Formatter) formatHistoryTable(history *api.LawHistory) string {
 	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n")
 
 	return buf.String()
+}
+
+// formatMarkdown outputs results in markdown format
+func (f *Formatter) formatMarkdown(resp *api.SearchResponse) error {
+	result, err := f.formatMarkdownToString(resp)
+	if err != nil {
+		return err
+	}
+	fmt.Print(result)
+	return nil
+}
+
+// formatMarkdownToString formats results as markdown and returns as string
+func (f *Formatter) formatMarkdownToString(resp *api.SearchResponse) (string, error) {
+	var buf bytes.Buffer
+
+	// Show summary
+	fmt.Fprintf(&buf, "## 검색 결과\n\n")
+	fmt.Fprintf(&buf, "총 **%d**개의 법령을 찾았습니다.\n\n", resp.TotalCount)
+
+	// If no results, return early
+	if len(resp.Laws) == 0 {
+		fmt.Fprintln(&buf, "_검색 결과가 없습니다._")
+		return buf.String(), nil
+	}
+
+	// Check if we have source information
+	hasSource := false
+	for _, law := range resp.Laws {
+		if law.Source != "" {
+			hasSource = true
+			break
+		}
+	}
+
+	// Prepare headers and rows
+	var headers []string
+	var rows [][]string
+
+	if hasSource {
+		headers = []string{"번호", "법령명", "구분", "출처", "소관부처", "시행일자"}
+	} else {
+		headers = []string{"번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자"}
+	}
+
+	// Add data rows
+	for i, law := range resp.Laws {
+		effectDate := formatDate(law.EffectDate)
+		if effectDate == "" && law.PromulDate != "" {
+			effectDate = formatDate(law.PromulDate)
+		}
+
+		var row []string
+		if hasSource {
+			source := law.Source
+			if source == "" {
+				source = "-"
+			}
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.Name,
+				law.LawType,
+				source,
+				law.Department,
+				effectDate,
+			}
+		} else {
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.ID,
+				law.Name,
+				law.LawType,
+				law.Department,
+				effectDate,
+			}
+		}
+		rows = append(rows, row)
+	}
+
+	// Render markdown table
+	tableStr := RenderMarkdownTable(headers, rows)
+	fmt.Fprint(&buf, tableStr)
+
+	// Show pagination info
+	if resp.TotalCount > len(resp.Laws) {
+		currentPage := resp.Page
+		pageSize := 10
+		if len(resp.Laws) > 0 {
+			pageSize = len(resp.Laws)
+		}
+		totalPages := (resp.TotalCount + pageSize - 1) / pageSize
+		fmt.Fprintf(&buf, "\n> 페이지 %d/%d (--page 옵션으로 다른 페이지 조회 가능)\n", currentPage, totalPages)
+	}
+
+	return buf.String(), nil
+}
+
+// formatCSV outputs results in CSV format
+func (f *Formatter) formatCSV(resp *api.SearchResponse) error {
+	result, err := f.formatCSVToString(resp)
+	if err != nil {
+		return err
+	}
+	fmt.Print(result)
+	return nil
+}
+
+// formatCSVToString formats results as CSV and returns as string
+func (f *Formatter) formatCSVToString(resp *api.SearchResponse) (string, error) {
+	if len(resp.Laws) == 0 {
+		return "", nil
+	}
+
+	// Check if we have source information
+	hasSource := false
+	for _, law := range resp.Laws {
+		if law.Source != "" {
+			hasSource = true
+			break
+		}
+	}
+
+	// Prepare headers and rows
+	var headers []string
+	var rows [][]string
+
+	if hasSource {
+		headers = []string{"번호", "법령명", "구분", "출처", "소관부처", "시행일자"}
+	} else {
+		headers = []string{"번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자"}
+	}
+
+	// Add data rows
+	for i, law := range resp.Laws {
+		effectDate := formatDate(law.EffectDate)
+		if effectDate == "" && law.PromulDate != "" {
+			effectDate = formatDate(law.PromulDate)
+		}
+
+		var row []string
+		if hasSource {
+			source := law.Source
+			if source == "" {
+				source = "-"
+			}
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.Name,
+				law.LawType,
+				source,
+				law.Department,
+				effectDate,
+			}
+		} else {
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.ID,
+				law.Name,
+				law.LawType,
+				law.Department,
+				effectDate,
+			}
+		}
+		rows = append(rows, row)
+	}
+
+	// Render CSV with BOM for Excel compatibility
+	return RenderCSV(headers, rows, true)
+}
+
+// formatHTML outputs results in HTML format
+func (f *Formatter) formatHTML(resp *api.SearchResponse) error {
+	result, err := f.formatHTMLToString(resp)
+	if err != nil {
+		return err
+	}
+	fmt.Print(result)
+	return nil
+}
+
+// formatHTMLToString formats results as HTML and returns as string
+func (f *Formatter) formatHTMLToString(resp *api.SearchResponse) (string, error) {
+	var buf bytes.Buffer
+
+	// HTML header
+	fmt.Fprintln(&buf, `<!DOCTYPE html>`)
+	fmt.Fprintln(&buf, `<html lang="ko">`)
+	fmt.Fprintln(&buf, `<head>`)
+	fmt.Fprintln(&buf, `  <meta charset="UTF-8">`)
+	fmt.Fprintln(&buf, `  <title>법령 검색 결과</title>`)
+	fmt.Fprintln(&buf, `</head>`)
+	fmt.Fprintln(&buf, `<body>`)
+
+	// Summary
+	fmt.Fprintf(&buf, `  <h2>검색 결과</h2>%s`, "\n")
+	fmt.Fprintf(&buf, `  <p>총 <strong>%d</strong>개의 법령을 찾았습니다.</p>%s`, resp.TotalCount, "\n")
+
+	// If no results, return early
+	if len(resp.Laws) == 0 {
+		fmt.Fprintln(&buf, `  <p><em>검색 결과가 없습니다.</em></p>`)
+		fmt.Fprintln(&buf, `</body>`)
+		fmt.Fprintln(&buf, `</html>`)
+		return buf.String(), nil
+	}
+
+	// Check if we have source information
+	hasSource := false
+	for _, law := range resp.Laws {
+		if law.Source != "" {
+			hasSource = true
+			break
+		}
+	}
+
+	// Prepare headers and rows
+	var headers []string
+	var rows [][]string
+
+	if hasSource {
+		headers = []string{"번호", "법령명", "구분", "출처", "소관부처", "시행일자"}
+	} else {
+		headers = []string{"번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자"}
+	}
+
+	// Add data rows
+	for i, law := range resp.Laws {
+		effectDate := formatDate(law.EffectDate)
+		if effectDate == "" && law.PromulDate != "" {
+			effectDate = formatDate(law.PromulDate)
+		}
+
+		var row []string
+		if hasSource {
+			source := law.Source
+			if source == "" {
+				source = "-"
+			}
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.Name,
+				law.LawType,
+				source,
+				law.Department,
+				effectDate,
+			}
+		} else {
+			row = []string{
+				fmt.Sprintf("%d", i+1),
+				law.ID,
+				law.Name,
+				law.LawType,
+				law.Department,
+				effectDate,
+			}
+		}
+		rows = append(rows, row)
+	}
+
+	// Render HTML table
+	tableStr := RenderHTMLTable(headers, rows)
+	fmt.Fprintln(&buf, tableStr)
+
+	// Pagination info
+	if resp.TotalCount > len(resp.Laws) {
+		currentPage := resp.Page
+		pageSize := 10
+		if len(resp.Laws) > 0 {
+			pageSize = len(resp.Laws)
+		}
+		totalPages := (resp.TotalCount + pageSize - 1) / pageSize
+		fmt.Fprintf(&buf, `  <p style="margin-top: 20px; color: #666;">페이지 %d/%d</p>%s`, currentPage, totalPages, "\n")
+	}
+
+	fmt.Fprintln(&buf, `</body>`)
+	fmt.Fprintln(&buf, `</html>`)
+
+	return buf.String(), nil
 }
