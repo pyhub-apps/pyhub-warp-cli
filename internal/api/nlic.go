@@ -108,7 +108,7 @@ func (c *NLICClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 			bodyStr := string(body)
 			if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
 				// Parse HTML error message
-				errorMsg := c.parseHTMLError(bodyStr)
+				errorMsg := ParseHTMLError(bodyStr)
 				logger.Debug("HTML error response detected: %s", errorMsg)
 				// Check if it's an API key error
 				if strings.Contains(errorMsg, "API 인증 실패") || strings.Contains(errorMsg, "API 키") {
@@ -370,6 +370,15 @@ func (c *NLICClient) parseAPIError(body []byte) error {
 
 // parseHTMLError extracts meaningful error message from HTML error page
 func (c *NLICClient) parseHTMLError(html string) string {
+	// Check for specific error messages in the HTML response
+	if strings.Contains(html, "미신청된 목록/본문에 대한 접근입니다") {
+		return "API 사용 권한이 없습니다. https://open.law.go.kr 에서 로그인 후 [OPEN API] -> [OPEN API 신청]에서 필요한 법령 종류를 체크해주세요"
+	}
+	
+	if strings.Contains(html, "페이지 접속에 실패하였습니다") {
+		return "API 접속 실패: API 키를 확인하거나 서비스 상태를 점검해주세요"
+	}
+
 	// Common patterns for error messages in HTML pages
 	patterns := []struct {
 		start string
@@ -392,7 +401,7 @@ func (c *NLICClient) parseHTMLError(html string) string {
 	// Check for authentication/key related issues
 	if strings.Contains(htmlLower, "인증") || strings.Contains(htmlLower, "auth") ||
 		strings.Contains(htmlLower, "key") || strings.Contains(htmlLower, "키") {
-		return "API 인증 실패: API 키가 유효하지 않거나 만료되었습니다. 'sejong config set law.key YOUR_API_KEY' 명령으로 올바른 API 키를 설정하세요"
+		return "API 인증 실패: 이메일 ID가 올바르지 않습니다. 'sejong config set law.key YOUR_EMAIL_ID' 명령으로 이메일 @ 앞부분을 설정하세요"
 	}
 
 	// Check for rate limit

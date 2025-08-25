@@ -86,7 +86,7 @@ func runInterpretationSearchCommand(cmd *cobra.Command, args []string) error {
 		Query:    query,
 		PageNo:   interpPageNo,
 		PageSize: interpPageSize,
-		Type:     "JSON",
+		Type:     "XML",
 	}
 
 	// Search with timeout

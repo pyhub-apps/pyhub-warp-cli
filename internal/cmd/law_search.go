@@ -119,7 +119,7 @@ func searchLaws(client APIClient, query string, format string, page int, size in
 	// Create search request
 	req := &api.UnifiedSearchRequest{
 		Query:    query,
-		Type:     "JSON",
+		Type:     "XML",
 		PageNo:   page,
 		PageSize: size,
 	}

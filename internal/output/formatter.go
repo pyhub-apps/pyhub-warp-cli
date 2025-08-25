@@ -116,7 +116,12 @@ func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 	// Add data rows
 	for i, law := range resp.Laws {
 		// Format dates (YYYYMMDD -> YYYY-MM-DD)
-		effectDate := formatDate(law.EffectDate)
+		// Use EffectDate if available, otherwise use PromulDate (for interpretations, precedents)
+		dateToShow := law.EffectDate
+		if dateToShow == "" && law.PromulDate != "" {
+			dateToShow = law.PromulDate
+		}
+		effectDate := formatDate(dateToShow)
 
 		// Truncate long names for better display
 		name := truncateString(law.Name, 40)
@@ -148,10 +153,16 @@ func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 
 // formatDate converts YYYYMMDD to YYYY-MM-DD format
 func formatDate(date string) string {
-	if len(date) != 8 {
-		return date
+	// Handle YYYYMMDD format
+	if len(date) == 8 {
+		return fmt.Sprintf("%s-%s-%s", date[:4], date[4:6], date[6:8])
 	}
-	return fmt.Sprintf("%s-%s-%s", date[:4], date[4:6], date[6:8])
+	// Handle YYYY.MM.DD format (from some APIs like legal interpretations)
+	if len(date) == 10 && date[4] == '.' && date[7] == '.' {
+		return strings.ReplaceAll(date, ".", "-")
+	}
+	// Return as-is for other formats
+	return date
 }
 
 // formatJSONToString formats results in JSON format and returns as string

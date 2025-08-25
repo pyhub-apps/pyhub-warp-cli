@@ -248,7 +248,7 @@ func TestConfigGetCommand(t *testing.T) {
 			name:       "API key not set",
 			args:       []string{"config", "get", "law.key"},
 			wantErr:    false,
-			wantOutput: "API 키 설정이 필요",
+			wantOutput: "API 설정이 필요",
 		},
 		{
 			name: "API key set",

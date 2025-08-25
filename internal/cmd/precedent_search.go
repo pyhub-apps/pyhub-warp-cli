@@ -86,7 +86,7 @@ func runPrecedentSearchCommand(cmd *cobra.Command, args []string) error {
 		Query:    query,
 		PageNo:   precPageNo,
 		PageSize: precPageSize,
-		Type:     "JSON",
+		Type:     "XML",
 	}
 
 	// Search with timeout

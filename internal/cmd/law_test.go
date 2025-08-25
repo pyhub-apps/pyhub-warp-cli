@@ -49,7 +49,7 @@ func TestLawCommand(t *testing.T) {
 			name:       "Multiple arguments",
 			args:       []string{"arg1", "arg2"},
 			wantErr:    false, // Shows API key guide for search with "arg1"
-			wantOutput: "API 키 설정이 필요합니다",
+			wantOutput: "API 설정이 필요합니다",
 		},
 		{
 			name:        "Whitespace only query",
@@ -320,7 +320,7 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 
 	// Check that output contains API key setup instruction
 	output := buf.String()
-	if !strings.Contains(output, "API 키 설정이 필요합니다") {
+	if !strings.Contains(output, "API 설정이 필요합니다") {
 		t.Errorf("Output should contain API key setup message, got %q", output)
 	}
 }

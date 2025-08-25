@@ -14,6 +14,24 @@ import (
 	"github.com/pyhub-apps/sejong-cli/internal/logger"
 )
 
+// AdmrulSearchResponse represents the administrative rule search response
+type AdmrulSearchResponse struct {
+	XMLName    xml.Name     `xml:"AdmRulSearch"`
+	TotalCount int          `xml:"totalCnt"`
+	Page       int          `xml:"page"`
+	Admruls    []AdmrulInfo `xml:"admrul"`
+}
+
+// AdmrulInfo represents individual administrative rule information
+type AdmrulInfo struct {
+	ID         string `xml:"행정규칙일련번호"`
+	Name       string `xml:"행정규칙명"`
+	Type       string `xml:"행정규칙종류"`
+	Department string `xml:"소관부처명"`
+	Date       string `xml:"발령일자"`
+	DetailLink string `xml:"행정규칙상세링크"`
+}
+
 // AdmrulClient represents the Administrative Rule API client (행정규칙 API 클라이언트)
 type AdmrulClient struct {
 	httpClient     *http.Client
@@ -81,20 +99,37 @@ func (c *AdmrulClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*
 	}
 
 	// Parse response based on type
-	var response SearchResponse
 	if strings.ToUpper(req.Type) == "JSON" {
-		if err := json.Unmarshal(body, &response); err != nil {
-			logger.Error("JSON parsing failed: %v", err)
-			return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
-		}
-	} else {
-		if err := xml.Unmarshal(body, &response); err != nil {
-			logger.Error("XML parsing failed: %v", err)
-			return nil, fmt.Errorf("XML 파싱 실패: %w", err)
+		// JSON is not supported for administrative rule API, return empty result
+		logger.Debug("JSON format not supported for administrative rule API, returning empty result")
+		return &SearchResponse{TotalCount: 0, Page: req.PageNo, Laws: []LawInfo{}}, nil
+	}
+	
+	// Parse XML response
+	var admrulResponse AdmrulSearchResponse
+	if err := xml.Unmarshal(body, &admrulResponse); err != nil {
+		logger.Error("XML parsing failed: %v", err)
+		return nil, fmt.Errorf("XML 파싱 실패: %w", err)
+	}
+
+	// Convert to SearchResponse
+	response := &SearchResponse{
+		TotalCount: admrulResponse.TotalCount,
+		Page:       admrulResponse.Page,
+		Laws:       make([]LawInfo, len(admrulResponse.Admruls)),
+	}
+
+	for i, admrul := range admrulResponse.Admruls {
+		response.Laws[i] = LawInfo{
+			ID:         admrul.ID,
+			Name:       admrul.Name,
+			LawType:    admrul.Type,
+			Department: admrul.Department,
+			PromulDate: admrul.Date,
 		}
 	}
 
-	return &response, nil
+	return response, nil
 }
 
 // GetDetail retrieves detailed administrative rule information

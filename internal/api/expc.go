@@ -14,6 +14,25 @@ import (
 	"github.com/pyhub-apps/sejong-cli/internal/logger"
 )
 
+// ExpcSearchResponse represents the legal interpretation search response
+type ExpcSearchResponse struct {
+	XMLName    xml.Name   `xml:"Expc"`
+	TotalCount int        `xml:"totalCnt"`
+	Page       int        `xml:"page"`
+	Expcs      []ExpcInfo `xml:"expc"`
+}
+
+// ExpcInfo represents individual legal interpretation information
+type ExpcInfo struct {
+	ID             string `xml:"법령해석례일련번호"`
+	Title          string `xml:"안건명"`
+	CaseNumber     string `xml:"안건번호"`
+	QueryDept      string `xml:"질의기관명"`
+	ResponseDept   string `xml:"회신기관명"`
+	ResponseDate   string `xml:"회신일자"`
+	DetailLink     string `xml:"법령해석례상세링크"`
+}
+
 // ExpcClient represents the Legal Interpretation API client (법령해석례 API 클라이언트)
 type ExpcClient struct {
 	httpClient     *http.Client
@@ -79,22 +98,42 @@ func (c *ExpcClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	if err != nil {
 		return nil, err
 	}
+	
 
 	// Parse response based on type
-	var response SearchResponse
 	if strings.ToUpper(req.Type) == "JSON" {
-		if err := json.Unmarshal(body, &response); err != nil {
-			logger.Error("JSON parsing failed: %v", err)
-			return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
-		}
-	} else {
-		if err := xml.Unmarshal(body, &response); err != nil {
-			logger.Error("XML parsing failed: %v", err)
-			return nil, fmt.Errorf("XML 파싱 실패: %w", err)
+		// JSON is not supported for legal interpretation API, return empty result
+		logger.Debug("JSON format not supported for legal interpretation API, returning empty result")
+		return &SearchResponse{TotalCount: 0, Page: req.PageNo, Laws: []LawInfo{}}, nil
+	}
+	
+	// Parse XML response
+	var expcResponse ExpcSearchResponse
+	if err := xml.Unmarshal(body, &expcResponse); err != nil {
+		logger.Error("XML parsing failed: %v", err)
+		return nil, fmt.Errorf("XML 파싱 실패: %w", err)
+	}
+
+
+	// Convert to SearchResponse
+	response := &SearchResponse{
+		TotalCount: expcResponse.TotalCount,
+		Page:       expcResponse.Page,
+		Laws:       make([]LawInfo, len(expcResponse.Expcs)),
+	}
+
+	for i, expc := range expcResponse.Expcs {
+		response.Laws[i] = LawInfo{
+			ID:         expc.ID,
+			Name:       expc.Title,
+			LawType:    "법령해석례",  // Legal interpretation type
+			Department: expc.QueryDept,
+			PromulDate: expc.ResponseDate,
+			PromulNo:   expc.CaseNumber,
 		}
 	}
 
-	return &response, nil
+	return response, nil
 }
 
 // GetDetail retrieves detailed legal interpretation information

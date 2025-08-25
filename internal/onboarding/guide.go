@@ -54,9 +54,9 @@ func (g *Guide) showColoredAPIKeySetup() {
 	}
 
 	// Header
-	red.Fprintln(g.writer, "🔐 API 키 설정이 필요합니다")
+	red.Fprintln(g.writer, "🔐 API 설정이 필요합니다")
 	fmt.Fprintln(g.writer)
-	fmt.Fprintln(g.writer, "국가법령정보센터 오픈 API를 사용하려면 인증키가 필요합니다.")
+	fmt.Fprintln(g.writer, "국가법령정보센터 오픈 API를 사용하려면 이메일 인증이 필요합니다.")
 	fmt.Fprintln(g.writer)
 
 	// Steps
@@ -64,17 +64,23 @@ func (g *Guide) showColoredAPIKeySetup() {
 	fmt.Fprintln(g.writer)
 
 	// Step 1
-	yellow.Fprint(g.writer, "1️⃣  인증키 발급받기")
+	yellow.Fprint(g.writer, "1️⃣  Open API 신청하기")
 	fmt.Fprintln(g.writer)
 	fmt.Fprint(g.writer, "   → ")
-	cyan.Fprintln(g.writer, "https://open.law.go.kr/LSO/openApi/cuAskList.do")
+	cyan.Fprintln(g.writer, "https://open.law.go.kr")
+	fmt.Fprintln(g.writer, "   • 회원가입 및 로그인")
+	fmt.Fprintln(g.writer, "   • [OPEN API] → [OPEN API 신청] 메뉴")
+	fmt.Fprintln(g.writer, "   • 필요한 법령 종류 체크 (법령, 판례, 행정규칙 등)")
+	fmt.Fprint(g.writer, "   ")
+	red.Fprintln(g.writer, "⚠️  중요: 도메인 주소는 반드시 \"도메인 없음\"으로 설정")
 	fmt.Fprintln(g.writer)
 
 	// Step 2
-	yellow.Fprint(g.writer, "2️⃣  인증키 설정하기")
+	yellow.Fprint(g.writer, "2️⃣  이메일 ID 설정하기")
 	fmt.Fprintln(g.writer)
 	fmt.Fprint(g.writer, "   → ")
-	green.Fprintln(g.writer, "sejong config set law.key <발급받은_인증키>")
+	green.Fprintln(g.writer, "sejong config set law.key <이메일ID>")
+	fmt.Fprintln(g.writer, "   예: example@gmail.com → example")
 	fmt.Fprintln(g.writer)
 
 	// Tip
@@ -86,17 +92,22 @@ func (g *Guide) showColoredAPIKeySetup() {
 }
 
 func (g *Guide) showPlainAPIKeySetup() {
-	fmt.Fprintln(g.writer, "❌ API 키 설정이 필요합니다")
+	fmt.Fprintln(g.writer, "❌ API 설정이 필요합니다")
 	fmt.Fprintln(g.writer)
-	fmt.Fprintln(g.writer, "국가법령정보센터 오픈 API를 사용하려면 인증키가 필요합니다.")
+	fmt.Fprintln(g.writer, "국가법령정보센터 오픈 API를 사용하려면 이메일 인증이 필요합니다.")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "📋 설정 방법:")
 	fmt.Fprintln(g.writer)
-	fmt.Fprintln(g.writer, "1. 인증키 발급받기")
-	fmt.Fprintln(g.writer, "   → https://open.law.go.kr/LSO/openApi/cuAskList.do")
+	fmt.Fprintln(g.writer, "1. Open API 신청하기")
+	fmt.Fprintln(g.writer, "   → https://open.law.go.kr")
+	fmt.Fprintln(g.writer, "   • 회원가입 및 로그인")
+	fmt.Fprintln(g.writer, "   • [OPEN API] → [OPEN API 신청] 메뉴")
+	fmt.Fprintln(g.writer, "   • 필요한 법령 종류 체크 (법령, 판례, 행정규칙 등)")
+	fmt.Fprintln(g.writer, "   ⚠️  중요: 도메인 주소는 반드시 \"도메인 없음\"으로 설정")
 	fmt.Fprintln(g.writer)
-	fmt.Fprintln(g.writer, "2. 인증키 설정하기")
-	fmt.Fprintln(g.writer, "   → sejong config set law.key <발급받은_인증키>")
+	fmt.Fprintln(g.writer, "2. 이메일 ID 설정하기")
+	fmt.Fprintln(g.writer, "   → sejong config set law.key <이메일ID>")
+	fmt.Fprintln(g.writer, "   예: example@gmail.com → example")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "💡 팁: 위 명령어를 복사하여 사용하세요!")
 

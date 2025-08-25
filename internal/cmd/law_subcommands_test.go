@@ -43,7 +43,7 @@ func TestLawSubcommands(t *testing.T) {
 			name:       "Search with valid query (no API key)",
 			args:       []string{"search", "테스트"},
 			wantErr:    false, // Shows API key setup guide, not an error
-			wantOutput: "API 키 설정이 필요합니다",
+			wantOutput: "API 설정이 필요합니다",
 		},
 		// Detail subcommand tests
 		{

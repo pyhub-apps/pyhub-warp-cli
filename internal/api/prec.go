@@ -14,6 +14,25 @@ import (
 	"github.com/pyhub-apps/sejong-cli/internal/logger"
 )
 
+// PrecSearchResponse represents the precedent search response
+type PrecSearchResponse struct {
+	XMLName    xml.Name   `xml:"PrecSearch"`
+	TotalCount int        `xml:"totalCnt"`
+	Page       int        `xml:"page"`
+	Precs      []PrecInfo `xml:"prec"`
+}
+
+// PrecInfo represents individual precedent information
+type PrecInfo struct {
+	ID         string `xml:"판례일련번호"`
+	CaseName   string `xml:"사건명"`
+	CaseNumber string `xml:"사건번호"`
+	CourtName  string `xml:"법원명"`
+	JudgeDate  string `xml:"선고일자"`
+	CaseType   string `xml:"사건종류명"`
+	DetailLink string `xml:"판례상세링크"`
+}
+
 // PrecClient represents the Precedent API client (판례 API 클라이언트)
 type PrecClient struct {
 	httpClient     *http.Client
@@ -78,20 +97,38 @@ func (c *PrecClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	}
 
 	// Parse response based on type
-	var response SearchResponse
 	if strings.ToUpper(req.Type) == "JSON" {
-		if err := json.Unmarshal(body, &response); err != nil {
-			logger.Error("JSON parsing failed: %v", err)
-			return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
-		}
-	} else {
-		if err := xml.Unmarshal(body, &response); err != nil {
-			logger.Error("XML parsing failed: %v", err)
-			return nil, fmt.Errorf("XML 파싱 실패: %w", err)
+		// JSON is not supported for precedent API, return empty result
+		logger.Debug("JSON format not supported for precedent API, returning empty result")
+		return &SearchResponse{TotalCount: 0, Page: req.PageNo, Laws: []LawInfo{}}, nil
+	}
+	
+	// Parse XML response
+	var precResponse PrecSearchResponse
+	if err := xml.Unmarshal(body, &precResponse); err != nil {
+		logger.Error("XML parsing failed: %v", err)
+		return nil, fmt.Errorf("XML 파싱 실패: %w", err)
+	}
+
+	// Convert to SearchResponse
+	response := &SearchResponse{
+		TotalCount: precResponse.TotalCount,
+		Page:       precResponse.Page,
+		Laws:       make([]LawInfo, len(precResponse.Precs)),
+	}
+
+	for i, prec := range precResponse.Precs {
+		response.Laws[i] = LawInfo{
+			ID:         prec.ID,
+			Name:       prec.CaseName,
+			LawType:    prec.CaseType,
+			Department: prec.CourtName,
+			PromulDate: prec.JudgeDate,
+			PromulNo:   prec.CaseNumber,
 		}
 	}
 
-	return &response, nil
+	return response, nil
 }
 
 // GetDetail retrieves detailed precedent information

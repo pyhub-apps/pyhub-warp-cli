@@ -86,7 +86,7 @@ func runAdmruleSearchCommand(cmd *cobra.Command, args []string) error {
 		Query:    query,
 		PageNo:   admrPageNo,
 		PageSize: admrPageSize,
-		Type:     "JSON",
+		Type:     "XML",
 	}
 
 	// Search with timeout
