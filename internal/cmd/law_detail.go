@@ -15,8 +15,10 @@ import (
 )
 
 var (
-	lawDetailCmd *cobra.Command
-	showArticles bool
+	lawDetailCmd      *cobra.Command
+	showArticles      bool
+	showTables        bool
+	showSupplementary bool
 )
 
 // initLawDetailCmd initializes the law detail command
@@ -40,6 +42,8 @@ func initLawDetailCmd() {
 	// Flags
 	lawDetailCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", i18n.T("law.flag.format"))
 	lawDetailCmd.Flags().BoolVarP(&showArticles, "articles", "a", false, i18n.T("law.detail.flag.articles"))
+	lawDetailCmd.Flags().BoolVarP(&showTables, "tables", "t", false, "별표 내용 표시")
+	lawDetailCmd.Flags().BoolVar(&showSupplementary, "addendum", false, "부칙 내용 표시")
 }
 
 // updateLawDetailCommand updates law detail command descriptions
@@ -54,6 +58,12 @@ func updateLawDetailCommand() {
 		}
 		if flag := lawDetailCmd.Flags().Lookup("articles"); flag != nil {
 			flag.Usage = i18n.T("law.detail.flag.articles")
+		}
+		if flag := lawDetailCmd.Flags().Lookup("tables"); flag != nil {
+			flag.Usage = "별표 내용 표시"
+		}
+		if flag := lawDetailCmd.Flags().Lookup("addendum"); flag != nil {
+			flag.Usage = "부칙 내용 표시"
 		}
 	}
 }
@@ -109,12 +119,8 @@ func runLawDetailCommand(cmd *cobra.Command, args []string) error {
 	// Format and output results
 	formatter := outputPkg.NewFormatter(outputFormat)
 
-	// Filter articles if not requested
-	if !showArticles {
-		detail.Articles = nil
-	}
-
-	formattedOutput, err := formatter.FormatDetailToString(detail)
+	// Use the formatter with options
+	formattedOutput, err := formatter.FormatDetailToStringWithOptions(detail, showArticles, showTables, showSupplementary)
 	if err != nil {
 		logger.Error("Failed to format output: %v", err)
 		return fmt.Errorf(i18n.T("law.outputFailed"))

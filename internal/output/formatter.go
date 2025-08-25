@@ -52,6 +52,11 @@ func (f *Formatter) FormatSearchResultToString(resp *api.SearchResponse) (string
 
 // FormatDetailToString formats law detail and returns as string
 func (f *Formatter) FormatDetailToString(detail *api.LawDetail) (string, error) {
+	return f.FormatDetailToStringWithOptions(detail, false, false, false)
+}
+
+// FormatDetailToStringWithOptions formats law detail with display options
+func (f *Formatter) FormatDetailToStringWithOptions(detail *api.LawDetail, showArticles, showTables, showSupplementary bool) (string, error) {
 	if detail == nil {
 		return "", fmt.Errorf("법령 상세 정보가 없습니다")
 	}
@@ -64,7 +69,7 @@ func (f *Formatter) FormatDetailToString(detail *api.LawDetail) (string, error) 
 		}
 		return string(data) + "\n", nil
 	case "table", "":
-		return f.formatDetailTable(detail), nil
+		return f.formatDetailTableWithOptions(detail, showArticles, showTables, showSupplementary), nil
 	default:
 		return "", fmt.Errorf("지원하지 않는 출력 형식: %s (table, json 중 선택)", f.format)
 	}
@@ -286,6 +291,11 @@ func truncateString(s string, maxLen int) string {
 
 // formatDetailTable formats law detail as a table
 func (f *Formatter) formatDetailTable(detail *api.LawDetail) string {
+	return f.formatDetailTableWithOptions(detail, len(detail.Articles) > 0, false, false)
+}
+
+// formatDetailTableWithOptions formats law detail with display options
+func (f *Formatter) formatDetailTableWithOptions(detail *api.LawDetail, showArticles, showTables, showSupplementary bool) string {
 	var buf bytes.Buffer
 
 	// Basic information
@@ -334,8 +344,38 @@ func (f *Formatter) formatDetailTable(detail *api.LawDetail) string {
 		fmt.Fprintf(&buf, "제개정구분:   %s\n", detail.Category)
 	}
 
-	// Articles if present
+	// Show summary of contents
+	fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
+	fmt.Fprintf(&buf, " 내용 요약\n")
+	fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
+
+	// Show counts
 	if len(detail.Articles) > 0 {
+		fmt.Fprintf(&buf, "조문:         %d개\n", len(detail.Articles))
+	}
+	if len(detail.Tables) > 0 {
+		fmt.Fprintf(&buf, "별표:         %d개\n", len(detail.Tables))
+	}
+	if len(detail.SupplementaryProvisions) > 0 {
+		fmt.Fprintf(&buf, "부칙:         %d개\n", len(detail.SupplementaryProvisions))
+	}
+	if detail.HasRevisionText {
+		fmt.Fprintf(&buf, "개정문:       있음\n")
+	}
+
+	// Show hints for additional content
+	if len(detail.Articles) > 0 && !showArticles {
+		fmt.Fprintf(&buf, "\n※ 조문 상세 내용은 --articles 옵션을 사용하세요\n")
+	}
+	if len(detail.Tables) > 0 && !showTables {
+		fmt.Fprintf(&buf, "※ 별표 내용은 --tables 옵션을 사용하세요\n")
+	}
+	if len(detail.SupplementaryProvisions) > 0 && !showSupplementary {
+		fmt.Fprintf(&buf, "※ 부칙 내용은 --addendum 옵션을 사용하세요\n")
+	}
+
+	// Articles if present and requested
+	if showArticles && len(detail.Articles) > 0 {
 		fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
 		fmt.Fprintf(&buf, " 조문 (%d개)\n", len(detail.Articles))
 		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
@@ -354,6 +394,69 @@ func (f *Formatter) formatDetailTable(detail *api.LawDetail) string {
 			for _, line := range lines {
 				if strings.TrimSpace(line) != "" {
 					fmt.Fprintf(&buf, "  %s\n", line)
+				}
+			}
+			fmt.Fprintf(&buf, "\n")
+		}
+	}
+
+	// Tables if present and requested
+	if showTables && len(detail.Tables) > 0 {
+		fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
+		fmt.Fprintf(&buf, " 별표 (%d개)\n", len(detail.Tables))
+		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
+
+		for _, table := range detail.Tables {
+			fmt.Fprintf(&buf, "%s", table.Number)
+			if table.Title != "" {
+				fmt.Fprintf(&buf, " - %s", table.Title)
+			}
+			fmt.Fprintf(&buf, "\n")
+
+			// Clean and format content
+			if table.Content != "" {
+				content := strings.TrimSpace(table.Content)
+				content = strings.ReplaceAll(content, "\r\n", "\n")
+				lines := strings.Split(content, "\n")
+				for _, line := range lines {
+					if strings.TrimSpace(line) != "" {
+						fmt.Fprintf(&buf, "  %s\n", line)
+					}
+				}
+			}
+			fmt.Fprintf(&buf, "\n")
+		}
+	}
+
+	// Supplementary provisions if present and requested
+	if showSupplementary && len(detail.SupplementaryProvisions) > 0 {
+		fmt.Fprintf(&buf, "\n───────────────────────────────────────────────────────────\n")
+		fmt.Fprintf(&buf, " 부칙 (%d개)\n", len(detail.SupplementaryProvisions))
+		fmt.Fprintf(&buf, "───────────────────────────────────────────────────────────\n\n")
+
+		for _, supp := range detail.SupplementaryProvisions {
+			if supp.PromulgationDate != "" || supp.PromulgationNo != "" {
+				fmt.Fprintf(&buf, "부칙")
+				if supp.PromulgationNo != "" {
+					fmt.Fprintf(&buf, " <%s>", supp.PromulgationNo)
+				}
+				if supp.PromulgationDate != "" {
+					fmt.Fprintf(&buf, " (%s)", formatDate(supp.PromulgationDate))
+				}
+				fmt.Fprintf(&buf, "\n")
+			} else if supp.Number != "" {
+				fmt.Fprintf(&buf, "%s\n", supp.Number)
+			}
+
+			// Clean and format content
+			if supp.Content != "" {
+				content := strings.TrimSpace(supp.Content)
+				content = strings.ReplaceAll(content, "\r\n", "\n")
+				lines := strings.Split(content, "\n")
+				for _, line := range lines {
+					if strings.TrimSpace(line) != "" {
+						fmt.Fprintf(&buf, "  %s\n", line)
+					}
 				}
 			}
 			fmt.Fprintf(&buf, "\n")

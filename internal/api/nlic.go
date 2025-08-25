@@ -181,7 +181,9 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 		LawInfo: LawInfo{
 			SerialNo: lawID, // Use the provided law ID
 		},
-		Articles: make([]Article, 0),
+		Articles:                 make([]Article, 0),
+		Tables:                   make([]Table, 0),
+		SupplementaryProvisions:  make([]SupplementaryProvision, 0),
 	}
 
 	// Extract basic info if available
@@ -203,6 +205,67 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 		if basicInfo.LawTypeInfo.Content != "" {
 			detail.LawInfo.LawType = basicInfo.LawTypeInfo.Content
 		}
+	}
+
+	// Process revision text
+	if detailResp.Law.Revisions.Content != nil {
+		detail.HasRevisionText = true
+		// Convert revision content to string if it exists
+		if revStr, ok := detailResp.Law.Revisions.Content.(string); ok {
+			detail.RevisionText = revStr
+		} else {
+			// Mark that revision exists but don't try to parse complex structure
+			detail.RevisionText = "(개정문 내용 있음)"
+		}
+	}
+
+	// Convert tables from the API response
+	for _, unit := range detailResp.Law.Tables.TableUnits {
+		table := Table{
+			Number: unit.TableNumber,
+			Title:  unit.TableTitle,
+		}
+		
+		// Handle table content which can be string or array
+		if unit.TableContent != nil {
+			if tableStr, ok := unit.TableContent.(string); ok {
+				table.Content = tableStr
+			} else {
+				// If it's an array or other type, just mark as existing
+				table.Content = "(별표 내용 있음)"
+			}
+		}
+		
+		detail.Tables = append(detail.Tables, table)
+	}
+
+	// Convert supplementary provisions from the API response
+	for _, unit := range detailResp.Law.SupplementaryProvisions.ProvisionUnits {
+		supp := SupplementaryProvision{
+			Number:           unit.ProvisionNumber,
+			PromulgationDate: unit.ProvisionDate,
+		}
+		
+		// Handle provision content which can be string or array
+		if unit.ProvisionContent != nil {
+			if provStr, ok := unit.ProvisionContent.(string); ok {
+				supp.Content = provStr
+			} else if provArr, ok := unit.ProvisionContent.([]interface{}); ok {
+				// If it's an array, join the elements
+				var contentParts []string
+				for _, part := range provArr {
+					if str, ok := part.(string); ok {
+						contentParts = append(contentParts, str)
+					}
+				}
+				supp.Content = strings.Join(contentParts, "\n")
+			} else {
+				// If it's something else, just mark as existing
+				supp.Content = "(부칙 내용 있음)"
+			}
+		}
+		
+		detail.SupplementaryProvisions = append(detail.SupplementaryProvisions, supp)
 	}
 
 	// Convert articles from the API response
