@@ -193,9 +193,34 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 		}
 
 		// Check format type
-		if r.URL.Query().Get("type") == "JSON" {
+		// Support both JSON and XML for testing
+		requestType := r.URL.Query().Get("type")
+		if requestType == "JSON" {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)
+		} else if requestType == "XML" {
+			// Return XML response for compatibility with updated code
+			w.Header().Set("Content-Type", "application/xml")
+			xmlResponse := `<?xml version="1.0" encoding="UTF-8"?>
+<LawSearch>
+	<totalCnt>2</totalCnt>
+	<page>1</page>
+	<law>
+		<법령ID>001234</법령ID>
+		<법령명한글>개인정보 보호법</법령명한글>
+		<법령구분명>법률</법령구분명>
+		<소관부처명>개인정보보호위원회</소관부처명>
+		<시행일자>20200805</시행일자>
+	</law>
+	<law>
+		<법령ID>005678</법령ID>
+		<법령명한글>개인정보 보호법 시행령</법령명한글>
+		<법령구분명>대통령령</법령구분명>
+		<소관부처명>개인정보보호위원회</소관부처명>
+		<시행일자>20200805</시행일자>
+	</law>
+</LawSearch>`
+			w.Write([]byte(xmlResponse))
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
