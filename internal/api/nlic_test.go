@@ -112,38 +112,58 @@ func TestNLICClient_GetDetail(t *testing.T) {
 
 		// Return mock response based on law ID
 		if lawID == "001234" {
-			detail := LawDetail{
-				LawInfo: LawInfo{
-					ID:         "001234",
-					Name:       "개인정보 보호법",
-					NameAbbrev: "개인정보보호법",
-					SerialNo:   "12345",
-					PromulDate: "20110329",
-					PromulNo:   "제10465호",
-					Category:   "제정",
-					Department: "개인정보보호위원회",
-					EffectDate: "20110930",
-					LawType:    "법률",
-				},
-				Articles: []Article{
-					{
-						Number:  "제1조",
-						Title:   "목적",
-						Content: "이 법은 개인정보의 처리 및 보호에 관한 사항을 정함으로써...",
+			// Create the response structure that matches the actual API
+			response := LawDetailResponse{
+				Law: LawDetailContent{
+					LawKey: "001234",
+					BasicInfo: &BasicInfo{
+						LawID:              "001234",
+						LawNameKorean:      "개인정보 보호법",
+						LawNameHanja:       "個人情報保護法",
+						LawNameAbbr:        "개인정보법",
+						PromulgationDate:   "20110329",
+						PromulgationNumber: "제10465호",
+						EffectiveDate:      "20110930",
+						RevisionType:       "제정",
+						Department: DepartmentInfo{
+							Content: "개인정보보호위원회",
+							Code:    "1570000",
+						},
+						LawTypeInfo: LawTypeInfo{
+							Content: "법률",
+							Code:    "01",
+						},
 					},
-					{
-						Number:  "제2조",
-						Title:   "정의",
-						Content: "이 법에서 사용하는 용어의 뜻은 다음과 같다...",
+					Revisions: RevisionContent{
+						Content: [][]interface{}{},
+					},
+					Tables: TableContent{
+						TableUnits: []TableUnit{},
+					},
+					ArticlesRaw: ArticlesContent{
+						ArticleUnits: []ArticleUnit{
+							{
+								ArticleKey:        "001234-1",
+								ArticleNumber:     "제1조",
+								ArticleTitle:      "목적",
+								ArticleContent:    "이 법은 개인정보의 처리 및 보호에 관한 사항을 정함으로써...",
+								ArticleEffectDate: "20110930",
+								Paragraphs:        nil, // Can be nil, array, or object
+							},
+							{
+								ArticleKey:        "001234-2",
+								ArticleNumber:     "제2조",
+								ArticleTitle:      "정의",
+								ArticleContent:    "이 법에서 사용하는 용어의 뜻은 다음과 같다...",
+								ArticleEffectDate: "20110930",
+								Paragraphs:        []interface{}{}, // Empty array example
+							},
+						},
+					},
+					SupplementaryProvisions: SupplementaryProvisionsContent{
+						ProvisionUnits: []SupplementaryProvisionUnit{},
 					},
 				},
-				RelatedLaws: []string{"정보통신망법", "신용정보법"},
-				Attachments: []string{"시행령.pdf", "시행규칙.pdf"},
-			}
-
-			// Wrap the response as the API expects
-			response := map[string]interface{}{
-				"법령": detail,
 			}
 
 			w.Header().Set("Content-Type", "application/json")

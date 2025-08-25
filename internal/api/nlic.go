@@ -152,12 +152,16 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 		return nil, err
 	}
 
-	// Parse the response - the API returns the detail in a wrapper
-	var wrapper struct {
-		Law *LawDetail `json:"법령" xml:"법령"`
+	// Debug: Log the raw response
+	maxLen := 2000
+	if len(body) < maxLen {
+		maxLen = len(body)
 	}
+	logger.Debug("Law Detail API Response (first %d chars): %s", maxLen, string(body[:maxLen]))
 
-	if err := json.Unmarshal(body, &wrapper); err != nil {
+	// Parse the response using the correct structure
+	var detailResp LawDetailResponse
+	if err := json.Unmarshal(body, &detailResp); err != nil {
 		// Check if response is HTML (error page)
 		bodyStr := string(body)
 		if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
@@ -169,19 +173,129 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 			}
 			return nil, fmt.Errorf("%s", errorMsg)
 		}
-		// Try direct unmarshal if wrapper fails
-		var detail LawDetail
-		if err2 := json.Unmarshal(body, &detail); err2 != nil {
-			return nil, fmt.Errorf("응답 데이터 파싱 실패: %w", err)
+		return nil, fmt.Errorf("응답 데이터 파싱 실패: %w", err)
+	}
+
+	// Convert the detailed response to our LawDetail structure
+	detail := &LawDetail{
+		LawInfo: LawInfo{
+			SerialNo: lawID, // Use the provided law ID
+		},
+		Articles:                 make([]Article, 0),
+		Tables:                   make([]Table, 0),
+		SupplementaryProvisions:  make([]SupplementaryProvision, 0),
+	}
+
+	// Extract basic info if available
+	if detailResp.Law.BasicInfo != nil {
+		basicInfo := detailResp.Law.BasicInfo
+		detail.LawInfo.ID = basicInfo.LawID
+		detail.LawInfo.Name = basicInfo.LawNameKorean
+		detail.LawInfo.PromulDate = basicInfo.PromulgationDate
+		detail.LawInfo.PromulNo = basicInfo.PromulgationNumber
+		detail.LawInfo.EffectDate = basicInfo.EffectiveDate
+		detail.LawInfo.Category = basicInfo.RevisionType
+		
+		// Extract department info if available
+		if basicInfo.Department.Content != "" {
+			detail.LawInfo.Department = basicInfo.Department.Content
 		}
-		return &detail, nil
+		
+		// Extract law type info if available
+		if basicInfo.LawTypeInfo.Content != "" {
+			detail.LawInfo.LawType = basicInfo.LawTypeInfo.Content
+		}
 	}
 
-	if wrapper.Law == nil {
-		return nil, fmt.Errorf("법령 상세 정보를 찾을 수 없습니다")
+	// Process revision text
+	if detailResp.Law.Revisions.Content != nil {
+		detail.HasRevisionText = true
+		// Convert revision content to string if it exists
+		if revStr, ok := detailResp.Law.Revisions.Content.(string); ok {
+			detail.RevisionText = revStr
+		} else {
+			// Mark that revision exists but don't try to parse complex structure
+			detail.RevisionText = "(개정문 내용 있음)"
+		}
 	}
 
-	return wrapper.Law, nil
+	// Convert tables from the API response
+	for _, unit := range detailResp.Law.Tables.TableUnits {
+		table := Table{
+			Number: unit.TableNumber,
+			Title:  unit.TableTitle,
+		}
+		
+		// Handle table content which can be string or array
+		if unit.TableContent != nil {
+			if tableStr, ok := unit.TableContent.(string); ok {
+				table.Content = tableStr
+			} else {
+				// If it's an array or other type, just mark as existing
+				table.Content = "(별표 내용 있음)"
+			}
+		}
+		
+		detail.Tables = append(detail.Tables, table)
+	}
+
+	// Convert supplementary provisions from the API response
+	for _, unit := range detailResp.Law.SupplementaryProvisions.ProvisionUnits {
+		supp := SupplementaryProvision{
+			Number:           unit.ProvisionNumber,
+			PromulgationDate: unit.ProvisionDate,
+		}
+		
+		// Handle provision content which can be string or array
+		if unit.ProvisionContent != nil {
+			if provStr, ok := unit.ProvisionContent.(string); ok {
+				supp.Content = provStr
+			} else if provArr, ok := unit.ProvisionContent.([]interface{}); ok {
+				// If it's an array, join the elements
+				var contentParts []string
+				for _, part := range provArr {
+					if str, ok := part.(string); ok {
+						contentParts = append(contentParts, str)
+					}
+				}
+				supp.Content = strings.Join(contentParts, "\n")
+			} else {
+				// If it's something else, just mark as existing
+				supp.Content = "(부칙 내용 있음)"
+			}
+		}
+		
+		detail.SupplementaryProvisions = append(detail.SupplementaryProvisions, supp)
+	}
+
+	// Convert articles from the API response
+	for _, unit := range detailResp.Law.ArticlesRaw.ArticleUnits {
+		article := Article{
+			Number:     unit.ArticleNumber,
+			Title:      unit.ArticleTitle,
+			Content:    unit.ArticleContent,
+			EffectDate: unit.ArticleEffectDate,
+		}
+		detail.Articles = append(detail.Articles, article)
+		
+		// If basic info wasn't in the main structure, try to get from article units
+		if detail.LawInfo.ID == "" && unit.LawID != "" {
+			detail.LawInfo.ID = unit.LawID
+		}
+		if detail.LawInfo.Name == "" && unit.LawNameKorean != "" {
+			detail.LawInfo.Name = unit.LawNameKorean
+		}
+		if detail.LawInfo.SerialNo == "" && unit.LawSerialNo != "" {
+			detail.LawInfo.SerialNo = unit.LawSerialNo
+		}
+	}
+
+	// Set the law key if available and ID is still empty
+	if detailResp.Law.LawKey != "" && detail.LawInfo.ID == "" {
+		detail.LawInfo.ID = detailResp.Law.LawKey
+	}
+
+	return detail, nil
 }
 
 // GetHistory retrieves law amendment history

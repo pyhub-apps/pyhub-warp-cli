@@ -149,6 +149,13 @@ func (c *PrecClient) GetDetail(ctx context.Context, precID string) (*LawDetail, 
 		return nil, err
 	}
 
+	// Debug: Log the raw response
+	maxLen := 500
+	if len(body) < maxLen {
+		maxLen = len(body)
+	}
+	logger.Debug("Precedent Detail API Response (first %d chars): %s", maxLen, string(body[:maxLen]))
+
 	// Parse response
 	var detail LawDetail
 	if err := json.Unmarshal(body, &detail); err != nil {

@@ -52,10 +52,127 @@ type UnifiedSearchRequest struct {
 // LawDetail represents detailed law information
 type LawDetail struct {
 	LawInfo
-	Content     string    `json:"조문내용" xml:"조문내용"`
-	Articles    []Article `json:"조문" xml:"조문"`
-	Attachments []string  `json:"첨부파일" xml:"첨부파일"`
-	RelatedLaws []string  `json:"관련법령" xml:"관련법령"`
+	Content              string                 `json:"조문내용" xml:"조문내용"`
+	Articles             []Article              `json:"조문" xml:"조문"`
+	Attachments          []string               `json:"첨부파일" xml:"첨부파일"`
+	RelatedLaws          []string               `json:"관련법령" xml:"관련법령"`
+	RevisionText         string                 `json:"개정문" xml:"개정문"`        // 개정문 내용
+	Tables               []Table                `json:"별표" xml:"별표"`          // 별표 목록
+	SupplementaryProvisions []SupplementaryProvision `json:"부칙" xml:"부칙"` // 부칙 목록
+	HasRevisionText      bool                   `json:"개정문존재" xml:"개정문존재"`  // 개정문 존재 여부
+}
+
+// LawDetailResponse represents the actual API response structure for law detail
+type LawDetailResponse struct {
+	Law LawDetailContent `json:"법령" xml:"법령"`
+}
+
+// LawDetailContent represents the content structure returned by the detail API
+type LawDetailContent struct {
+	LawKey      string           `json:"법령키" xml:"법령키"`
+	BasicInfo   *BasicInfo       `json:"기본정보" xml:"기본정보"`
+	Revisions   RevisionContent  `json:"개정문" xml:"개정문"`
+	Tables      TableContent     `json:"별표" xml:"별표"`
+	ArticlesRaw ArticlesContent  `json:"조문" xml:"조문"`
+	SupplementaryProvisions SupplementaryProvisionsContent `json:"부칙" xml:"부칙"`
+}
+
+// BasicInfo represents basic law information
+type BasicInfo struct {
+	LawID              string          `json:"법령ID" xml:"법령ID"`
+	LawNameKorean      string          `json:"법령명_한글" xml:"법령명_한글"`
+	LawNameHanja       string          `json:"법령명_한자" xml:"법령명_한자"`
+	LawNameAbbr        string          `json:"법령명약칭" xml:"법령명약칭"`
+	PromulgationDate   string          `json:"공포일자" xml:"공포일자"`
+	PromulgationNumber string          `json:"공포번호" xml:"공포번호"`
+	EffectiveDate      string          `json:"시행일자" xml:"시행일자"`
+	RevisionType       string          `json:"제개정구분" xml:"제개정구분"`
+	Department         DepartmentInfo  `json:"소관부처" xml:"소관부처"`
+	LawTypeInfo        LawTypeInfo     `json:"법종구분" xml:"법종구분"`
+}
+
+// DepartmentInfo represents department information
+type DepartmentInfo struct {
+	Content string `json:"content" xml:"content"`
+	Code    string `json:"소관부처코드" xml:"소관부처코드"`
+}
+
+// LawTypeInfo represents law type information
+type LawTypeInfo struct {
+	Content string `json:"content" xml:"content"`
+	Code    string `json:"법종구분코드" xml:"법종구분코드"`
+}
+
+// RevisionContent represents revision content structure
+type RevisionContent struct {
+	Content interface{} `json:"개정문내용" xml:"개정문내용"` // Can be string or nested structure
+}
+
+// TableContent represents table content structure
+type TableContent struct {
+	TableUnits []TableUnit `json:"별표단위" xml:"별표단위"`
+}
+
+// TableUnit represents a single table unit from the API
+type TableUnit struct {
+	TableKey     string      `json:"별표키" xml:"별표키"`
+	TableNumber  string      `json:"별표번호" xml:"별표번호"`
+	TableTitle   string      `json:"별표제목" xml:"별표제목"`
+	TableContent interface{} `json:"별표내용" xml:"별표내용"` // Can be string or array
+	TableHoYN    string      `json:"별표서식여부" xml:"별표서식여부"`
+}
+
+// SupplementaryProvisionsContent represents supplementary provisions structure
+type SupplementaryProvisionsContent struct {
+	ProvisionUnits []SupplementaryProvisionUnit `json:"부칙단위" xml:"부칙단위"`
+}
+
+// SupplementaryProvisionUnit represents a single supplementary provision
+type SupplementaryProvisionUnit struct {
+	ProvisionKey     string      `json:"부칙키" xml:"부칙키"`
+	ProvisionNumber  string      `json:"부칙번호" xml:"부칙번호"`
+	ProvisionContent interface{} `json:"부칙내용" xml:"부칙내용"` // Can be string or array
+	ProvisionDate    string      `json:"부칙공포일자" xml:"부칙공포일자"`
+}
+
+// Table represents a law table/appendix
+type Table struct {
+	Number  string `json:"번호" xml:"번호"`
+	Title   string `json:"제목" xml:"제목"`
+	Content string `json:"내용" xml:"내용"`
+}
+
+// ArticlesContent represents articles content structure
+type ArticlesContent struct {
+	ArticleUnits []ArticleUnit `json:"조문단위" xml:"조문단위"`
+}
+
+// ArticleUnit represents a single article unit from the API
+type ArticleUnit struct {
+	ArticleKey          string      `json:"조문키" xml:"조문키"`
+	ArticleNumber       string      `json:"조문번호" xml:"조문번호"`
+	ArticleYN           string      `json:"조문여부" xml:"조문여부"`
+	ArticleContent      string      `json:"조문내용" xml:"조문내용"`
+	ArticleReference    string      `json:"조문참고자료" xml:"조문참고자료"`
+	ArticleEffectDate   string      `json:"조문시행일자" xml:"조문시행일자"`
+	ArticleTitle        string      `json:"조문제목" xml:"조문제목"`
+	ArticleChangeYN     string      `json:"조문변경여부" xml:"조문변경여부"`
+	ArticleMoveBefore   string      `json:"조문이동이전" xml:"조문이동이전"`
+	ArticleMoveAfter    string      `json:"조문이동이후" xml:"조문이동이후"`
+	Paragraphs          interface{} `json:"항" xml:"항"` // Can be array or object
+	ArticleHistory      interface{} `json:"조문이동이력" xml:"조문이동이력"`
+	LawID               string      `json:"법령ID" xml:"법령ID"`
+	LawNameKorean       string      `json:"법령명한글" xml:"법령명한글"`
+	LawSerialNo         string      `json:"법령일련번호" xml:"법령일련번호"`
+}
+
+
+// SupplementaryProvision represents a supplementary provision (부칙)
+type SupplementaryProvision struct {
+	Number           string `json:"번호" xml:"번호"`
+	Content          string `json:"내용" xml:"내용"`
+	PromulgationDate string `json:"공포일자" xml:"공포일자"`
+	PromulgationNo   string `json:"공포번호" xml:"공포번호"`
 }
 
 // Article represents a law article
