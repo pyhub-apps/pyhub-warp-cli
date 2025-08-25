@@ -37,7 +37,7 @@ func initPrecedentSearchCmd() {
 	// Flags
 	precedentSearchCmd.Flags().StringVarP(&precOutputFormat, "format", "f", "table", "출력 형식 (table, json)")
 	precedentSearchCmd.Flags().IntVarP(&precPageNo, "page", "p", 1, "페이지 번호")
-	precedentSearchCmd.Flags().IntVarP(&precPageSize, "size", "s", 10, "페이지 크기")
+	precedentSearchCmd.Flags().IntVarP(&precPageSize, "size", "s", 50, "페이지 크기")
 }
 
 // updatePrecedentSearchCommand updates precedent search command descriptions

@@ -65,7 +65,7 @@ func initLawCmd() {
 	// Flags for backward compatibility (when using law without subcommand)
 	lawCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", i18n.T("law.flag.format"))
 	lawCmd.Flags().IntVarP(&pageNo, "page", "p", 1, i18n.T("law.flag.page"))
-	lawCmd.Flags().IntVarP(&pageSize, "size", "s", 10, i18n.T("law.flag.size"))
+	lawCmd.Flags().IntVarP(&pageSize, "size", "s", 50, i18n.T("law.flag.size"))
 	lawCmd.Flags().StringVar(&sourceFlag, "source", "nlic", i18n.T("law.flag.source"))
 }
 
