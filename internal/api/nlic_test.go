@@ -138,7 +138,7 @@ func TestNLICClient_GetDetail(t *testing.T) {
 						Content: [][]interface{}{},
 					},
 					Tables: TableContent{
-						TableUnits: []interface{}{},
+						TableUnits: []TableUnit{},
 					},
 					ArticlesRaw: ArticlesContent{
 						ArticleUnits: []ArticleUnit{
@@ -159,6 +159,9 @@ func TestNLICClient_GetDetail(t *testing.T) {
 								Paragraphs:        []interface{}{}, // Empty array example
 							},
 						},
+					},
+					SupplementaryProvisions: SupplementaryProvisionsContent{
+						ProvisionUnits: []SupplementaryProvisionUnit{},
 					},
 				},
 			}
