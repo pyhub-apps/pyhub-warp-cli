@@ -110,7 +110,7 @@ func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 
 	// Create simple table output
 	// Print header
-	fmt.Printf("%-5s %-45s %-10s %-15s %-12s\n", "번호", "법령명", "법령구분", "소관부처", "시행일자")
+	fmt.Printf("%-5s %-8s %-40s %-10s %-15s %-12s\n", "번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자")
 	fmt.Println(strings.Repeat("-", 100))
 
 	// Add data rows
@@ -124,11 +124,13 @@ func (f *Formatter) formatTable(resp *api.SearchResponse) error {
 		effectDate := formatDate(dateToShow)
 
 		// Truncate long names for better display
-		name := truncateString(law.Name, 40)
+		name := truncateString(law.Name, 35)
 		dept := truncateString(law.Department, 13)
+		lawID := truncateString(law.ID, 8)
 
-		fmt.Printf("%-5d %-45s %-10s %-15s %-12s\n",
+		fmt.Printf("%-5d %-8s %-40s %-10s %-15s %-12s\n",
 			i+1,
+			lawID,
 			name,
 			law.LawType,
 			dept,
@@ -204,8 +206,8 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 		fmt.Fprintf(&buf, "%-5s %-40s %-10s %-10s %-15s %-12s\n", "번호", "법령명", "구분", "출처", "소관부처", "시행일자")
 		fmt.Fprintln(&buf, strings.Repeat("-", 107))
 	} else {
-		fmt.Fprintf(&buf, "%-5s %-45s %-10s %-15s %-12s\n", "번호", "법령명", "법령구분", "소관부처", "시행일자")
-		fmt.Fprintln(&buf, strings.Repeat("-", 100))
+		fmt.Fprintf(&buf, "%-5s %-8s %-40s %-10s %-15s %-12s\n", "번호", "법령ID", "법령명", "법령구분", "소관부처", "시행일자")
+		fmt.Fprintln(&buf, strings.Repeat("-", 108))
 	}
 
 	// Add data rows
@@ -231,11 +233,13 @@ func (f *Formatter) formatTableToString(resp *api.SearchResponse) (string, error
 				effectDate,
 			)
 		} else {
-			name := truncateString(law.Name, 40)
+			name := truncateString(law.Name, 35)
 			dept := truncateString(law.Department, 13)
+			lawID := truncateString(law.ID, 8)
 
-			fmt.Fprintf(&buf, "%-5d %-45s %-10s %-15s %-12s\n",
+			fmt.Fprintf(&buf, "%-5d %-8s %-40s %-10s %-15s %-12s\n",
 				i+1,
+				lawID,
 				name,
 				law.LawType,
 				dept,

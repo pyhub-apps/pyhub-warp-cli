@@ -152,6 +152,13 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 		return nil, err
 	}
 
+	// Debug: Log the raw response
+	maxLen := 2000
+	if len(body) < maxLen {
+		maxLen = len(body)
+	}
+	logger.Debug("Law Detail API Response (first %d chars): %s", maxLen, string(body[:maxLen]))
+
 	// Parse the response - the API returns the detail in a wrapper
 	var wrapper struct {
 		Law *LawDetail `json:"법령" xml:"법령"`
