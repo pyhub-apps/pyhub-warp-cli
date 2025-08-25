@@ -63,7 +63,6 @@ func (m *MockOrdinanceClient) GetAPIType() api.APIType {
 func TestOrdinanceCommand(t *testing.T) {
 	// Initialize i18n for testing
 	i18n.Init()
-	i18n.SetLanguage("ko")
 
 	// Set up mock client
 	mockClient := &MockOrdinanceClient{}
@@ -146,7 +145,6 @@ func TestOrdinanceCommand(t *testing.T) {
 func TestOrdinanceSearchCommand(t *testing.T) {
 	// Initialize i18n for testing
 	i18n.Init()
-	i18n.SetLanguage("ko")
 
 	// Set up mock client
 	mockClient := &MockOrdinanceClient{}
@@ -235,7 +233,6 @@ func TestOrdinanceSearchCommand(t *testing.T) {
 func TestOrdinanceDetailCommand(t *testing.T) {
 	// Initialize i18n for testing
 	i18n.Init()
-	i18n.SetLanguage("ko")
 
 	// Set up mock client
 	mockClient := &MockOrdinanceClient{}

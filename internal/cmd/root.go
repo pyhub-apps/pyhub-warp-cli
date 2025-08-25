@@ -18,8 +18,6 @@ var (
 	BuildDate = "unknown"
 	GitCommit = "unknown"
 
-	// Language flag
-	langFlag string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -39,15 +37,6 @@ func initRootCmd() {
   
   # API 키 설정
   sejong config set law.key YOUR_API_KEY`,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			// Set language if specified
-			if langFlag != "" {
-				i18n.SetLanguage(langFlag)
-				// Re-initialize commands with new language
-				updateCommandDescriptions()
-			}
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// If no subcommand is provided, show help
 			return cmd.Help()
@@ -121,8 +110,6 @@ func setupFlags() {
 	// Initialize configuration
 	cobra.OnInitialize(initConfig)
 
-	// Language flag
-	rootCmd.PersistentFlags().StringVar(&langFlag, "lang", "", "Language (ko, en)")
 
 	// Global flags
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, i18n.T("cli.verbose"))

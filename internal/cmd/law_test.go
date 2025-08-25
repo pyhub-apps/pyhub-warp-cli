@@ -21,7 +21,6 @@ func TestLawCommand(t *testing.T) {
 	if err := i18n.Init(); err != nil {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
-	i18n.SetLanguage("ko")
 
 	// Initialize law command
 	initLawCmd()
@@ -105,7 +104,6 @@ func TestLawCommandFlags(t *testing.T) {
 	if err := i18n.Init(); err != nil {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
-	i18n.SetLanguage("ko")
 
 	// Initialize law command
 	initLawCmd()
@@ -143,7 +141,6 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 	if err := i18n.Init(); err != nil {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
-	i18n.SetLanguage("ko")
 
 	// Initialize law command
 	initLawCmd()
@@ -307,7 +304,6 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 	if err := i18n.Init(); err != nil {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
-	i18n.SetLanguage("ko")
 
 	// Initialize law command
 	initLawCmd()
@@ -355,7 +351,6 @@ func TestSearchLaws(t *testing.T) {
 	if err := i18n.Init(); err != nil {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
-	i18n.SetLanguage("ko")
 
 	// Test with mock client
 	mockClient := &mockAPIClient{
