@@ -37,7 +37,7 @@ func initAdmruleSearchCmd() {
 	// Flags
 	admruleSearchCmd.Flags().StringVarP(&admrOutputFormat, "format", "f", "table", "출력 형식 (table, json)")
 	admruleSearchCmd.Flags().IntVarP(&admrPageNo, "page", "p", 1, "페이지 번호")
-	admruleSearchCmd.Flags().IntVarP(&admrPageSize, "size", "s", 10, "페이지 크기")
+	admruleSearchCmd.Flags().IntVarP(&admrPageSize, "size", "s", 50, "페이지 크기")
 }
 
 // updateAdmruleSearchCommand updates administrative rule search command descriptions

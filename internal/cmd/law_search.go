@@ -42,7 +42,7 @@ func initLawSearchCmd() {
 	// Flags
 	lawSearchCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", i18n.T("law.flag.format"))
 	lawSearchCmd.Flags().IntVarP(&pageNo, "page", "p", 1, i18n.T("law.flag.page"))
-	lawSearchCmd.Flags().IntVarP(&pageSize, "size", "s", 10, i18n.T("law.flag.size"))
+	lawSearchCmd.Flags().IntVarP(&pageSize, "size", "s", 50, i18n.T("law.flag.size"))
 	lawSearchCmd.Flags().StringVar(&sourceFlag, "source", "nlic", i18n.T("law.flag.source"))
 }
 

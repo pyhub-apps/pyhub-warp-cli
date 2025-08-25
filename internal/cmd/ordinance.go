@@ -67,7 +67,7 @@ func initOrdinanceCmd() {
 	// Flags
 	ordinanceCmd.PersistentFlags().StringVarP(&ordinanceOutputFormat, "format", "f", "table", i18n.T("ordinance.flag.format"))
 	ordinanceCmd.PersistentFlags().IntVarP(&ordinancePageNo, "page", "p", 1, i18n.T("ordinance.flag.page"))
-	ordinanceCmd.PersistentFlags().IntVarP(&ordinancePageSize, "size", "s", 10, i18n.T("ordinance.flag.size"))
+	ordinanceCmd.PersistentFlags().IntVarP(&ordinancePageSize, "size", "s", 50, i18n.T("ordinance.flag.size"))
 	ordinanceCmd.PersistentFlags().StringVarP(&ordinanceRegion, "region", "r", "", i18n.T("ordinance.flag.region"))
 	ordinanceCmd.PersistentFlags().StringVar(&ordinanceSort, "sort", "date", i18n.T("ordinance.flag.sort"))
 }

@@ -37,7 +37,7 @@ func initInterpretationSearchCmd() {
 	// Flags
 	interpretationSearchCmd.Flags().StringVarP(&interpOutputFormat, "format", "f", "table", "출력 형식 (table, json)")
 	interpretationSearchCmd.Flags().IntVarP(&interpPageNo, "page", "p", 1, "페이지 번호")
-	interpretationSearchCmd.Flags().IntVarP(&interpPageSize, "size", "s", 10, "페이지 크기")
+	interpretationSearchCmd.Flags().IntVarP(&interpPageSize, "size", "s", 50, "페이지 크기")
 }
 
 // updateInterpretationSearchCommand updates legal interpretation search command descriptions
