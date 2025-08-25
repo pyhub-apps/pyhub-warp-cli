@@ -293,17 +293,46 @@ func (f *Formatter) formatDetailTable(detail *api.LawDetail) string {
 	fmt.Fprintf(&buf, " 법령 상세 정보\n")
 	fmt.Fprintf(&buf, "═══════════════════════════════════════════════════════════\n\n")
 
-	fmt.Fprintf(&buf, "법령ID:       %s\n", detail.ID)
-	fmt.Fprintf(&buf, "법령명:       %s\n", detail.Name)
+	// Display available information, use "N/A" for missing fields
+	if detail.ID != "" {
+		fmt.Fprintf(&buf, "법령ID:       %s\n", detail.ID)
+	} else if detail.SerialNo != "" {
+		fmt.Fprintf(&buf, "법령일련번호: %s\n", detail.SerialNo)
+	}
+	
+	if detail.Name != "" {
+		fmt.Fprintf(&buf, "법령명:       %s\n", detail.Name)
+	} else {
+		fmt.Fprintf(&buf, "법령명:       (정보 없음)\n")
+	}
+	
 	if detail.NameAbbrev != "" {
 		fmt.Fprintf(&buf, "약칭:         %s\n", detail.NameAbbrev)
 	}
-	fmt.Fprintf(&buf, "법령구분:     %s\n", detail.LawType)
-	fmt.Fprintf(&buf, "소관부처:     %s\n", detail.Department)
-	fmt.Fprintf(&buf, "공포일자:     %s\n", formatDate(detail.PromulDate))
-	fmt.Fprintf(&buf, "공포번호:     %s\n", detail.PromulNo)
-	fmt.Fprintf(&buf, "시행일자:     %s\n", formatDate(detail.EffectDate))
-	fmt.Fprintf(&buf, "제개정구분:   %s\n", detail.Category)
+	
+	if detail.LawType != "" {
+		fmt.Fprintf(&buf, "법령구분:     %s\n", detail.LawType)
+	}
+	
+	if detail.Department != "" {
+		fmt.Fprintf(&buf, "소관부처:     %s\n", detail.Department)
+	}
+	
+	if detail.PromulDate != "" {
+		fmt.Fprintf(&buf, "공포일자:     %s\n", formatDate(detail.PromulDate))
+	}
+	
+	if detail.PromulNo != "" {
+		fmt.Fprintf(&buf, "공포번호:     %s\n", detail.PromulNo)
+	}
+	
+	if detail.EffectDate != "" {
+		fmt.Fprintf(&buf, "시행일자:     %s\n", formatDate(detail.EffectDate))
+	}
+	
+	if detail.Category != "" {
+		fmt.Fprintf(&buf, "제개정구분:   %s\n", detail.Category)
+	}
 
 	// Articles if present
 	if len(detail.Articles) > 0 {

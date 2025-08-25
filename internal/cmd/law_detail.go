@@ -93,7 +93,18 @@ func runLawDetailCommand(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(i18n.T("law.detail.error.failed"), err)
 	}
 
-	logger.Info(i18n.Tf("law.detail.searchComplete", detail.Name))
+	// Use name if available, otherwise use ID or serial number
+	nameToShow := detail.Name
+	if nameToShow == "" {
+		if detail.ID != "" {
+			nameToShow = fmt.Sprintf("법령ID: %s", detail.ID)
+		} else if detail.SerialNo != "" {
+			nameToShow = fmt.Sprintf("법령일련번호: %s", detail.SerialNo)
+		} else {
+			nameToShow = "법령"
+		}
+	}
+	logger.Info(i18n.Tf("law.detail.searchComplete", nameToShow))
 
 	// Format and output results
 	formatter := outputPkg.NewFormatter(outputFormat)
