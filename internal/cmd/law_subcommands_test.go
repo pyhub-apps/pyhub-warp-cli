@@ -14,7 +14,6 @@ func TestLawSubcommands(t *testing.T) {
 	if err := i18n.Init(); err != nil {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
-	i18n.SetLanguage("ko")
 
 	// Initialize law command
 	initLawCmd()
@@ -156,7 +155,6 @@ func TestLawBackwardCompatibility(t *testing.T) {
 	if err := i18n.Init(); err != nil {
 		t.Fatalf("Failed to initialize i18n: %v", err)
 	}
-	i18n.SetLanguage("ko")
 
 	// Initialize law command
 	initLawCmd()
