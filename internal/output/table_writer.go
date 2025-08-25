@@ -199,6 +199,38 @@ func RenderHTMLTable(headers []string, rows [][]string) string {
 	return buf.String()
 }
 
+// RenderHTMLSimpleTable renders a simple HTML table without CSS styles
+func RenderHTMLSimpleTable(headers []string, rows [][]string) string {
+	var buf bytes.Buffer
+	
+	// Start table
+	fmt.Fprintln(&buf, `<table>`)
+	
+	// Headers
+	fmt.Fprintln(&buf, "  <thead>")
+	fmt.Fprintln(&buf, "    <tr>")
+	for _, header := range headers {
+		fmt.Fprintf(&buf, "      <th>%s</th>\n", escapeHTML(header))
+	}
+	fmt.Fprintln(&buf, "    </tr>")
+	fmt.Fprintln(&buf, "  </thead>")
+	
+	// Body
+	fmt.Fprintln(&buf, "  <tbody>")
+	for _, row := range rows {
+		fmt.Fprintln(&buf, "    <tr>")
+		for _, cell := range row {
+			fmt.Fprintf(&buf, "      <td>%s</td>\n", escapeHTML(cell))
+		}
+		fmt.Fprintln(&buf, "    </tr>")
+	}
+	fmt.Fprintln(&buf, "  </tbody>")
+	
+	fmt.Fprintln(&buf, "</table>")
+	
+	return buf.String()
+}
+
 // escapeHTML escapes HTML special characters
 func escapeHTML(s string) string {
 	s = strings.ReplaceAll(s, "&", "&amp;")
