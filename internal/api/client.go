@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
+	"github.com/pyhub-apps/sejong-cli/internal/config"
 )
 
 const (
@@ -72,6 +72,7 @@ type LawInfo struct {
 	Department string `json:"소관부처명" xml:"소관부처명"`
 	EffectDate string `json:"시행일자" xml:"시행일자"`
 	LawType    string `json:"법령구분명" xml:"법령구분명"`
+	Source     string `json:"출처,omitempty" xml:"출처,omitempty"` // "국가법령" or "자치법규"
 }
 
 // ErrorInfo represents API error information
@@ -82,15 +83,24 @@ type ErrorInfo struct {
 
 // RetryableError represents an error that can be retried
 type RetryableError struct {
-	err error
+	Err error // Exported for use by sub-packages
 }
 
 func (e *RetryableError) Error() string {
-	return e.err.Error()
+	return e.Err.Error()
 }
 
 func (e *RetryableError) Unwrap() error {
-	return e.err
+	return e.Err
+}
+
+// APIKeyError indicates an API key authentication failure
+type APIKeyError struct {
+	Message string
+}
+
+func (e *APIKeyError) Error() string {
+	return e.Message
 }
 
 // NewClient creates a new API client
@@ -203,7 +213,7 @@ func (c *Client) doRequest(ctx context.Context, url string) (*SearchResponse, er
 			return nil, fmt.Errorf("요청이 취소되었거나 시간 초과되었습니다: %w", err)
 		}
 		// Treat other transport-level problems as retryable
-		return nil, &RetryableError{fmt.Errorf("네트워크 에러: %w", err)}
+		return nil, &RetryableError{Err: fmt.Errorf("네트워크 에러: %w", err)}
 	}
 	defer resp.Body.Close()
 
@@ -212,23 +222,23 @@ func (c *Client) doRequest(ctx context.Context, url string) (*SearchResponse, er
 		switch resp.StatusCode {
 		case http.StatusTooManyRequests: // 429
 			// Rate limit - retryable
-			return nil, &RetryableError{fmt.Errorf("레이트 리밋: HTTP 429 (잠시 후 다시 시도하세요)")}
+			return nil, &RetryableError{Err: fmt.Errorf("레이트 리밋: HTTP 429 (잠시 후 다시 시도하세요)")}
 		case http.StatusRequestTimeout: // 408
 			// Request timeout - retryable
-			return nil, &RetryableError{fmt.Errorf("요청 타임아웃: HTTP 408")}
+			return nil, &RetryableError{Err: fmt.Errorf("요청 타임아웃: HTTP 408")}
 		case http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout: // 502, 503, 504
 			// Server errors - retryable
-			return nil, &RetryableError{fmt.Errorf("일시적 서버 오류: HTTP %d", resp.StatusCode)}
+			return nil, &RetryableError{Err: fmt.Errorf("일시적 서버 오류: HTTP %d", resp.StatusCode)}
 		case http.StatusInternalServerError: // 500
 			// Internal server error - retryable
-			return nil, &RetryableError{fmt.Errorf("내부 서버 오류: HTTP 500")}
+			return nil, &RetryableError{Err: fmt.Errorf("내부 서버 오류: HTTP 500")}
 		case http.StatusUnauthorized, http.StatusForbidden: // 401, 403
 			// Authentication errors - not retryable
 			return nil, fmt.Errorf("인증 실패: HTTP %d - API 키를 확인하세요", resp.StatusCode)
 		default:
 			if resp.StatusCode >= 500 {
 				// Any other 5xx error - retryable
-				return nil, &RetryableError{fmt.Errorf("서버 에러: HTTP %d", resp.StatusCode)}
+				return nil, &RetryableError{Err: fmt.Errorf("서버 에러: HTTP %d", resp.StatusCode)}
 			}
 			// 4xx errors - not retryable
 			return nil, fmt.Errorf("클라이언트 에러: HTTP %d", resp.StatusCode)

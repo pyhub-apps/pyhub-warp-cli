@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
+	"github.com/pyhub-apps/sejong-cli/internal/testutil"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

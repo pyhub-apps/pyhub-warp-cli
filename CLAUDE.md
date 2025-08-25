@@ -107,7 +107,7 @@ When a user runs `sejong law` without an API key configured:
 1. Check for API key in configuration
 2. If missing, display a helpful message that includes:
    - Why the key is needed
-   - Direct link to get the key: `https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9`
+   - Direct link to get the key: `https://open.law.go.kr/LSO/openApi/cuAskList.do`
    - Exact command to set the key: `sejong config set law.key <YOUR_KEY>`
 
 ### Command Examples

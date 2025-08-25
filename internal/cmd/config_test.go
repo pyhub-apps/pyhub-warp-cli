@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/sejong-cli/internal/config"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
 )
 
@@ -248,7 +248,7 @@ func TestConfigGetCommand(t *testing.T) {
 			name:       "API key not set",
 			args:       []string{"config", "get", "law.key"},
 			wantErr:    false,
-			wantOutput: "API 키 설정이 필요",
+			wantOutput: "API 설정이 필요",
 		},
 		{
 			name: "API key set",

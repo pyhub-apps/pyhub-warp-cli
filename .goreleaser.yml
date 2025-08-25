@@ -26,19 +26,17 @@ builds:
     goarch:
       - amd64
       - arm64
-    # Skip unsupported combinations
+    # Skip unsupported combinations (Windows ARM64 not widely supported yet)
     ignore:
-      - goos: linux
-        goarch: arm64
       - goos: windows
         goarch: arm64
     # Inject version information at build time
     ldflags:
       - -s -w
-      - -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.Version={{.Version}}
-      - -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.GitCommit={{.Commit}}
-      - -X github.com/pyhub-kr/pyhub-sejong-cli/internal/cmd.BuildDate={{.Date}}
-    # Custom build tags
+      - -X main.version={{.Version}}
+      - -X main.gitCommit={{.Commit}}
+      - -X main.buildDate={{.Date}}
+    # Custom build tags for static binary
     tags:
       - netgo
       - osusergo
@@ -48,10 +46,12 @@ archives:
     name_template: >-
       {{ .ProjectName }}_
       {{- .Version }}_
-      {{- title .Os }}_
+      {{- if eq .Os "windows" }}Windows
+      {{- else }}{{ title .Os }}{{ end }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
+    format: tar.gz
     format_overrides:
       - goos: windows
         format: zip
@@ -64,7 +64,7 @@ checksum:
   algorithm: sha256
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
@@ -103,26 +103,87 @@ release:
   
   # Release notes
   footer: |
-    ## 설치 방법
+    ## 📦 설치 방법 / Installation
     
-    ### macOS (Apple Silicon)
+    ### macOS (Apple Silicon M1/M2/M3)
     ```bash
     curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Darwin_arm64.tar.gz
     tar -xzf sejong_{{ .Version }}_Darwin_arm64.tar.gz
     sudo mv sejong /usr/local/bin/
+    sejong version
     ```
     
-    ### Windows
+    ### macOS (Intel)
+    ```bash
+    curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Darwin_x86_64.tar.gz
+    tar -xzf sejong_{{ .Version }}_Darwin_x86_64.tar.gz
+    sudo mv sejong /usr/local/bin/
+    sejong version
+    ```
+    
+    ### Windows (PowerShell)
     ```powershell
-    # PowerShell
+    # Download and extract
     Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Windows_x86_64.zip -OutFile sejong.zip
     Expand-Archive -Path sejong.zip -DestinationPath .
-    # Add to PATH or move to desired location
+    
+    # Add to PATH (run as Administrator)
+    Move-Item sejong.exe "C:\Program Files\sejong\"
+    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\sejong", [EnvironmentVariableTarget]::Machine)
+    
+    # Verify installation (new terminal required)
+    sejong version
     ```
     
-    ### Linux
+    ### Linux (x86_64)
     ```bash
     curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Linux_x86_64.tar.gz
     tar -xzf sejong_{{ .Version }}_Linux_x86_64.tar.gz
     sudo mv sejong /usr/local/bin/
+    sejong version
     ```
+    
+    ### Linux (ARM64)
+    ```bash
+    curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Linux_arm64.tar.gz
+    tar -xzf sejong_{{ .Version }}_Linux_arm64.tar.gz
+    sudo mv sejong /usr/local/bin/
+    sejong version
+    ```
+    
+    ## 🔧 초기 설정 / Configuration
+    
+    1. **API 키 발급 / Get API Key**
+       - [국가법령정보센터 Open API](https://www.law.go.kr/LSW/openApi.do) 접속
+       - 회원가입 후 인증키 발급
+    
+    2. **API 키 설정 / Set API Key**
+       ```bash
+       sejong config set law.key YOUR_API_KEY
+       ```
+    
+    ## 📖 사용 예제 / Usage Examples
+    
+    ```bash
+    # 국가 법령 검색 / Search national laws
+    sejong law search "개인정보"
+    
+    # 자치 법규 검색 / Search local ordinances
+    sejong ordinance search "주차장"
+    
+    # 통합 검색 (국가법령 + 자치법규) / Unified search
+    sejong law search "환경" --source all
+    
+    # 법령 상세 조회 / View law details
+    sejong law detail 001234
+    
+    # 법령 연혁 조회 / View law history
+    sejong law history 001234
+    
+    # JSON 출력 / JSON output
+    sejong law search "도로교통법" --format json
+    ```
+    
+    ## 📝 Changelog
+    
+    See below for detailed changes in this release.

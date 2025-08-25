@@ -1,4 +1,4 @@
-module github.com/pyhub-kr/pyhub-sejong-cli
+module github.com/pyhub-apps/sejong-cli
 
 go 1.23.0
 

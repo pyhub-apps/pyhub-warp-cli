@@ -3,17 +3,13 @@ package cmd
 import (
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"strings"
-	"time"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
-	cliErrors "github.com/pyhub-kr/pyhub-sejong-cli/internal/errors"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/onboarding"
-	outputPkg "github.com/pyhub-kr/pyhub-sejong-cli/internal/output"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
+	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +17,7 @@ var (
 	outputFormat string
 	pageNo       int
 	pageSize     int
+	sourceFlag   string // "all", "nlic", "elis"
 
 	// testAPIClient allows injecting a mock client for testing
 	testAPIClient APIClient
@@ -32,25 +29,44 @@ var lawCmd *cobra.Command
 // initLawCmd initializes the law command
 func initLawCmd() {
 	lawCmd = &cobra.Command{
-		Use:   "law <검색어>",
+		Use:   "law",
 		Short: i18n.T("law.short"),
 		Long:  i18n.T("law.long"),
-		Example: `  # 기본 검색
-  sejong law "개인정보 보호법"
+		Example: `  # 법령 검색
+  sejong law search "개인정보 보호법"
+  sejong law "개인정보 보호법"  # search는 생략 가능
   
-  # JSON 형식으로 출력
-  sejong law "도로교통법" --format json
+  # 법령 상세 조회
+  sejong law detail 001234
   
-  # 페이지네이션 옵션
-  sejong law "민법" --page 2 --size 20`,
-		Args: cobra.ExactArgs(1),
-		RunE: runLawCommand,
+  # 법령 이력 조회
+  sejong law history 001234`,
+		// Run default search when args provided without subcommand
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// If args are provided without subcommand, run search
+			if len(args) > 0 {
+				return runLawCommand(cmd, args)
+			}
+			// Otherwise show help
+			return cmd.Help()
+		},
 	}
 
-	// Flags
+	// Initialize subcommands
+	initLawSearchCmd()
+	initLawDetailCmd()
+	initLawHistoryCmd()
+
+	// Add subcommands
+	lawCmd.AddCommand(lawSearchCmd)
+	lawCmd.AddCommand(lawDetailCmd)
+	lawCmd.AddCommand(lawHistoryCmd)
+
+	// Flags for backward compatibility (when using law without subcommand)
 	lawCmd.Flags().StringVarP(&outputFormat, "format", "f", "table", i18n.T("law.flag.format"))
 	lawCmd.Flags().IntVarP(&pageNo, "page", "p", 1, i18n.T("law.flag.page"))
 	lawCmd.Flags().IntVarP(&pageSize, "size", "s", 10, i18n.T("law.flag.size"))
+	lawCmd.Flags().StringVar(&sourceFlag, "source", "nlic", i18n.T("law.flag.source"))
 }
 
 // updateLawCommand updates law command descriptions
@@ -69,6 +85,11 @@ func updateLawCommand() {
 		if flag := lawCmd.Flags().Lookup("size"); flag != nil {
 			flag.Usage = i18n.T("law.flag.size")
 		}
+
+		// Update subcommands
+		updateLawSearchCommand()
+		updateLawDetailCommand()
+		updateLawHistoryCommand()
 	}
 }
 
@@ -78,7 +99,7 @@ func init() {
 
 // APIClient interface for dependency injection and testing
 type APIClient interface {
-	Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
+	Search(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error)
 }
 
 func runLawCommand(cmd *cobra.Command, args []string) error {
@@ -96,12 +117,32 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 	if testAPIClient != nil {
 		client = testAPIClient
 	} else {
-		// Create API client
-		apiClient, err := api.NewClient()
+		// Determine which API to use based on source flag
+		var apiType api.APIType
+		switch sourceFlag {
+		case "all":
+			apiType = api.APITypeAll
+		case "elis":
+			apiType = api.APITypeELIS
+		case "nlic":
+			fallthrough
+		default:
+			apiType = api.APITypeNLIC
+		}
+
+		// Create API client using the factory
+		apiClient, err := api.CreateClient(apiType)
 		if err != nil {
-			// Check if it's an API key error
+			// Check if it's an API key error (either CLIError or regular error with API key message)
 			var cliErr *cliErrors.CLIError
 			if errors.As(err, &cliErr) && cliErr.Code == cliErrors.ErrCodeNoAPIKey {
+				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
+				guide.ShowAPIKeySetup()
+				return nil // Return nil to avoid printing the error twice
+			}
+
+			// Also check for direct API key error message from factory
+			if strings.Contains(err.Error(), "API 키가 설정되지 않았습니다") {
 				guide := onboarding.NewGuideWithWriter(cmd.OutOrStdout(), false)
 				guide.ShowAPIKeySetup()
 				return nil // Return nil to avoid printing the error twice
@@ -119,54 +160,4 @@ func runLawCommand(cmd *cobra.Command, args []string) error {
 
 	// Use searchLaws for the actual search logic
 	return searchLaws(client, query, outputFormat, pageNo, pageSize, cmd.OutOrStdout(), verbose)
-}
-
-// searchLaws performs the actual law search - extracted for testing
-func searchLaws(client APIClient, query string, format string, page int, size int, output io.Writer, verbose bool) error {
-	logger.Info(i18n.Tf("law.searching", query, page, size))
-
-	// Create search request
-	req := &api.SearchRequest{
-		Query:    query,
-		Type:     api.TypeJSON,
-		PageNo:   page,
-		PageSize: size,
-	}
-
-	// Search with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	resp, err := client.Search(ctx, req)
-	if err != nil {
-		logger.LogError(err, verbose)
-
-		// Show user-friendly error with hint
-		var cliErr *cliErrors.CLIError
-		if errors.As(err, &cliErr) {
-			guide := onboarding.NewGuideWithWriter(output, false)
-			guide.ShowError(err.Error())
-			return nil // Error already displayed
-		}
-		return err
-	}
-
-	logger.Info(i18n.Tf("law.searchComplete", resp.TotalCount, page, size))
-
-	// Format and output results using the formatter package
-	formatter := outputPkg.NewFormatter(format)
-	formattedOutput, err := formatter.FormatSearchResultToString(resp)
-	if err != nil {
-		logger.Error("Failed to format output: %v", err)
-		return cliErrors.Wrap(err, cliErrors.New(
-			cliErrors.ErrCodeDataFormat,
-			i18n.T("law.outputFailed"),
-			i18n.T("law.checkFormat"),
-		))
-	}
-
-	// Write formatted output
-	fmt.Fprint(output, formattedOutput)
-
-	return nil
 }

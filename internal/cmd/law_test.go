@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
+	"github.com/pyhub-apps/sejong-cli/internal/config"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/testutil"
 	"github.com/spf13/cobra"
 )
 
@@ -31,12 +31,13 @@ func TestLawCommand(t *testing.T) {
 		args        []string
 		wantErr     bool
 		errContains string
+		wantOutput  string
 	}{
 		{
-			name:        "No arguments",
-			args:        []string{},
-			wantErr:     true,
-			errContains: "accepts 1 arg(s), received 0",
+			name:       "No arguments shows help",
+			args:       []string{},
+			wantErr:    false,
+			wantOutput: "국가법령정보센터에서 법령 정보를 검색하고 상세 정보를 조회합니다", // Should show help text
 		},
 		{
 			name:        "Empty search query",
@@ -45,10 +46,10 @@ func TestLawCommand(t *testing.T) {
 			errContains: "검색어를 입력해주세요",
 		},
 		{
-			name:        "Multiple arguments",
-			args:        []string{"arg1", "arg2"},
-			wantErr:     true,
-			errContains: "accepts 1 arg(s), received 2",
+			name:       "Multiple arguments",
+			args:       []string{"arg1", "arg2"},
+			wantErr:    false, // Shows API key guide for search with "arg1"
+			wantOutput: "API 설정이 필요합니다",
 		},
 		{
 			name:        "Whitespace only query",
@@ -85,6 +86,14 @@ func TestLawCommand(t *testing.T) {
 			if err != nil && tt.errContains != "" {
 				if !strings.Contains(err.Error(), tt.errContains) {
 					t.Errorf("Error should contain %q, got %q", tt.errContains, err.Error())
+				}
+			}
+
+			// Check output if expected
+			if tt.wantOutput != "" {
+				output := buf.String()
+				if !strings.Contains(output, tt.wantOutput) {
+					t.Errorf("Output should contain %q, got %q", tt.wantOutput, output)
 				}
 			}
 		})
@@ -184,9 +193,34 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 		}
 
 		// Check format type
-		if r.URL.Query().Get("type") == "JSON" {
+		// Support both JSON and XML for testing
+		requestType := r.URL.Query().Get("type")
+		if requestType == "JSON" {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)
+		} else if requestType == "XML" {
+			// Return XML response for compatibility with updated code
+			w.Header().Set("Content-Type", "application/xml")
+			xmlResponse := `<?xml version="1.0" encoding="UTF-8"?>
+<LawSearch>
+	<totalCnt>2</totalCnt>
+	<page>1</page>
+	<law>
+		<법령ID>001234</법령ID>
+		<법령명한글>개인정보 보호법</법령명한글>
+		<법령구분명>법률</법령구분명>
+		<소관부처명>개인정보보호위원회</소관부처명>
+		<시행일자>20200805</시행일자>
+	</law>
+	<law>
+		<법령ID>005678</법령ID>
+		<법령명한글>개인정보 보호법 시행령</법령명한글>
+		<법령구분명>대통령령</법령구분명>
+		<소관부처명>개인정보보호위원회</소관부처명>
+		<시행일자>20200805</시행일자>
+	</law>
+</LawSearch>`
+			w.Write([]byte(xmlResponse))
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
@@ -236,7 +270,8 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a mock API client with test server URL
-			testAPIClient = api.NewClientWithURL("test-api-key", server.URL)
+			legacyClient := api.NewClientWithURL("test-api-key", server.URL)
+			testAPIClient = &api.LegacyClientWrapper{Client: legacyClient}
 			defer func() { testAPIClient = nil }()
 
 			// Create a new root command for testing
@@ -302,16 +337,16 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 	// Set args
 	cmd.SetArgs([]string{"law", "개인정보"})
 
-	// Execute command - should return error about missing API key
+	// Execute command - should show API key setup guide (no error)
 	err := cmd.Execute()
-	if err == nil {
-		t.Error("Execute() should return error when API key is not set")
+	if err != nil {
+		t.Errorf("Execute() should not return error when showing API key guide, got: %v", err)
 	}
 
-	// Check that error message contains API key setup instruction
+	// Check that output contains API key setup instruction
 	output := buf.String()
-	if !strings.Contains(output, "API 키가 설정되지 않았습니다") {
-		t.Errorf("Output should contain API key error message, got %q", output)
+	if !strings.Contains(output, "API 설정이 필요합니다") {
+		t.Errorf("Output should contain API key setup message, got %q", output)
 	}
 }
 
@@ -324,7 +359,7 @@ func TestSearchLaws(t *testing.T) {
 
 	// Test with mock client
 	mockClient := &mockAPIClient{
-		searchFunc: func(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
+		searchFunc: func(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error) {
 			return &api.SearchResponse{
 				TotalCount: 1,
 				Page:       1,
@@ -377,10 +412,10 @@ func TestSearchLaws(t *testing.T) {
 
 // Mock API client for testing
 type mockAPIClient struct {
-	searchFunc func(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
+	searchFunc func(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error)
 }
 
-func (m *mockAPIClient) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
+func (m *mockAPIClient) Search(ctx context.Context, req *api.UnifiedSearchRequest) (*api.SearchResponse, error) {
 	if m.searchFunc != nil {
 		return m.searchFunc(ctx, req)
 	}

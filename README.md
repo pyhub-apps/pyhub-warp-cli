@@ -40,6 +40,9 @@
 ### ✨ 주요 기능
 
 - 🔍 **빠른 법령 검색**: 터미널에서 즉시 법령 정보 조회
+- ⚖️ **판례 검색**: 대법원 및 각급 법원의 판례 검색 및 상세 조회
+- 📜 **행정규칙 검색**: 정부 부처의 고시, 훈령, 예규 등 검색
+- 📚 **법령해석례 검색**: 법령 적용과 해석에 대한 정부 공식 견해 조회
 - 📋 **다양한 출력 형식**: 테이블 형식 또는 JSON 형식 지원
 - ⚡ **간편한 설정**: 한 번의 API 키 설정으로 계속 사용
 - 📄 **페이지네이션**: 대량의 검색 결과를 페이지별로 조회
@@ -107,7 +110,7 @@ make install
 #### 1. API 키 발급
 
 국가법령정보센터에서 오픈 API 인증키를 발급받으세요:
-👉 [https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9](https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9)
+👉 [https://open.law.go.kr/LSO/openApi/cuAskList.do](https://open.law.go.kr/LSO/openApi/cuAskList.do)
 
 #### 2. API 키 설정
 
@@ -148,6 +151,65 @@ sejong law "검색어" --verbose
 sejong law "검색어" -v  # 단축 옵션
 ```
 
+#### 판례 검색
+
+```bash
+# 기본 검색
+sejong precedent search "계약 해지"
+
+# 또는 단축 명령어 사용
+sejong prec search "손해배상"
+
+# JSON 형식으로 출력
+sejong precedent search "부당이득" --format json
+
+# 페이지네이션
+sejong precedent search "계약" --page 2 --size 20
+
+# 판례 상세 조회
+sejong precedent detail 12345
+```
+
+#### 행정규칙 검색
+
+```bash
+# 기본 검색
+sejong admrule search "공공기관"
+
+# 단축 명령어 사용
+sejong admr search "개인정보"
+sejong rule search "행정처분"
+
+# JSON 형식으로 출력
+sejong admrule search "고시" --format json
+
+# 페이지네이션
+sejong admrule search "훈령" --page 2 --size 20
+
+# 행정규칙 상세 조회
+sejong admrule detail 12345
+```
+
+#### 법령해석례 검색
+
+```bash
+# 기본 검색
+sejong interpretation search "근로시간"
+
+# 단축 명령어 사용
+sejong interp search "휴가"
+sejong expc search "임금"
+
+# JSON 형식으로 출력
+sejong interpretation search "퇴직금" --format json
+
+# 페이지네이션
+sejong interpretation search "근로계약" --page 2 --size 20
+
+# 법령해석례 상세 조회
+sejong interpretation detail 12345
+```
+
 #### 설정 관리
 
 ```bash
@@ -173,6 +235,9 @@ sejong -h
 
 # 명령별 도움말
 sejong law --help
+sejong precedent --help
+sejong admrule --help
+sejong interpretation --help
 sejong config --help
 ```
 
@@ -295,6 +360,9 @@ sudo mv sejong /usr/local/bin/
 ### ✨ Key Features
 
 - 🔍 **Fast Law Search**: Instantly search law information from terminal
+- ⚖️ **Precedent Search**: Search and view court precedents from all levels
+- 📜 **Administrative Rule Search**: Search government notices, directives, and regulations
+- 📚 **Legal Interpretation Search**: View official government interpretations of laws
 - 📋 **Multiple Output Formats**: Support for table and JSON formats
 - ⚡ **Simple Configuration**: One-time API key setup for continuous use
 - 📄 **Pagination**: Browse large search results page by page
@@ -353,7 +421,7 @@ make install
 #### 1. Get API Key
 
 Get your Open API authentication key from the National Law Information Center:
-👉 [https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9](https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9)
+👉 [https://open.law.go.kr/LSO/openApi/cuAskList.do](https://open.law.go.kr/LSO/openApi/cuAskList.do)
 
 #### 2. Configure API Key
 
@@ -394,6 +462,65 @@ sejong law "search term" --verbose
 sejong law "search term" -v  # Short option
 ```
 
+#### Precedent Search
+
+```bash
+# Basic search
+sejong precedent search "contract termination"
+
+# Or use alias
+sejong prec search "damages"
+
+# Output in JSON format
+sejong precedent search "unjust enrichment" --format json
+
+# Pagination
+sejong precedent search "contract" --page 2 --size 20
+
+# View precedent details
+sejong precedent detail 12345
+```
+
+#### Administrative Rule Search
+
+```bash
+# Basic search
+sejong admrule search "public institution"
+
+# Use aliases
+sejong admr search "personal information"
+sejong rule search "administrative action"
+
+# Output in JSON format
+sejong admrule search "notice" --format json
+
+# Pagination
+sejong admrule search "directive" --page 2 --size 20
+
+# View administrative rule details
+sejong admrule detail 12345
+```
+
+#### Legal Interpretation Search
+
+```bash
+# Basic search
+sejong interpretation search "working hours"
+
+# Use aliases
+sejong interp search "vacation"
+sejong expc search "wages"
+
+# Output in JSON format
+sejong interpretation search "retirement" --format json
+
+# Pagination
+sejong interpretation search "employment" --page 2 --size 20
+
+# View legal interpretation details
+sejong interpretation detail 12345
+```
+
 #### Configuration Management
 
 ```bash
@@ -419,6 +546,9 @@ sejong -h
 
 # Command-specific help
 sejong law --help
+sejong precedent --help
+sejong admrule --help
+sejong interpretation --help
 sejong config --help
 ```
 

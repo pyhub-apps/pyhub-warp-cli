@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
+	"github.com/pyhub-apps/sejong-cli/internal/api"
 )
 
 // captureStdout captures stdout during function execution

@@ -26,12 +26,13 @@ func TestGuide_ShowAPIKeySetup_Plain(t *testing.T) {
 
 	// Check for required elements
 	expectedStrings := []string{
-		"API 키 설정이 필요합니다",
+		"API 설정이 필요합니다",
 		"국가법령정보센터 오픈 API",
 		"설정 방법:",
-		"인증키 발급받기",
-		"https://www.law.go.kr/LSW/opn/prvsn/opnPrvsnInfoP.do?mode=9",
-		"인증키 설정하기",
+		"Open API 신청하기",
+		"https://open.law.go.kr",
+		"도메인 없음",
+		"이메일 ID 설정하기",
 		"sejong config set law.key",
 		"팁: 위 명령어를 복사하여 사용하세요",
 	}
@@ -53,10 +54,11 @@ func TestGuide_ShowAPIKeySetup_Colored(t *testing.T) {
 
 	// Check for required content (color codes will be present but we check the text)
 	expectedStrings := []string{
-		"API 키 설정이 필요합니다",
+		"API 설정이 필요합니다",
 		"설정 방법:",
-		"인증키 발급받기",
-		"인증키 설정하기",
+		"Open API 신청하기",
+		"도메인 없음",
+		"이메일 ID 설정하기",
 	}
 
 	for _, expected := range expectedStrings {

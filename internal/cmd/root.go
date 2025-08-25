@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/config"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/i18n"
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/logger"
+	"github.com/pyhub-apps/sejong-cli/internal/config"
+	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/sejong-cli/internal/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -73,6 +73,10 @@ func Execute() {
 	initConfigGetCmd()
 	initConfigPathCmd()
 	initLawCmd()
+	initOrdinanceCmd()
+	initPrecedentCmd()
+	initAdmruleCmd()
+	initInterpretationCmd()
 
 	// Add version command to root
 	rootCmd.AddCommand(versionCmd)
@@ -94,6 +98,18 @@ func Execute() {
 
 	// Add law command to root
 	rootCmd.AddCommand(lawCmd)
+
+	// Add ordinance command to root
+	rootCmd.AddCommand(ordinanceCmd)
+
+	// Add precedent command to root
+	rootCmd.AddCommand(precedentCmd)
+
+	// Add administrative rule command to root
+	rootCmd.AddCommand(admruleCmd)
+
+	// Add legal interpretation command to root
+	rootCmd.AddCommand(interpretationCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -131,6 +147,10 @@ func updateCommandDescriptions() {
 	updateVersionCommand()
 	updateConfigCommand()
 	updateLawCommand()
+	updateOrdinanceCommand()
+	updatePrecedentCommand()
+	updateAdmruleCommand()
+	updateInterpretationCommand()
 }
 
 func init() {

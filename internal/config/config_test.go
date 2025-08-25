@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/pyhub-kr/pyhub-sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/sejong-cli/internal/testutil"
 	"github.com/spf13/viper"
 )
 
