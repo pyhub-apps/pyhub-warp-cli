@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
 )
 
 // AdmrulSearchResponse represents the administrative rule search response
@@ -303,7 +303,7 @@ func (c *AdmrulClient) parseHTMLError(html string) string {
 	// Check for authentication/key related issues
 	if strings.Contains(htmlLower, "인증") || strings.Contains(htmlLower, "auth") ||
 		strings.Contains(htmlLower, "key") || strings.Contains(htmlLower, "키") {
-		return "API 인증 실패: API 키가 유효하지 않거나 만료되었습니다. 'sejong config set law.key <API_KEY>' 명령으로 유효한 API 키를 설정해주세요."
+		return "API 인증 실패: API 키가 유효하지 않거나 만료되었습니다. 'warp config set law.key <API_KEY>' 명령으로 유효한 API 키를 설정해주세요."
 	}
 
 	// Check for service errors

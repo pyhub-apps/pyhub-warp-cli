@@ -1,4 +1,4 @@
-# Contributing to Sejong CLI
+# Contributing to Warp CLI
 
 [한국어](#한국어) | [English](#english)
 
@@ -6,7 +6,7 @@
 
 ## 한국어
 
-Sejong CLI 프로젝트에 기여해주셔서 감사합니다! 이 문서는 프로젝트에 기여하는 방법을 안내합니다.
+Warp CLI 프로젝트에 기여해주셔서 감사합니다! 이 문서는 프로젝트에 기여하는 방법을 안내합니다.
 
 ### 🤝 기여 방법
 
@@ -34,7 +34,7 @@ Sejong CLI 프로젝트에 기여해주셔서 감사합니다! 이 문서는 프
 ## 환경
 - OS: [예: macOS 14.0]
 - Go 버전: [예: 1.21]
-- Sejong CLI 버전: [예: v1.2534.1]
+- Warp CLI 버전: [예: v1.2534.1]
 ```
 
 #### 2. 개발 환경 설정
@@ -44,11 +44,11 @@ Sejong CLI 프로젝트에 기여해주셔서 감사합니다! 이 문서는 프
 # GitHub에서 Fork 버튼을 클릭
 
 # Fork한 저장소 클론
-git clone https://github.com/YOUR_USERNAME/pyhub-sejong-cli.git
-cd pyhub-sejong-cli
+git clone https://github.com/YOUR_USERNAME/pyhub-warp-cli.git
+cd pyhub-warp-cli
 
 # 원본 저장소를 upstream으로 추가
-git remote add upstream https://github.com/pyhub-kr/pyhub-sejong-cli.git
+git remote add upstream https://github.com/pyhub-kr/pyhub-warp-cli.git
 
 # 의존성 설치
 go mod download
@@ -200,15 +200,15 @@ git push origin v1.2534.1
 
 ### 💬 커뮤니티
 
-- **Issues**: [GitHub Issues](https://github.com/pyhub-kr/pyhub-sejong-cli/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/pyhub-kr/pyhub-sejong-cli/discussions)
+- **Issues**: [GitHub Issues](https://github.com/pyhub-kr/pyhub-warp-cli/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/pyhub-kr/pyhub-warp-cli/discussions)
 - **PyHub Korea**: [https://github.com/pyhub-kr](https://github.com/pyhub-kr)
 
 ---
 
 ## English
 
-Thank you for contributing to Sejong CLI! This document guides you through the contribution process.
+Thank you for contributing to Warp CLI! This document guides you through the contribution process.
 
 ### 🤝 How to Contribute
 
@@ -236,7 +236,7 @@ Issue Template:
 ## Environment
 - OS: [e.g., macOS 14.0]
 - Go version: [e.g., 1.21]
-- Sejong CLI version: [e.g., v1.2534.1]
+- Warp CLI version: [e.g., v1.2534.1]
 ```
 
 #### 2. Development Setup
@@ -246,11 +246,11 @@ Issue Template:
 # Click the Fork button on GitHub
 
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/pyhub-sejong-cli.git
-cd pyhub-sejong-cli
+git clone https://github.com/YOUR_USERNAME/pyhub-warp-cli.git
+cd pyhub-warp-cli
 
 # Add upstream remote
-git remote add upstream https://github.com/pyhub-kr/pyhub-sejong-cli.git
+git remote add upstream https://github.com/pyhub-kr/pyhub-warp-cli.git
 
 # Install dependencies
 go mod download
@@ -402,8 +402,8 @@ When you find a bug:
 
 ### 💬 Community
 
-- **Issues**: [GitHub Issues](https://github.com/pyhub-kr/pyhub-sejong-cli/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/pyhub-kr/pyhub-sejong-cli/discussions)
+- **Issues**: [GitHub Issues](https://github.com/pyhub-kr/pyhub-warp-cli/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/pyhub-kr/pyhub-warp-cli/discussions)
 - **PyHub Korea**: [https://github.com/pyhub-kr](https://github.com/pyhub-kr)
 
 ---

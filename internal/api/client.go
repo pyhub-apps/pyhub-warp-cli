@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/config"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/config"
 )
 
 const (
@@ -107,7 +107,7 @@ func (e *APIKeyError) Error() string {
 func NewClient() (*Client, error) {
 	apiKey := config.GetAPIKey()
 	if apiKey == "" {
-		return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+		return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'warp config set law.key YOUR_KEY' 명령으로 설정하세요")
 	}
 
 	return &Client{

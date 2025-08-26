@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
 	"github.com/spf13/cobra"
 )
 
@@ -169,19 +169,19 @@ func TestLawBackwardCompatibility(t *testing.T) {
 			name:        "Direct search without subcommand",
 			args:        []string{"개인정보"},
 			wantErr:     false, // Should work for backward compatibility
-			description: "sejong law '검색어' should still work",
+			description: "warp law '검색어' should still work",
 		},
 		{
 			name:        "Direct search with flags",
 			args:        []string{"개인정보", "--format", "json"},
 			wantErr:     false,
-			description: "sejong law '검색어' --format json should still work",
+			description: "warp law '검색어' --format json should still work",
 		},
 		{
 			name:        "Direct search with pagination",
 			args:        []string{"민법", "--page", "2", "--size", "20"},
 			wantErr:     false,
-			description: "sejong law '검색어' with pagination should still work",
+			description: "warp law '검색어' with pagination should still work",
 		},
 	}
 

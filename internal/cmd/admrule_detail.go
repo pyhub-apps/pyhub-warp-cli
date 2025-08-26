@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -22,10 +22,10 @@ func initAdmruleDetailCmd() {
 		Short: "행정규칙 상세 조회",
 		Long:  "행정규칙ID로 행정규칙의 상세 정보를 조회합니다.",
 		Example: `  # 행정규칙 상세 조회
-  sejong admrule detail 12345
+  warp admrule detail 12345
   
   # JSON 형식으로 출력
-  sejong admrule detail 12345 --format json`,
+  warp admrule detail 12345 --format json`,
 		Args:    cobra.ExactArgs(1),
 		Aliases: []string{"d", "info"},
 		RunE:    runAdmruleDetailCommand,

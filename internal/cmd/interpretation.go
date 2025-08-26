@@ -20,8 +20,8 @@ func initInterpretationCmd() {
 법령해석례는 법령의 적용과 해석에 대한 정부의 공식 견해입니다.
 
 예시:
-  sejong interpretation search "근로시간"  # 법령해석례 검색
-  sejong interpretation detail 12345       # 법령해석례 상세 조회`,
+  warp interpretation search "근로시간"  # 법령해석례 검색
+  warp interpretation detail 12345       # 법령해석례 상세 조회`,
 		Aliases: []string{"interp", "expc"},
 	}
 
@@ -42,8 +42,8 @@ func updateInterpretationCommand() {
 법령해석례는 법령의 적용과 해석에 대한 정부의 공식 견해입니다.
 
 예시:
-  sejong interpretation search "근로시간"  # 법령해석례 검색
-  sejong interpretation detail 12345       # 법령해석례 상세 조회`
+  warp interpretation search "근로시간"  # 법령해석례 검색
+  warp interpretation detail 12345       # 법령해석례 상세 조회`
 	}
 
 	// Update subcommands

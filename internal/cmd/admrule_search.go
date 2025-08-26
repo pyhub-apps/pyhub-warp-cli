@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +22,13 @@ func initAdmruleSearchCmd() {
 		Short: "행정규칙 검색",
 		Long:  "키워드로 행정규칙(고시, 훈령, 예규 등)을 검색합니다.",
 		Example: `  # 행정규칙 검색
-  sejong admrule search "공공기관"
+  warp admrule search "공공기관"
   
   # JSON 형식으로 출력
-  sejong admrule search "개인정보" --format json
+  warp admrule search "개인정보" --format json
   
   # 페이지 지정
-  sejong admrule search "행정처분" --page 2 --size 20`,
+  warp admrule search "행정처분" --page 2 --size 20`,
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"s"},
 		RunE:    runAdmruleSearchCommand,

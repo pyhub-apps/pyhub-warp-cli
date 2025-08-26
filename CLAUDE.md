@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Sejong-CLI is a command-line utility tool for searching South Korean law information using the National Law Information Center Open API. The project aims to provide developers, researchers, and legal professionals with quick access to legal information directly from their terminal.
+Warp-CLI is a command-line utility tool for searching South Korean law information using the National Law Information Center Open API. The project aims to provide developers, researchers, and legal professionals with quick access to legal information directly from their terminal.
 
 ## Development Setup
 
 ### Initialize Project (First Time)
 ```bash
 # Initialize Go module
-go mod init github.com/allieus/sejong-cli
+go mod init github.com/pyhub-apps/pyhub-warp-cli
 
 # Add dependencies
 go get github.com/spf13/cobra@latest
@@ -22,15 +22,15 @@ go get github.com/olekukonko/tablewriter@latest
 ### Build and Run Commands
 ```bash
 # Build the project
-go build -o sejong cmd/sejong/main.go
+go build -o warp cmd/warp/main.go
 
 # Run without building
-go run cmd/sejong/main.go
+go run cmd/warp/main.go
 
 # Build for multiple platforms
-GOOS=windows GOARCH=amd64 go build -o sejong.exe cmd/sejong/main.go
-GOOS=darwin GOARCH=arm64 go build -o sejong cmd/sejong/main.go
-GOOS=linux GOARCH=amd64 go build -o sejong-linux cmd/sejong/main.go
+GOOS=windows GOARCH=amd64 go build -o warp.exe cmd/warp/main.go
+GOOS=darwin GOARCH=arm64 go build -o warp cmd/warp/main.go
+GOOS=linux GOARCH=amd64 go build -o warp-linux cmd/warp/main.go
 
 # Run tests
 go test ./...
@@ -56,7 +56,7 @@ goreleaser release  # actual release (requires git tag)
 
 ### Project Structure
 The application should follow a clean architecture pattern with the following structure:
-- `cmd/sejong/` - Entry point and command definitions
+- `cmd/warp/` - Entry point and command definitions
 - `internal/api/` - API client for National Law Information Center
 - `internal/config/` - Configuration management (API keys, settings)
 - `internal/output/` - Output formatting (table, JSON)
@@ -64,12 +64,12 @@ The application should follow a clean architecture pattern with the following st
 ### Key Design Decisions
 
 1. **Command Structure**: Use Cobra CLI framework for command handling
-   - Main command: `sejong`
+   - Main command: `warp`
    - Subcommands: `law`, `config`
    - Support for flags like `--format json`
 
 2. **Configuration Storage**: Store API keys and settings in user's home directory
-   - Location: `~/.sejong/config.yaml` or similar
+   - Location: `~/.pyhub/warp/config.yaml` or similar
    - Use viper for configuration management
 
 3. **Error Handling**: Provide user-friendly error messages
@@ -103,26 +103,26 @@ The National Law Information Center API requires:
 ## Critical Implementation Notes
 
 ### First-Time User Experience
-When a user runs `sejong law` without an API key configured:
+When a user runs `warp law` without an API key configured:
 1. Check for API key in configuration
 2. If missing, display a helpful message that includes:
    - Why the key is needed
    - Direct link to get the key: `https://open.law.go.kr/LSO/openApi/cuAskList.do`
-   - Exact command to set the key: `sejong config set law.key <YOUR_KEY>`
+   - Exact command to set the key: `warp config set law.key <YOUR_KEY>`
 
 ### Command Examples
 ```bash
 # Search for laws
-sejong law "개인정보 보호법"
+warp law "개인정보 보호법"
 
 # Set API key
-sejong config set law.key YOUR_API_KEY_HERE
+warp config set law.key YOUR_API_KEY_HERE
 
 # Get current API key
-sejong config get law.key
+warp config get law.key
 
 # Export results as JSON
-sejong law "도로교통법" --format json > laws.json
+warp law "도로교통법" --format json > laws.json
 ```
 
 ## Testing Strategy
@@ -144,9 +144,9 @@ sejong law "도로교통법" --format json > laws.json
 
 The project structure needs to be created:
 ```
-pyhub-sejong-cli/
+pyhub-warp-cli/
 ├── cmd/
-│   └── sejong/
+│   └── warp/
 │       └── main.go         # CLI entry point
 ├── internal/
 │   ├── api/

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/pyhub-apps/sejong-cli/internal/config"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/config"
 )
 
 func TestUnifiedClient_Search(t *testing.T) {

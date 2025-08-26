@@ -33,7 +33,7 @@ func TestGuide_ShowAPIKeySetup_Plain(t *testing.T) {
 		"https://open.law.go.kr",
 		"도메인 없음",
 		"이메일 ID 설정하기",
-		"sejong config set law.key",
+		"warp config set law.key",
 		"팁: 위 명령어를 복사하여 사용하세요",
 	}
 

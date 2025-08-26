@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
 	"github.com/spf13/cobra"
 )
 

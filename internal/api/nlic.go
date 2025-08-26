@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
 )
 
 // NLICClient represents the National Law Information Center API client
@@ -515,7 +515,7 @@ func (c *NLICClient) parseHTMLError(html string) string {
 	// Check for authentication/key related issues
 	if strings.Contains(htmlLower, "인증") || strings.Contains(htmlLower, "auth") ||
 		strings.Contains(htmlLower, "key") || strings.Contains(htmlLower, "키") {
-		return "API 인증 실패: 이메일 ID가 올바르지 않습니다. 'sejong config set law.key YOUR_EMAIL_ID' 명령으로 이메일 @ 앞부분을 설정하세요"
+		return "API 인증 실패: 이메일 ID가 올바르지 않습니다. 'warp config set law.key YOUR_EMAIL_ID' 명령으로 이메일 @ 앞부분을 설정하세요"
 	}
 
 	// Check for rate limit
@@ -543,7 +543,7 @@ func (c *NLICClient) parseHTMLError(html string) string {
 					// Check if it's just a generic title
 					if strings.Contains(msg, "국가법령정보") && !strings.Contains(msg, "오류") {
 						// Generic title, return more specific message
-						return "API 인증 실패: API 키가 올바르지 않습니다. 'sejong config set law.key YOUR_API_KEY' 명령으로 유효한 API 키를 설정하세요"
+						return "API 인증 실패: API 키가 올바르지 않습니다. 'warp config set law.key YOUR_API_KEY' 명령으로 유효한 API 키를 설정하세요"
 					}
 					return fmt.Sprintf("API 오류: %s", msg)
 				}

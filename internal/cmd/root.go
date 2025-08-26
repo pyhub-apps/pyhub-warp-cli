@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pyhub-apps/sejong-cli/internal/config"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/config"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -26,17 +26,17 @@ var rootCmd *cobra.Command
 // initRootCmd initializes the root command with i18n support
 func initRootCmd() {
 	rootCmd = &cobra.Command{
-		Use:   "sejong",
+		Use:   "warp",
 		Short: i18n.T("cli.short"),
 		Long:  i18n.T("cli.long"),
 		Example: `  # 법령 검색
-  sejong law "개인정보 보호법"
+  warp law "개인정보 보호법"
   
   # JSON 형식으로 출력
-  sejong law "도로교통법" --format json
+  warp law "도로교통법" --format json
   
   # API 키 설정
-  sejong config set law.key YOUR_API_KEY`,
+  warp config set law.key YOUR_API_KEY`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// If no subcommand is provided, show help
 			return cmd.Help()

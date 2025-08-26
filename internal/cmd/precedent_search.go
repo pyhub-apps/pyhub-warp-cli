@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +22,13 @@ func initPrecedentSearchCmd() {
 		Short: "판례 검색",
 		Long:  "키워드로 판례를 검색합니다.",
 		Example: `  # 판례 검색
-  sejong precedent search "계약 해지"
+  warp precedent search "계약 해지"
   
   # JSON 형식으로 출력
-  sejong precedent search "손해배상" --format json
+  warp precedent search "손해배상" --format json
   
   # 페이지 지정
-  sejong precedent search "부당이득" --page 2 --size 20`,
+  warp precedent search "부당이득" --page 2 --size 20`,
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"s"},
 		RunE:    runPrecedentSearchCommand,

@@ -48,7 +48,7 @@ jobs:
       run: go test -v -tags=integration ./test/integration/...
     
     - name: Build binary for E2E tests
-      run: go build -o sejong ./cmd/sejong
+      run: go build -o warp ./cmd/warp
     
     - name: Run E2E tests
       run: go test -v -tags=e2e ./test/e2e/...

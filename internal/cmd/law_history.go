@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -26,13 +26,13 @@ func initLawHistoryCmd() {
 		Short: i18n.T("law.history.short"),
 		Long:  i18n.T("law.history.long"),
 		Example: `  # 법령ID로 이력 조회
-  sejong law history 001234
+  warp law history 001234
   
   # 최근 10개만 조회
-  sejong law history 001234 --limit 10
+  warp law history 001234 --limit 10
   
   # JSON 형식으로 출력
-  sejong law history 001234 --format json`,
+  warp law history 001234 --format json`,
 		Args: cobra.ExactArgs(1),
 		RunE: runLawHistoryCommand,
 	}

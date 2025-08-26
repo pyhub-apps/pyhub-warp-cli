@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -22,10 +22,10 @@ func initInterpretationDetailCmd() {
 		Short: "법령해석례 상세 조회",
 		Long:  "법령해석례ID로 법령해석례의 상세 정보를 조회합니다.",
 		Example: `  # 법령해석례 상세 조회
-  sejong interpretation detail 12345
+  warp interpretation detail 12345
   
   # JSON 형식으로 출력
-  sejong interpretation detail 12345 --format json`,
+  warp interpretation detail 12345 --format json`,
 		Args:    cobra.ExactArgs(1),
 		Aliases: []string{"d", "info"},
 		RunE:    runInterpretationDetailCommand,

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pyhub-apps/sejong-cli/internal/config"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/config"
 )
 
 // CreateClient creates an API client for the specified type
@@ -13,7 +13,7 @@ func CreateClient(apiType APIType) (ClientInterface, error) {
 	case APITypeNLIC:
 		apiKey := config.GetNLICAPIKey()
 		if apiKey == "" {
-			return nil, fmt.Errorf("NLIC API 키가 설정되지 않았습니다. 'sejong config set law.nlic.key YOUR_KEY' 명령으로 설정하세요")
+			return nil, fmt.Errorf("NLIC API 키가 설정되지 않았습니다. 'warp config set law.nlic.key YOUR_KEY' 명령으로 설정하세요")
 		}
 		// Use the dedicated NLIC client
 		return NewNLICClient(apiKey), nil
@@ -25,7 +25,7 @@ func CreateClient(apiType APIType) (ClientInterface, error) {
 			// Try ELIS-specific key first
 			apiKey = config.GetString("law.elis.key")
 			if apiKey == "" {
-				return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+				return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'warp config set law.key YOUR_KEY' 명령으로 설정하세요")
 			}
 		}
 		return NewELISClient(apiKey), nil
@@ -38,7 +38,7 @@ func CreateClient(apiType APIType) (ClientInterface, error) {
 		// Precedent API client (판례)
 		apiKey := config.GetNLICAPIKey()
 		if apiKey == "" {
-			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'warp config set law.key YOUR_KEY' 명령으로 설정하세요")
 		}
 		return NewPrecClient(apiKey), nil
 
@@ -46,7 +46,7 @@ func CreateClient(apiType APIType) (ClientInterface, error) {
 		// Administrative Rule API client (행정규칙)
 		apiKey := config.GetNLICAPIKey()
 		if apiKey == "" {
-			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'warp config set law.key YOUR_KEY' 명령으로 설정하세요")
 		}
 		return NewAdmrulClient(apiKey), nil
 
@@ -54,7 +54,7 @@ func CreateClient(apiType APIType) (ClientInterface, error) {
 		// Legal Interpretation API client (법령해석례)
 		apiKey := config.GetNLICAPIKey()
 		if apiKey == "" {
-			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'warp config set law.key YOUR_KEY' 명령으로 설정하세요")
 		}
 		return NewExpcClient(apiKey), nil
 

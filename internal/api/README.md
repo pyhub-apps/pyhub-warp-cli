@@ -21,7 +21,7 @@ import (
     "fmt"
     "log"
     
-    "github.com/pyhub-kr/pyhub-sejong-cli/internal/api"
+    "github.com/pyhub-apps/pyhub-warp-cli/internal/api"
 )
 
 func main() {

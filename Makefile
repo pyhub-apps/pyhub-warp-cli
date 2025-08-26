@@ -15,8 +15,8 @@ all: test build
 
 # Build the binary
 build:
-	@echo "Building sejong $(VERSION)..."
-	go build $(LDFLAGS) -o sejong ./cmd/sejong
+	@echo "Building warp $(VERSION)..."
+	go build $(LDFLAGS) -o warp ./cmd/warp
 
 # Run tests
 test:
@@ -32,13 +32,13 @@ test-coverage:
 
 # Install the binary to $GOPATH/bin
 install: build
-	@echo "Installing sejong to GOPATH/bin..."
-	cp sejong $(shell go env GOPATH)/bin/sejong
+	@echo "Installing warp to GOPATH/bin..."
+	cp warp $(shell go env GOPATH)/bin/warp
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
-	rm -f sejong
+	rm -f warp
 	rm -f coverage.txt coverage.html
 	rm -rf dist/
 
@@ -71,11 +71,11 @@ release:
 # Development build with race detector
 dev:
 	@echo "Building development version with race detector..."
-	go build -race $(LDFLAGS) -o sejong ./cmd/sejong
+	go build -race $(LDFLAGS) -o warp ./cmd/warp
 
 # Quick test of the binary
 run: build
-	./sejong version
+	./warp version
 
 # Bump head version
 bump-head:

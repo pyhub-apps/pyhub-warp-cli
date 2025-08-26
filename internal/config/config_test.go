@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/pyhub-apps/sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/testutil"
 	"github.com/spf13/viper"
 )
 
 func TestInitialize(t *testing.T) {
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-config-test-*")
 	defer cleanup()
 
 	// Reset config and set test path
@@ -36,7 +36,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestInitialize_ExistingConfig(t *testing.T) {
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-config-test-*")
 	defer cleanup()
 
 	// Reset config and set test path
@@ -65,7 +65,7 @@ func TestInitialize_ExistingConfig(t *testing.T) {
 }
 
 func TestInitialize_InvalidYAML(t *testing.T) {
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-config-test-*")
 	defer cleanup()
 
 	// Reset config and set test path
@@ -130,7 +130,7 @@ func TestGetAPIKey(t *testing.T) {
 }
 
 func TestSetAPIKey(t *testing.T) {
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-config-test-*")
 	defer cleanup()
 
 	// Reset config and set test path
@@ -293,7 +293,7 @@ func TestSet(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-config-test-*")
 	defer cleanup()
 
 	// Reset config and set test path
@@ -332,7 +332,7 @@ func TestSave(t *testing.T) {
 }
 
 func TestGetConfigPath(t *testing.T) {
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-config-test-*")
 	defer cleanup()
 
 	// Reset config and set test path
@@ -348,7 +348,7 @@ func TestGetConfigPath(t *testing.T) {
 }
 
 func TestCreateDefaultConfig(t *testing.T) {
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-config-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-config-test-*")
 	defer cleanup()
 
 	// Reset config and set test path
@@ -375,7 +375,7 @@ func TestCreateDefaultConfig(t *testing.T) {
 
 	// Check for expected content
 	expectedStrings := []string{
-		"Sejong CLI Configuration",
+		"Warp CLI Configuration",
 		"law:",
 		"key:",
 	}

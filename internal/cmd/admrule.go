@@ -19,8 +19,8 @@ func initAdmruleCmd() {
 		Long: `정부 부처 및 기관의 행정규칙(고시, 훈령, 예규 등)을 검색하고 상세 정보를 조회합니다.
 
 예시:
-  sejong admrule search "공공기관"  # 행정규칙 검색
-  sejong admrule detail 12345       # 행정규칙 상세 조회`,
+  warp admrule search "공공기관"  # 행정규칙 검색
+  warp admrule detail 12345       # 행정규칙 상세 조회`,
 		Aliases: []string{"admr", "rule"},
 	}
 
@@ -40,8 +40,8 @@ func updateAdmruleCommand() {
 		admruleCmd.Long = `정부 부처 및 기관의 행정규칙(고시, 훈령, 예규 등)을 검색하고 상세 정보를 조회합니다.
 
 예시:
-  sejong admrule search "공공기관"  # 행정규칙 검색
-  sejong admrule detail 12345       # 행정규칙 상세 조회`
+  warp admrule search "공공기관"  # 행정규칙 검색
+  warp admrule detail 12345       # 행정규칙 상세 조회`
 	}
 
 	// Update subcommands

@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	// ConfigDirName is the name of the config directory
-	ConfigDirName = ".sejong"
+	// ConfigDirName is the name of the config directory (relative to home)
+	ConfigDirName = ".pyhub/warp"
 	// ConfigFileName is the name of the config file
 	ConfigFileName = "config"
 	// ConfigFileType is the type of the config file
@@ -60,7 +60,7 @@ func Initialize() error {
 		}
 
 		// Set config path
-		configPath = filepath.Join(homeDir, ConfigDirName)
+		configPath = filepath.Join(homeDir, ".pyhub", "warp")
 	}
 
 	// Create config directory if it doesn't exist (restricted permissions for security)
@@ -108,8 +108,8 @@ func createDefaultConfig() error {
 	configFile := filepath.Join(configPath, ConfigFileName+"."+ConfigFileType)
 
 	// Default configuration content
-	defaultConfig := `# Sejong CLI Configuration
-# 세종 CLI 설정 파일
+	defaultConfig := `# Warp CLI Configuration
+# Warp CLI 설정 파일
 
 # 법령 정보 API 설정
 law:

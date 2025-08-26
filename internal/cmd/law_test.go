@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/config"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/config"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/testutil"
 	"github.com/spf13/cobra"
 )
 
@@ -146,7 +146,7 @@ func TestLawCommandWithAPIKey(t *testing.T) {
 	initLawCmd()
 
 	// Setup test environment
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-law-test-*")
 	defer cleanup()
 
 	// Mock API server
@@ -309,7 +309,7 @@ func TestLawCommandNoAPIKey(t *testing.T) {
 	initLawCmd()
 
 	// Setup test environment without API key
-	tempDir, cleanup := testutil.CreateTempDir(t, "sejong-law-test-nokey-*")
+	tempDir, cleanup := testutil.CreateTempDir(t, "warp-law-test-nokey-*")
 	defer cleanup()
 
 	// Reset config and set test path

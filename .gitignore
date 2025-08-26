@@ -19,8 +19,8 @@ go.work
 go.work.sum
 
 # Build output
-sejong
-sejong-*
+warp
+warp-*
 dist/
 
 # IDE specific files

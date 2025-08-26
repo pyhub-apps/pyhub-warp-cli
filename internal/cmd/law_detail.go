@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -28,13 +28,13 @@ func initLawDetailCmd() {
 		Short: i18n.T("law.detail.short"),
 		Long:  i18n.T("law.detail.long"),
 		Example: `  # 법령ID로 상세 조회
-  sejong law detail 001234
+  warp law detail 001234
   
   # 조문 포함하여 조회
-  sejong law detail 001234 --articles
+  warp law detail 001234 --articles
   
   # JSON 형식으로 출력
-  sejong law detail 001234 --format json`,
+  warp law detail 001234 --format json`,
 		Args: cobra.ExactArgs(1),
 		RunE: runLawDetailCommand,
 	}

@@ -1,11 +1,11 @@
-# Sejong CLI
+# Warp CLI
 
 > 🏛️ 터미널에서 빠르게 검색하는 대한민국 법령 정보
 
 [![Go Version](https://img.shields.io/badge/Go-1.21%2B-00ADD8?logo=go)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/test.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/test.yml)
-[![Build](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/build.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-sejong-cli/actions/workflows/build.yml)
+[![Tests](https://github.com/pyhub-kr/pyhub-warp-cli/actions/workflows/test.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-warp-cli/actions/workflows/test.yml)
+[![Build](https://github.com/pyhub-kr/pyhub-warp-cli/actions/workflows/build.yml/badge.svg)](https://github.com/pyhub-kr/pyhub-warp-cli/actions/workflows/build.yml)
 
 ## 📑 목차 / Table of Contents
 
@@ -35,7 +35,7 @@
 
 ### 📖 소개
 
-**Sejong CLI**는 국가법령정보센터 오픈 API를 활용하여 터미널에서 한국 법령 정보를 빠르고 쉽게 검색할 수 있는 명령줄 도구입니다.
+**Warp CLI**는 국가법령정보센터 오픈 API를 활용하여 터미널에서 한국 법령 정보를 빠르고 쉽게 검색할 수 있는 명령줄 도구입니다.
 
 ### ✨ 주요 기능
 
@@ -57,36 +57,36 @@
 
 #### 바이너리 다운로드 (권장)
 
-최신 릴리스는 [Releases](https://github.com/pyhub-kr/pyhub-sejong-cli/releases) 페이지에서 다운로드할 수 있습니다.
+최신 릴리스는 [Releases](https://github.com/pyhub-kr/pyhub-warp-cli/releases) 페이지에서 다운로드할 수 있습니다.
 
 ##### macOS (Apple Silicon)
 ```bash
 # 최신 버전 다운로드
-curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_arm64.tar.gz
-tar -xzf pyhub-sejong-cli_Darwin_arm64.tar.gz
-sudo mv sejong /usr/local/bin/
+curl -LO https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Darwin_arm64.tar.gz
+tar -xzf pyhub-warp-cli_Darwin_arm64.tar.gz
+sudo mv warp /usr/local/bin/
 ```
 
 ##### macOS (Intel)
 ```bash
-curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_x86_64.tar.gz
-tar -xzf pyhub-sejong-cli_Darwin_x86_64.tar.gz
-sudo mv sejong /usr/local/bin/
+curl -LO https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Darwin_x86_64.tar.gz
+tar -xzf pyhub-warp-cli_Darwin_x86_64.tar.gz
+sudo mv warp /usr/local/bin/
 ```
 
 ##### Windows
 ```powershell
 # PowerShell에서 실행
-Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Windows_x86_64.zip -OutFile sejong.zip
-Expand-Archive -Path sejong.zip -DestinationPath .
-# sejong.exe를 PATH에 추가하거나 원하는 위치로 이동
+Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Windows_x86_64.zip -OutFile warp.zip
+Expand-Archive -Path warp.zip -DestinationPath .
+# warp.exe를 PATH에 추가하거나 원하는 위치로 이동
 ```
 
 ##### Linux
 ```bash
-curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Linux_x86_64.tar.gz
-tar -xzf pyhub-sejong-cli_Linux_x86_64.tar.gz
-sudo mv sejong /usr/local/bin/
+curl -LO https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Linux_x86_64.tar.gz
+tar -xzf pyhub-warp-cli_Linux_x86_64.tar.gz
+sudo mv warp /usr/local/bin/
 ```
 
 #### 소스에서 빌드
@@ -95,14 +95,14 @@ Go 1.21 이상이 필요합니다.
 
 ```bash
 # 저장소 클론
-git clone https://github.com/pyhub-kr/pyhub-sejong-cli.git
-cd pyhub-sejong-cli
+git clone https://github.com/pyhub-kr/pyhub-warp-cli.git
+cd pyhub-warp-cli
 
 # 빌드
 make build
 
 # 또는 직접 빌드
-go build -o sejong ./cmd/sejong
+go build -o warp ./cmd/warp
 
 # 설치
 make install
@@ -118,32 +118,32 @@ make install
 #### 2. API 키 설정
 
 ```bash
-sejong config set law.key YOUR_API_KEY
+warp config set law.key YOUR_API_KEY
 ```
 
 #### 3. 첫 검색
 
 ```bash
 # 법령 검색
-sejong law "개인정보 보호법"
+warp law "개인정보 보호법"
 
 # JSON 형식으로 출력
-sejong law "도로교통법" --format json
+warp law "도로교통법" --format json
 
 # Markdown 형식으로 출력 (문서 작성용)
-sejong law "민법" --format markdown > laws.md
+warp law "민법" --format markdown > laws.md
 
 # CSV 형식으로 저장 (Excel에서 열기)
-sejong law "상법" --format csv > laws.csv
+warp law "상법" --format csv > laws.csv
 
 # 페이지 지정 (기본 50건씩)
-sejong law "민법" --page 2
+warp law "민법" --page 2
 
 # 법령 상세 조회
-sejong law detail 011357
+warp law detail 011357
 
 # 법령 이력 조회
-sejong law history 011357
+warp law history 011357
 ```
 
 ### 📚 명령어 가이드
@@ -152,171 +152,171 @@ sejong law history 011357
 
 ```bash
 # 기본 검색
-sejong law "검색어"
+warp law "검색어"
 
 # 출력 형식 지정
-sejong law "검색어" --format json       # JSON 형식
-sejong law "검색어" --format table      # 테이블 형식 (기본값)
-sejong law "검색어" --format markdown   # Markdown 형식
-sejong law "검색어" --format csv        # CSV 형식 (Excel 호환)
-sejong law "검색어" --format html       # HTML 형식
-sejong law "검색어" --format html-simple # HTML 형식 (CSS 없음, LLM AI용)
+warp law "검색어" --format json       # JSON 형식
+warp law "검색어" --format table      # 테이블 형식 (기본값)
+warp law "검색어" --format markdown   # Markdown 형식
+warp law "검색어" --format csv        # CSV 형식 (Excel 호환)
+warp law "검색어" --format html       # HTML 형식
+warp law "검색어" --format html-simple # HTML 형식 (CSS 없음, LLM AI용)
 
 # 페이지네이션
-sejong law "검색어" --page 2 --size 50
+warp law "검색어" --page 2 --size 50
 
 # 검색 소스 지정
-sejong law "검색어" --source all   # 통합 검색 (국가법령 + 자치법규)
-sejong law "검색어" --source nlic  # 국가법령만
-sejong law "검색어" --source elis  # 자치법규만
+warp law "검색어" --source all   # 통합 검색 (국가법령 + 자치법규)
+warp law "검색어" --source nlic  # 국가법령만
+warp law "검색어" --source elis  # 자치법규만
 
 # 상세 로그 출력
-sejong law "검색어" --verbose
-sejong law "검색어" -v  # 단축 옵션
+warp law "검색어" --verbose
+warp law "검색어" -v  # 단축 옵션
 ```
 
 #### 법령 상세 조회
 
 ```bash
 # 기본 상세 조회
-sejong law detail 법령ID
+warp law detail 법령ID
 
 # 조문 포함
-sejong law detail 법령ID --articles
+warp law detail 법령ID --articles
 
 # 별표 포함
-sejong law detail 법령ID --tables
+warp law detail 법령ID --tables
 
 # 부칙 포함
-sejong law detail 법령ID --addendum
+warp law detail 법령ID --addendum
 
 # 모두 포함
-sejong law detail 법령ID --articles --tables --addendum
+warp law detail 법령ID --articles --tables --addendum
 
 # JSON 형식으로 출력
-sejong law detail 법령ID --format json
+warp law detail 법령ID --format json
 ```
 
 #### 법령 이력 조회
 
 ```bash
 # 기본 이력 조회
-sejong law history 법령ID
+warp law history 법령ID
 
 # 최근 N개만 조회
-sejong law history 법령ID --limit 10
+warp law history 법령ID --limit 10
 
 # JSON 형식으로 출력
-sejong law history 법령ID --format json
+warp law history 법령ID --format json
 ```
 
 #### 판례 검색
 
 ```bash
 # 기본 검색
-sejong precedent search "계약 해지"
+warp precedent search "계약 해지"
 
 # 또는 단축 명령어 사용
-sejong prec search "손해배상"
+warp prec search "손해배상"
 
 # JSON 형식으로 출력
-sejong precedent search "부당이득" --format json
+warp precedent search "부당이득" --format json
 
 # 페이지네이션
-sejong precedent search "계약" --page 2 --size 20
+warp precedent search "계약" --page 2 --size 20
 
 # 판례 상세 조회
-sejong precedent detail 12345
+warp precedent detail 12345
 ```
 
 #### 행정규칙 검색
 
 ```bash
 # 기본 검색
-sejong admrule search "공공기관"
+warp admrule search "공공기관"
 
 # 단축 명령어 사용
-sejong admr search "개인정보"
-sejong rule search "행정처분"
+warp admr search "개인정보"
+warp rule search "행정처분"
 
 # JSON 형식으로 출력
-sejong admrule search "고시" --format json
+warp admrule search "고시" --format json
 
 # 페이지네이션
-sejong admrule search "훈령" --page 2 --size 20
+warp admrule search "훈령" --page 2 --size 20
 
 # 행정규칙 상세 조회
-sejong admrule detail 12345
+warp admrule detail 12345
 ```
 
 #### 법령해석례 검색
 
 ```bash
 # 기본 검색
-sejong interpretation search "근로시간"
+warp interpretation search "근로시간"
 
 # 단축 명령어 사용
-sejong interp search "휴가"
-sejong expc search "임금"
+warp interp search "휴가"
+warp expc search "임금"
 
 # JSON 형식으로 출력
-sejong interpretation search "퇴직금" --format json
+warp interpretation search "퇴직금" --format json
 
 # 페이지네이션
-sejong interpretation search "근로계약" --page 2 --size 20
+warp interpretation search "근로계약" --page 2 --size 20
 
 # 법령해석례 상세 조회
-sejong interpretation detail 12345
+warp interpretation detail 12345
 ```
 
 #### 자치법규 (조례/규칙) 검색
 
 ```bash
 # 기본 검색
-sejong ordinance search "주차 조례"
+warp ordinance search "주차 조례"
 
 # 단축 명령어 사용
-sejong ord search "건축 조례"
+warp ord search "건축 조례"
 
 # JSON 형식으로 출력
-sejong ordinance search "환경" --format json
+warp ordinance search "환경" --format json
 
 # 페이지네이션
-sejong ordinance search "교통" --page 2 --size 50
+warp ordinance search "교통" --page 2 --size 50
 
 # 자치법규 상세 조회
-sejong ordinance detail ORD123456
+warp ordinance detail ORD123456
 ```
 
 #### 설정 관리
 
 ```bash
 # API 키 설정
-sejong config set law.key YOUR_API_KEY
+warp config set law.key YOUR_API_KEY
 
 # API 키 확인 (마스킹된 출력)
-sejong config get law.key
+warp config get law.key
 
 # 설정 파일 경로 확인
-sejong config path
+warp config path
 ```
 
 #### 버전 및 도움말
 
 ```bash
 # 버전 정보
-sejong version
+warp version
 
 # 전체 도움말
-sejong --help
-sejong -h
+warp --help
+warp -h
 
 # 명령별 도움말
-sejong law --help
-sejong precedent --help
-sejong admrule --help
-sejong interpretation --help
-sejong config --help
+warp law --help
+warp precedent --help
+warp admrule --help
+warp interpretation --help
+warp config --help
 ```
 
 ### 📊 출력 예제
@@ -442,10 +442,10 @@ make release-snapshot
 
 ```bash
 # API 키가 올바르게 설정되었는지 확인
-sejong config get law.key
+warp config get law.key
 
 # API 키 재설정
-sejong config set law.key YOUR_NEW_API_KEY
+warp config set law.key YOUR_NEW_API_KEY
 ```
 
 #### 네트워크 오류
@@ -458,10 +458,10 @@ sejong config set law.key YOUR_NEW_API_KEY
 
 ```bash
 # 실행 권한 부여
-chmod +x sejong
+chmod +x warp
 
 # sudo를 사용하여 시스템 경로에 설치
-sudo mv sejong /usr/local/bin/
+sudo mv warp /usr/local/bin/
 ```
 
 ### 🤝 기여하기
@@ -484,7 +484,7 @@ sudo mv sejong /usr/local/bin/
 
 ### 📖 Introduction
 
-**Sejong CLI** is a command-line tool that allows you to quickly and easily search Korean law information from the terminal using the National Law Information Center Open API.
+**Warp CLI** is a command-line tool that allows you to quickly and easily search Korean law information from the terminal using the National Law Information Center Open API.
 
 ### ✨ Key Features
 
@@ -506,35 +506,35 @@ sudo mv sejong /usr/local/bin/
 
 #### Download Binary (Recommended)
 
-Download the latest release from the [Releases](https://github.com/pyhub-kr/pyhub-sejong-cli/releases) page.
+Download the latest release from the [Releases](https://github.com/pyhub-kr/pyhub-warp-cli/releases) page.
 
 ##### macOS (Apple Silicon)
 ```bash
-curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_arm64.tar.gz
-tar -xzf pyhub-sejong-cli_Darwin_arm64.tar.gz
-sudo mv sejong /usr/local/bin/
+curl -LO https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Darwin_arm64.tar.gz
+tar -xzf pyhub-warp-cli_Darwin_arm64.tar.gz
+sudo mv warp /usr/local/bin/
 ```
 
 ##### macOS (Intel)
 ```bash
-curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Darwin_x86_64.tar.gz
-tar -xzf pyhub-sejong-cli_Darwin_x86_64.tar.gz
-sudo mv sejong /usr/local/bin/
+curl -LO https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Darwin_x86_64.tar.gz
+tar -xzf pyhub-warp-cli_Darwin_x86_64.tar.gz
+sudo mv warp /usr/local/bin/
 ```
 
 ##### Windows
 ```powershell
 # Run in PowerShell
-Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Windows_x86_64.zip -OutFile sejong.zip
-Expand-Archive -Path sejong.zip -DestinationPath .
-# Add sejong.exe to PATH or move to desired location
+Invoke-WebRequest -Uri https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Windows_x86_64.zip -OutFile warp.zip
+Expand-Archive -Path warp.zip -DestinationPath .
+# Add warp.exe to PATH or move to desired location
 ```
 
 ##### Linux
 ```bash
-curl -LO https://github.com/pyhub-kr/pyhub-sejong-cli/releases/latest/download/pyhub-sejong-cli_Linux_x86_64.tar.gz
-tar -xzf pyhub-sejong-cli_Linux_x86_64.tar.gz
-sudo mv sejong /usr/local/bin/
+curl -LO https://github.com/pyhub-kr/pyhub-warp-cli/releases/latest/download/pyhub-warp-cli_Linux_x86_64.tar.gz
+tar -xzf pyhub-warp-cli_Linux_x86_64.tar.gz
+sudo mv warp /usr/local/bin/
 ```
 
 #### Build from Source
@@ -542,8 +542,8 @@ sudo mv sejong /usr/local/bin/
 Requires Go 1.21 or higher.
 
 ```bash
-git clone https://github.com/pyhub-kr/pyhub-sejong-cli.git
-cd pyhub-sejong-cli
+git clone https://github.com/pyhub-kr/pyhub-warp-cli.git
+cd pyhub-warp-cli
 make build
 make install
 ```
@@ -558,20 +558,20 @@ Get your Open API authentication key from the National Law Information Center:
 #### 2. Configure API Key
 
 ```bash
-sejong config set law.key YOUR_API_KEY
+warp config set law.key YOUR_API_KEY
 ```
 
 #### 3. First Search
 
 ```bash
 # Search laws
-sejong law "personal information"
+warp law "personal information"
 
 # Output in JSON format
-sejong law "traffic law" --format json
+warp law "traffic law" --format json
 
 # Specify page
-sejong law "civil law" --page 2 --size 20
+warp law "civil law" --page 2 --size 20
 ```
 
 ### 📚 Command Guide
@@ -580,168 +580,168 @@ sejong law "civil law" --page 2 --size 20
 
 ```bash
 # Basic search
-sejong law "search term"
+warp law "search term"
 
 # Specify output format
-sejong law "search term" --format json       # JSON format
-sejong law "search term" --format table      # Table format (default)
-sejong law "search term" --format markdown   # Markdown format
-sejong law "search term" --format csv        # CSV format (Excel compatible)
-sejong law "search term" --format html       # HTML format
-sejong law "search term" --format html-simple # HTML format without CSS (for LLM AI)
+warp law "search term" --format json       # JSON format
+warp law "search term" --format table      # Table format (default)
+warp law "search term" --format markdown   # Markdown format
+warp law "search term" --format csv        # CSV format (Excel compatible)
+warp law "search term" --format html       # HTML format
+warp law "search term" --format html-simple # HTML format without CSS (for LLM AI)
 
 # Pagination
-sejong law "search term" --page 2 --size 50
+warp law "search term" --page 2 --size 50
 
 # Search source
-sejong law "search term" --source all   # Unified search
-sejong law "search term" --source nlic  # National laws only
-sejong law "search term" --source elis  # Local ordinances only
+warp law "search term" --source all   # Unified search
+warp law "search term" --source nlic  # National laws only
+warp law "search term" --source elis  # Local ordinances only
 
 # Verbose logging
-sejong law "search term" --verbose
-sejong law "search term" -v  # Short option
+warp law "search term" --verbose
+warp law "search term" -v  # Short option
 ```
 
 #### Law Details
 
 ```bash
 # Basic detail view
-sejong law detail LAW_ID
+warp law detail LAW_ID
 
 # Include articles
-sejong law detail LAW_ID --articles
+warp law detail LAW_ID --articles
 
 # Include tables
-sejong law detail LAW_ID --tables
+warp law detail LAW_ID --tables
 
 # Include addenda
-sejong law detail LAW_ID --addendum
+warp law detail LAW_ID --addendum
 
 # Output in JSON format
-sejong law detail LAW_ID --format json
+warp law detail LAW_ID --format json
 ```
 
 #### Law History
 
 ```bash
 # Basic history view
-sejong law history LAW_ID
+warp law history LAW_ID
 
 # Limit number of records
-sejong law history LAW_ID --limit 10
+warp law history LAW_ID --limit 10
 
 # Output in JSON format
-sejong law history LAW_ID --format json
+warp law history LAW_ID --format json
 ```
 
 #### Precedent Search
 
 ```bash
 # Basic search
-sejong precedent search "contract termination"
+warp precedent search "contract termination"
 
 # Or use alias
-sejong prec search "damages"
+warp prec search "damages"
 
 # Output in JSON format
-sejong precedent search "unjust enrichment" --format json
+warp precedent search "unjust enrichment" --format json
 
 # Pagination
-sejong precedent search "contract" --page 2 --size 20
+warp precedent search "contract" --page 2 --size 20
 
 # View precedent details
-sejong precedent detail 12345
+warp precedent detail 12345
 ```
 
 #### Administrative Rule Search
 
 ```bash
 # Basic search
-sejong admrule search "public institution"
+warp admrule search "public institution"
 
 # Use aliases
-sejong admr search "personal information"
-sejong rule search "administrative action"
+warp admr search "personal information"
+warp rule search "administrative action"
 
 # Output in JSON format
-sejong admrule search "notice" --format json
+warp admrule search "notice" --format json
 
 # Pagination
-sejong admrule search "directive" --page 2 --size 20
+warp admrule search "directive" --page 2 --size 20
 
 # View administrative rule details
-sejong admrule detail 12345
+warp admrule detail 12345
 ```
 
 #### Legal Interpretation Search
 
 ```bash
 # Basic search
-sejong interpretation search "working hours"
+warp interpretation search "working hours"
 
 # Use aliases
-sejong interp search "vacation"
-sejong expc search "wages"
+warp interp search "vacation"
+warp expc search "wages"
 
 # Output in JSON format
-sejong interpretation search "retirement" --format json
+warp interpretation search "retirement" --format json
 
 # Pagination
-sejong interpretation search "employment" --page 2 --size 20
+warp interpretation search "employment" --page 2 --size 20
 
 # View legal interpretation details
-sejong interpretation detail 12345
+warp interpretation detail 12345
 ```
 
 #### Local Ordinance Search
 
 ```bash
 # Basic search
-sejong ordinance search "parking ordinance"
+warp ordinance search "parking ordinance"
 
 # Use alias
-sejong ord search "building ordinance"
+warp ord search "building ordinance"
 
 # Output in JSON format
-sejong ordinance search "environment" --format json
+warp ordinance search "environment" --format json
 
 # Pagination
-sejong ordinance search "traffic" --page 2 --size 50
+warp ordinance search "traffic" --page 2 --size 50
 
 # View ordinance details
-sejong ordinance detail ORD123456
+warp ordinance detail ORD123456
 ```
 
 #### Configuration Management
 
 ```bash
 # Set API key
-sejong config set law.key YOUR_API_KEY
+warp config set law.key YOUR_API_KEY
 
 # Check API key (masked output)
-sejong config get law.key
+warp config get law.key
 
 # Check configuration file path
-sejong config path
+warp config path
 ```
 
 #### Version and Help
 
 ```bash
 # Version information
-sejong version
+warp version
 
 # General help
-sejong --help
-sejong -h
+warp --help
+warp -h
 
 # Command-specific help
-sejong law --help
-sejong precedent --help
-sejong admrule --help
-sejong interpretation --help
-sejong config --help
+warp law --help
+warp precedent --help
+warp admrule --help
+warp interpretation --help
+warp config --help
 ```
 
 ### 📊 Output Examples
@@ -867,10 +867,10 @@ make release-snapshot
 
 ```bash
 # Check if API key is properly set
-sejong config get law.key
+warp config get law.key
 
 # Reset API key
-sejong config set law.key YOUR_NEW_API_KEY
+warp config set law.key YOUR_NEW_API_KEY
 ```
 
 #### Network Errors
@@ -883,10 +883,10 @@ sejong config set law.key YOUR_NEW_API_KEY
 
 ```bash
 # Grant execution permission
-chmod +x sejong
+chmod +x warp
 
 # Install to system path with sudo
-sudo mv sejong /usr/local/bin/
+sudo mv warp /usr/local/bin/
 ```
 
 ### 🤝 Contributing

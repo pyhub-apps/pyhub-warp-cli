@@ -7,12 +7,12 @@ import (
 	"io"
 	"strings"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
-	"github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	cliErrors "github.com/pyhub-apps/pyhub-warp-cli/internal/errors"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/onboarding"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -38,14 +38,14 @@ func initOrdinanceCmd() {
 		Short: i18n.T("ordinance.short"),
 		Long:  i18n.T("ordinance.long"),
 		Example: `  # 조례 검색
-  sejong ordinance search "주차 조례"
-  sejong ordinance "환경 보호"  # search는 생략 가능
+  warp ordinance search "주차 조례"
+  warp ordinance "환경 보호"  # search는 생략 가능
   
   # 지역별 조례 검색
-  sejong ordinance search "도시계획" --region 서울
+  warp ordinance search "도시계획" --region 서울
   
   # 조례 상세 조회
-  sejong ordinance detail ORD123456`,
+  warp ordinance detail ORD123456`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// If args are provided without subcommand, run search
 			if len(args) > 0 {

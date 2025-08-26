@@ -3,9 +3,9 @@ package cmd
 import (
 	"strings"
 
-	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	cliErrors "github.com/pyhub-apps/pyhub-warp-cli/internal/errors"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -19,17 +19,17 @@ func initOrdinanceSearchCmd() {
 		Short: i18n.T("ordinance.search.short"),
 		Long:  i18n.T("ordinance.search.long"),
 		Example: `  # 기본 검색
-  sejong ordinance search "주차 조례"
+  warp ordinance search "주차 조례"
   
   # 지역별 검색
-  sejong ordinance search "환경" --region 서울
-  sejong ordinance search "도시계획" --region 부산
+  warp ordinance search "환경" --region 서울
+  warp ordinance search "도시계획" --region 부산
   
   # JSON 형식으로 출력
-  sejong ordinance search "건축 조례" --format json
+  warp ordinance search "건축 조례" --format json
   
   # 페이지네이션 옵션
-  sejong ordinance search "교통" --page 2 --size 20`,
+  warp ordinance search "교통" --page 2 --size 20`,
 		Args: cobra.ExactArgs(1),
 		RunE: runOrdinanceSearchCommand,
 	}

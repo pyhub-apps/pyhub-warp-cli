@@ -1,4 +1,4 @@
-module github.com/pyhub-apps/sejong-cli
+module github.com/pyhub-apps/pyhub-warp-cli
 
 go 1.23.0
 

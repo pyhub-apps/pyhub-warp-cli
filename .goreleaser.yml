@@ -14,9 +14,9 @@ before:
     - go mod tidy
 
 builds:
-  - id: sejong
-    main: ./cmd/sejong
-    binary: sejong
+  - id: warp
+    main: ./cmd/warp
+    binary: warp
     env:
       - CGO_ENABLED=0
     goos:
@@ -90,7 +90,7 @@ changelog:
 release:
   github:
     owner: pyhub-apps
-    name: sejong-cli
+    name: pyhub-warp-cli
   
   # Release name template
   name_template: "{{.ProjectName}} v{{.Version}}"
@@ -107,48 +107,48 @@ release:
     
     ### macOS (Apple Silicon M1/M2/M3)
     ```bash
-    curl -LO https://github.com/pyhub-apps/sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Darwin_arm64.tar.gz
-    tar -xzf sejong_{{ .Version }}_Darwin_arm64.tar.gz
-    sudo mv sejong /usr/local/bin/
-    sejong version
+    curl -LO https://github.com/pyhub-apps/pyhub-warp-cli/releases/download/v{{ .Version }}/warp_{{ .Version }}_Darwin_arm64.tar.gz
+    tar -xzf warp_{{ .Version }}_Darwin_arm64.tar.gz
+    sudo mv warp /usr/local/bin/
+    warp version
     ```
     
     ### macOS (Intel)
     ```bash
-    curl -LO https://github.com/pyhub-apps/sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Darwin_x86_64.tar.gz
-    tar -xzf sejong_{{ .Version }}_Darwin_x86_64.tar.gz
-    sudo mv sejong /usr/local/bin/
-    sejong version
+    curl -LO https://github.com/pyhub-apps/pyhub-warp-cli/releases/download/v{{ .Version }}/warp_{{ .Version }}_Darwin_x86_64.tar.gz
+    tar -xzf warp_{{ .Version }}_Darwin_x86_64.tar.gz
+    sudo mv warp /usr/local/bin/
+    warp version
     ```
     
     ### Windows (PowerShell)
     ```powershell
     # Download and extract
-    Invoke-WebRequest -Uri https://github.com/pyhub-apps/sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Windows_x86_64.zip -OutFile sejong.zip
-    Expand-Archive -Path sejong.zip -DestinationPath .
+    Invoke-WebRequest -Uri https://github.com/pyhub-apps/pyhub-warp-cli/releases/download/v{{ .Version }}/warp_{{ .Version }}_Windows_x86_64.zip -OutFile warp.zip
+    Expand-Archive -Path warp.zip -DestinationPath .
     
     # Add to PATH (run as Administrator)
-    Move-Item sejong.exe "C:\Program Files\sejong\"
-    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\sejong", [EnvironmentVariableTarget]::Machine)
+    Move-Item warp.exe "C:\Program Files\warp\"
+    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\warp", [EnvironmentVariableTarget]::Machine)
     
     # Verify installation (new terminal required)
-    sejong version
+    warp version
     ```
     
     ### Linux (x86_64)
     ```bash
-    curl -LO https://github.com/pyhub-apps/sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Linux_x86_64.tar.gz
-    tar -xzf sejong_{{ .Version }}_Linux_x86_64.tar.gz
-    sudo mv sejong /usr/local/bin/
-    sejong version
+    curl -LO https://github.com/pyhub-apps/pyhub-warp-cli/releases/download/v{{ .Version }}/warp_{{ .Version }}_Linux_x86_64.tar.gz
+    tar -xzf warp_{{ .Version }}_Linux_x86_64.tar.gz
+    sudo mv warp /usr/local/bin/
+    warp version
     ```
     
     ### Linux (ARM64)
     ```bash
-    curl -LO https://github.com/pyhub-apps/sejong-cli/releases/download/v{{ .Version }}/sejong_{{ .Version }}_Linux_arm64.tar.gz
-    tar -xzf sejong_{{ .Version }}_Linux_arm64.tar.gz
-    sudo mv sejong /usr/local/bin/
-    sejong version
+    curl -LO https://github.com/pyhub-apps/pyhub-warp-cli/releases/download/v{{ .Version }}/warp_{{ .Version }}_Linux_arm64.tar.gz
+    tar -xzf warp_{{ .Version }}_Linux_arm64.tar.gz
+    sudo mv warp /usr/local/bin/
+    warp version
     ```
     
     ## 🔧 초기 설정 / Configuration
@@ -159,29 +159,29 @@ release:
     
     2. **API 키 설정 / Set API Key**
        ```bash
-       sejong config set law.key YOUR_API_KEY
+       warp config set law.key YOUR_API_KEY
        ```
     
     ## 📖 사용 예제 / Usage Examples
     
     ```bash
     # 국가 법령 검색 / Search national laws
-    sejong law search "개인정보"
+    warp law search "개인정보"
     
     # 자치 법규 검색 / Search local ordinances
-    sejong ordinance search "주차장"
+    warp ordinance search "주차장"
     
     # 통합 검색 (국가법령 + 자치법규) / Unified search
-    sejong law search "환경" --source all
+    warp law search "환경" --source all
     
     # 법령 상세 조회 / View law details
-    sejong law detail 001234
+    warp law detail 001234
     
     # 법령 연혁 조회 / View law history
-    sejong law history 001234
+    warp law history 001234
     
     # JSON 출력 / JSON output
-    sejong law search "도로교통법" --format json
+    warp law search "도로교통법" --format json
     ```
     
     ## 📝 Changelog

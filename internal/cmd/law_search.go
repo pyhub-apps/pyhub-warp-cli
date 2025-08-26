@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	cliErrors "github.com/pyhub-apps/pyhub-warp-cli/internal/errors"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/onboarding"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -28,13 +28,13 @@ func initLawSearchCmd() {
 		Short: i18n.T("law.search.short"),
 		Long:  i18n.T("law.search.long"),
 		Example: `  # 기본 검색
-  sejong law search "개인정보 보호법"
+  warp law search "개인정보 보호법"
   
   # JSON 형식으로 출력
-  sejong law search "도로교통법" --format json
+  warp law search "도로교통법" --format json
   
   # 페이지네이션 옵션
-  sejong law search "민법" --page 2 --size 20`,
+  warp law search "민법" --page 2 --size 20`,
 		Args: cobra.ExactArgs(1),
 		RunE: runLawSearchCommand,
 	}

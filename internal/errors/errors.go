@@ -90,13 +90,13 @@ var (
 	ErrNoAPIKey = &CLIError{
 		Code:    ErrCodeNoAPIKey,
 		Message: "API 키가 설정되지 않았습니다",
-		Hint:    "sejong config set law.key <YOUR_KEY> 명령으로 API 키를 설정하세요",
+		Hint:    "warp config set law.key <YOUR_KEY> 명령으로 API 키를 설정하세요",
 	}
 
 	ErrInvalidAPIKey = &CLIError{
 		Code:    ErrCodeInvalidAPIKey,
 		Message: "API 인증에 실패했습니다",
-		Hint:    "API 키가 올바른지 확인하세요: sejong config get law.key",
+		Hint:    "API 키가 올바른지 확인하세요: warp config get law.key",
 	}
 
 	// API errors
@@ -123,7 +123,7 @@ var (
 	ErrEmptyQuery = &CLIError{
 		Code:    ErrCodeInvalidInput,
 		Message: "검색어를 입력해주세요",
-		Hint:    "예: sejong law \"개인정보 보호법\"",
+		Hint:    "예: warp law \"개인정보 보호법\"",
 	}
 )
 

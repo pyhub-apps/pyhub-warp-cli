@@ -5,11 +5,11 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	cliErrors "github.com/pyhub-apps/pyhub-warp-cli/internal/errors"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/onboarding"
 	"github.com/spf13/cobra"
 )
 
@@ -33,14 +33,14 @@ func initLawCmd() {
 		Short: i18n.T("law.short"),
 		Long:  i18n.T("law.long"),
 		Example: `  # 법령 검색
-  sejong law search "개인정보 보호법"
-  sejong law "개인정보 보호법"  # search는 생략 가능
+  warp law search "개인정보 보호법"
+  warp law "개인정보 보호법"  # search는 생략 가능
   
   # 법령 상세 조회
-  sejong law detail 001234
+  warp law detail 001234
   
   # 법령 이력 조회
-  sejong law history 001234`,
+  warp law history 001234`,
 		// Run default search when args provided without subcommand
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// If args are provided without subcommand, run search

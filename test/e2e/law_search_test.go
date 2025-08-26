@@ -12,17 +12,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pyhub-apps/sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// getSejongPath returns the path to the sejong binary, checking env var first
-func getSejongPath() string {
-	if path := os.Getenv("SEJONG_BINARY_PATH"); path != "" {
+// warp binary, checking env var first
+func getWarpPath() string {
+	if path := os.Getenv("WARP_BINARY_PATH"); path != "" {
 		return path
 	}
-	return "../../sejong"
+	return "../../warp"
 }
 
 // TestE2EFirstUserScenario tests the first-time user experience
@@ -33,7 +33,7 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 	// Scenario 1: Search without API key - should show guidance
 	t.Run("SearchWithoutAPIKey", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "law", "개인정보 보호법")
+		cmd := exec.Command(getWarpPath(), "law", "개인정보 보호법")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -41,12 +41,12 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 		outputStr := string(output)
 		assert.Contains(t, outputStr, "API 키가 설정되지 않았습니다")
-		assert.Contains(t, outputStr, "sejong config set law.key")
+		assert.Contains(t, outputStr, "warp config set law.key")
 	})
 
 	// Scenario 2: Set API key
 	t.Run("SetAPIKey", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "config", "set", "law.key", "TEST_API_KEY")
+		cmd := exec.Command(getWarpPath(), "config", "set", "law.key", "TEST_API_KEY")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -58,7 +58,7 @@ func TestE2EFirstUserScenario(t *testing.T) {
 
 	// Scenario 3: Verify API key is set
 	t.Run("GetAPIKey", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "config", "get", "law.key")
+		cmd := exec.Command(getWarpPath(), "config", "get", "law.key")
 		cmd.Env = append(os.Environ(), fmt.Sprintf("HOME=%s", tempDir))
 
 		output, err := cmd.CombinedOutput()
@@ -89,7 +89,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 1: Normal search with table output
 	t.Run("NormalSearchTableOutput", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "law", "개인정보 보호법")
+		cmd := exec.Command(getWarpPath(), "law", "개인정보 보호법")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -107,7 +107,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 2: Search with JSON output
 	t.Run("SearchWithJSONOutput", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "law", "도로교통법", "--format", "json")
+		cmd := exec.Command(getWarpPath(), "law", "도로교통법", "--format", "json")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -130,7 +130,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 3: Empty result handling
 	t.Run("EmptyResultHandling", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "law", "없는법령")
+		cmd := exec.Command(getWarpPath(), "law", "없는법령")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -145,7 +145,7 @@ func TestE2ENormalUserScenario(t *testing.T) {
 
 	// Scenario 4: Pagination test
 	t.Run("PaginationTest", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "law", "개인정보 보호법", "--page", "2", "--size", "10")
+		cmd := exec.Command(getWarpPath(), "law", "개인정보 보호법", "--page", "2", "--size", "10")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -174,7 +174,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 	t.Run("InvalidAPIKey", func(t *testing.T) {
 		setupConfig(t, tempDir, "INVALID_KEY", mockServer.GetSearchURL())
 
-		cmd := exec.Command(getSejongPath(), "law", "개인정보")
+		cmd := exec.Command(getWarpPath(), "law", "개인정보")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -191,7 +191,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 	t.Run("ServerError", func(t *testing.T) {
 		setupConfig(t, tempDir, "TEST_API_KEY", mockServer.GetSearchURL())
 
-		cmd := exec.Command(getSejongPath(), "law", "error")
+		cmd := exec.Command(getWarpPath(), "law", "error")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=%s", mockServer.GetSearchURL()),
@@ -208,7 +208,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 	t.Run("NetworkTimeout", func(t *testing.T) {
 		setupConfig(t, tempDir, "TEST_API_KEY", "http://127.0.0.1:1/api")
 
-		cmd := exec.Command(getSejongPath(), "law", "test")
+		cmd := exec.Command(getWarpPath(), "law", "test")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("HOME=%s", tempDir),
 			fmt.Sprintf("LAW_API_URL=http://127.0.0.1:1/api"),
@@ -231,7 +231,7 @@ func TestE2EErrorScenarios(t *testing.T) {
 func TestE2EVersionAndHelp(t *testing.T) {
 	// Test version command
 	t.Run("VersionCommand", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "version")
+		cmd := exec.Command(getWarpPath(), "version")
 		output, err := cmd.CombinedOutput()
 		require.NoError(t, err, "Command failed: %s", string(output))
 
@@ -242,12 +242,12 @@ func TestE2EVersionAndHelp(t *testing.T) {
 
 	// Test help command
 	t.Run("HelpCommand", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "--help")
+		cmd := exec.Command(getWarpPath(), "--help")
 		output, err := cmd.CombinedOutput()
 		require.NoError(t, err, "Command failed: %s", string(output))
 
 		outputStr := string(output)
-		assert.Contains(t, outputStr, "sejong")
+		assert.Contains(t, outputStr, "warp")
 		assert.Contains(t, outputStr, "law")
 		assert.Contains(t, outputStr, "config")
 		assert.Contains(t, outputStr, "version")
@@ -255,7 +255,7 @@ func TestE2EVersionAndHelp(t *testing.T) {
 
 	// Test law subcommand help
 	t.Run("LawHelpCommand", func(t *testing.T) {
-		cmd := exec.Command(getSejongPath(), "law", "--help")
+		cmd := exec.Command(getWarpPath(), "law", "--help")
 		output, err := cmd.CombinedOutput()
 		require.NoError(t, err, "Command failed: %s", string(output))
 
@@ -271,12 +271,12 @@ func TestE2EVersionAndHelp(t *testing.T) {
 
 func setupTestEnvironment(t *testing.T) string {
 	t.Helper()
-	tempDir, err := os.MkdirTemp("", "sejong-e2e-test-*")
+	tempDir, err := os.MkdirTemp("", "warp-e2e-test-*")
 	require.NoError(t, err)
 
-	// Create .sejong directory
-	sejongDir := filepath.Join(tempDir, ".sejong")
-	err = os.MkdirAll(sejongDir, 0755)
+	// Create .pyhub/warp directory
+	pyhubDir := filepath.Join(tempDir, ".pyhub", "warp")
+	err = os.MkdirAll(pyhubDir, 0755)
 	require.NoError(t, err)
 
 	return tempDir
@@ -284,7 +284,7 @@ func setupTestEnvironment(t *testing.T) string {
 
 func setupConfig(t *testing.T, homeDir, apiKey, apiURL string) {
 	t.Helper()
-	configDir := filepath.Join(homeDir, ".sejong")
+	configDir := filepath.Join(homeDir, ".pyhub", "warp")
 	err := os.MkdirAll(configDir, 0755)
 	require.NoError(t, err)
 

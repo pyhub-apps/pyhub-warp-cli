@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
 )
 
 // Formatter handles output formatting

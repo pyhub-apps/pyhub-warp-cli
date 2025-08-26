@@ -9,7 +9,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
 )
 
 func main() {

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pyhub-apps/sejong-cli/internal/config"
-	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/config"
+	cliErrors "github.com/pyhub-apps/pyhub-warp-cli/internal/errors"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/onboarding"
 	"github.com/spf13/cobra"
 )
 

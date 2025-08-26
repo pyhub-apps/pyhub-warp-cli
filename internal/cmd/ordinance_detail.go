@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	cliErrors "github.com/pyhub-apps/sejong-cli/internal/errors"
-	"github.com/pyhub-apps/sejong-cli/internal/i18n"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	"github.com/pyhub-apps/sejong-cli/internal/onboarding"
-	"github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	cliErrors "github.com/pyhub-apps/pyhub-warp-cli/internal/errors"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/i18n"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/onboarding"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -25,10 +25,10 @@ func initOrdinanceDetailCmd() {
 		Short: i18n.T("ordinance.detail.short"),
 		Long:  i18n.T("ordinance.detail.long"),
 		Example: `  # 조례 상세 조회
-  sejong ordinance detail ORD123456
+  warp ordinance detail ORD123456
   
   # JSON 형식으로 출력
-  sejong ordinance detail ORD123456 --format json`,
+  warp ordinance detail ORD123456 --format json`,
 		Args: cobra.ExactArgs(1),
 		RunE: runOrdinanceDetailCommand,
 	}

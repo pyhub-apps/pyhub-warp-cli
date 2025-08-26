@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
-	outputPkg "github.com/pyhub-apps/sejong-cli/internal/output"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
+	outputPkg "github.com/pyhub-apps/pyhub-warp-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +22,13 @@ func initInterpretationSearchCmd() {
 		Short: "법령해석례 검색",
 		Long:  "키워드로 법령해석례를 검색합니다.",
 		Example: `  # 법령해석례 검색
-  sejong interpretation search "근로시간"
+  warp interpretation search "근로시간"
   
   # JSON 형식으로 출력
-  sejong interpretation search "휴가" --format json
+  warp interpretation search "휴가" --format json
   
   # 페이지 지정
-  sejong interpretation search "임금" --page 2 --size 20`,
+  warp interpretation search "임금" --page 2 --size 20`,
 		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"s"},
 		RunE:    runInterpretationSearchCommand,

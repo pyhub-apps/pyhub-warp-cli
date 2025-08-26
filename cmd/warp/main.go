@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/pyhub-apps/sejong-cli/internal/cmd"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/cmd"
 )
 
 // Build variables - will be set during build

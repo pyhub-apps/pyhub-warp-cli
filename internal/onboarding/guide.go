@@ -79,7 +79,7 @@ func (g *Guide) showColoredAPIKeySetup() {
 	yellow.Fprint(g.writer, "2️⃣  이메일 ID 설정하기")
 	fmt.Fprintln(g.writer)
 	fmt.Fprint(g.writer, "   → ")
-	green.Fprintln(g.writer, "sejong config set law.key <이메일ID>")
+	green.Fprintln(g.writer, "warp config set law.key <이메일ID>")
 	fmt.Fprintln(g.writer, "   예: example@gmail.com → example")
 	fmt.Fprintln(g.writer)
 
@@ -106,7 +106,7 @@ func (g *Guide) showPlainAPIKeySetup() {
 	fmt.Fprintln(g.writer, "   ⚠️  중요: 도메인 주소는 반드시 \"도메인 없음\"으로 설정")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "2. 이메일 ID 설정하기")
-	fmt.Fprintln(g.writer, "   → sejong config set law.key <이메일ID>")
+	fmt.Fprintln(g.writer, "   → warp config set law.key <이메일ID>")
 	fmt.Fprintln(g.writer, "   예: example@gmail.com → example")
 	fmt.Fprintln(g.writer)
 	fmt.Fprintln(g.writer, "💡 팁: 위 명령어를 복사하여 사용하세요!")

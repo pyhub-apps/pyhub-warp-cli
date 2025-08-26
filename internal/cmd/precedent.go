@@ -19,8 +19,8 @@ func initPrecedentCmd() {
 		Long: `대법원 및 각급 법원의 판례를 검색하고 상세 정보를 조회합니다.
 
 예시:
-  sejong precedent search "계약 해지"  # 판례 검색
-  sejong precedent detail 12345        # 판례 상세 조회`,
+  warp precedent search "계약 해지"  # 판례 검색
+  warp precedent detail 12345        # 판례 상세 조회`,
 		Aliases: []string{"prec"},
 	}
 
@@ -40,8 +40,8 @@ func updatePrecedentCommand() {
 		precedentCmd.Long = `대법원 및 각급 법원의 판례를 검색하고 상세 정보를 조회합니다.
 
 예시:
-  sejong precedent search "계약 해지"  # 판례 검색
-  sejong precedent detail 12345        # 판례 상세 조회`
+  warp precedent search "계약 해지"  # 판례 검색
+  warp precedent detail 12345        # 판례 상세 조회`
 	}
 
 	// Update subcommands

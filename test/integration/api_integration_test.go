@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pyhub-apps/sejong-cli/internal/api"
-	"github.com/pyhub-apps/sejong-cli/internal/testutil"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/api"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/testutil"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -128,7 +128,7 @@ func TestAPIClientWithoutKey(t *testing.T) {
 // TestConfigurationIntegration tests configuration loading and saving
 func TestConfigurationIntegration(t *testing.T) {
 	// Create temp directory for config
-	tempDir, err := os.MkdirTemp("", "sejong-config-test-*")
+	tempDir, err := os.MkdirTemp("", "warp-config-test-*")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
 
@@ -139,7 +139,7 @@ func TestConfigurationIntegration(t *testing.T) {
 
 	// Test 1: Create config file
 	t.Run("CreateConfig", func(t *testing.T) {
-		configDir := filepath.Join(tempDir, ".sejong")
+		configDir := filepath.Join(tempDir, ".pyhub", "warp")
 		err := os.MkdirAll(configDir, 0755)
 		require.NoError(t, err)
 
@@ -151,7 +151,7 @@ func TestConfigurationIntegration(t *testing.T) {
 
 	// Test 2: Set and save API key
 	t.Run("SetAndSaveAPIKey", func(t *testing.T) {
-		configFile := filepath.Join(tempDir, ".sejong", "config.yaml")
+		configFile := filepath.Join(tempDir, ".pyhub", "warp", "config.yaml")
 		viper.SetConfigFile(configFile)
 		viper.Set("law.key", "TEST_API_KEY_123")
 		err := viper.WriteConfig()
@@ -160,7 +160,7 @@ func TestConfigurationIntegration(t *testing.T) {
 
 	// Test 3: Load saved config
 	t.Run("LoadSavedConfig", func(t *testing.T) {
-		configFile := filepath.Join(tempDir, ".sejong", "config.yaml")
+		configFile := filepath.Join(tempDir, ".pyhub", "warp", "config.yaml")
 		viper.SetConfigFile(configFile)
 		err := viper.ReadInConfig()
 		require.NoError(t, err)

@@ -6,8 +6,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/pyhub-apps/sejong-cli/internal/config"
-	"github.com/pyhub-apps/sejong-cli/internal/logger"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/config"
+	"github.com/pyhub-apps/pyhub-warp-cli/internal/logger"
 )
 
 // UnifiedClient handles unified search across multiple APIs
@@ -24,7 +24,7 @@ func NewUnifiedClient() (*UnifiedClient, error) {
 		// Try legacy key path
 		apiKey = config.GetString("law.key")
 		if apiKey == "" {
-			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'sejong config set law.key YOUR_KEY' 명령으로 설정하세요")
+			return nil, fmt.Errorf("API 키가 설정되지 않았습니다. 'warp config set law.key YOUR_KEY' 명령으로 설정하세요")
 		}
 	}
 
