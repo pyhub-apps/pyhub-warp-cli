@@ -411,7 +411,7 @@ func TestFormatTableToString(t *testing.T) {
 			},
 		},
 		{
-			name: "Long names truncated",
+			name: "Long names wrapped",
 			resp: &api.SearchResponse{
 				TotalCount: 1,
 				Page:       1,
@@ -425,7 +425,9 @@ func TestFormatTableToString(t *testing.T) {
 				},
 			},
 			contains: []string{
-				"...", // Should have ellipsis for truncated text
+				"매우 긴 법령 이름입니다",  // Text should be wrapped, not truncated
+				"이것은 정말로 너무 길어서", // Second line of wrapped text
+				"매우 긴 부처명입니다",    // Department text wrapped
 			},
 		},
 		{

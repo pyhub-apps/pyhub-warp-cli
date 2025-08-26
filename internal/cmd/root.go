@@ -17,7 +17,6 @@ var (
 	Version   = "dev"
 	BuildDate = "unknown"
 	GitCommit = "unknown"
-
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -109,7 +108,6 @@ func Execute() {
 func setupFlags() {
 	// Initialize configuration
 	cobra.OnInitialize(initConfig)
-
 
 	// Global flags
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, i18n.T("cli.verbose"))

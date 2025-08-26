@@ -31,7 +31,7 @@ func NewELISClient(apiKey string) *ELISClient {
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
-		baseURL:        "https://www.law.go.kr/DRF/lawSearch.do", // 자치법규 목록
+		baseURL:        "https://www.law.go.kr/DRF/lawSearch.do",  // 자치법규 목록
 		detailURL:      "https://www.law.go.kr/DRF/lawService.do", // 자치법규 본문
 		apiKey:         apiKey,
 		retryBaseDelay: 500 * time.Millisecond,
@@ -79,14 +79,14 @@ func (c *ELISClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	params := url.Values{}
 	params.Set("OC", c.apiKey)
 	params.Set("target", "ordin") // 자치법규 대상
-	
+
 	// Add region to query if provided
 	query := req.Query
 	if req.Region != "" {
 		query = req.Region + " " + query
 	}
 	params.Set("query", query)
-	
+
 	params.Set("page", fmt.Sprintf("%d", req.PageNo))
 	params.Set("display", fmt.Sprintf("%d", req.PageSize))
 	params.Set("type", "json")
@@ -151,7 +151,7 @@ func (c *ELISClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 		law := LawInfo{
 			LawType: "자치법규",
 		}
-		
+
 		// Parse fields from map
 		if v, ok := lawData["자치법규ID"].(string); ok {
 			law.ID = v
@@ -177,7 +177,7 @@ func (c *ELISClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 		if v, ok := lawData["시행일자"].(string); ok {
 			law.EffectDate = v
 		}
-		
+
 		searchResp.Laws = append(searchResp.Laws, law)
 	}
 

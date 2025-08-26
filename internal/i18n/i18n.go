@@ -43,13 +43,11 @@ func Init() error {
 	return nil
 }
 
-
 // detectLanguage always returns Korean as this is a Korean law information tool
 func detectLanguage() string {
 	// Always return Korean - this is a Korean law information tool
 	return "ko"
 }
-
 
 // T translates a message
 func T(messageID string, data ...map[string]interface{}) string {

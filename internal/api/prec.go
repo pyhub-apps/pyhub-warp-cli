@@ -102,7 +102,7 @@ func (c *PrecClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 		logger.Debug("JSON format not supported for precedent API, returning empty result")
 		return &SearchResponse{TotalCount: 0, Page: req.PageNo, Laws: []LawInfo{}}, nil
 	}
-	
+
 	// Parse XML response
 	var precResponse PrecSearchResponse
 	if err := xml.Unmarshal(body, &precResponse); err != nil {

@@ -52,14 +52,14 @@ type UnifiedSearchRequest struct {
 // LawDetail represents detailed law information
 type LawDetail struct {
 	LawInfo
-	Content              string                 `json:"조문내용" xml:"조문내용"`
-	Articles             []Article              `json:"조문" xml:"조문"`
-	Attachments          []string               `json:"첨부파일" xml:"첨부파일"`
-	RelatedLaws          []string               `json:"관련법령" xml:"관련법령"`
-	RevisionText         string                 `json:"개정문" xml:"개정문"`        // 개정문 내용
-	Tables               []Table                `json:"별표" xml:"별표"`          // 별표 목록
-	SupplementaryProvisions []SupplementaryProvision `json:"부칙" xml:"부칙"` // 부칙 목록
-	HasRevisionText      bool                   `json:"개정문존재" xml:"개정문존재"`  // 개정문 존재 여부
+	Content                 string                   `json:"조문내용" xml:"조문내용"`
+	Articles                []Article                `json:"조문" xml:"조문"`
+	Attachments             []string                 `json:"첨부파일" xml:"첨부파일"`
+	RelatedLaws             []string                 `json:"관련법령" xml:"관련법령"`
+	RevisionText            string                   `json:"개정문" xml:"개정문"`     // 개정문 내용
+	Tables                  []Table                  `json:"별표" xml:"별표"`       // 별표 목록
+	SupplementaryProvisions []SupplementaryProvision `json:"부칙" xml:"부칙"`       // 부칙 목록
+	HasRevisionText         bool                     `json:"개정문존재" xml:"개정문존재"` // 개정문 존재 여부
 }
 
 // LawDetailResponse represents the actual API response structure for law detail
@@ -69,26 +69,26 @@ type LawDetailResponse struct {
 
 // LawDetailContent represents the content structure returned by the detail API
 type LawDetailContent struct {
-	LawKey      string           `json:"법령키" xml:"법령키"`
-	BasicInfo   *BasicInfo       `json:"기본정보" xml:"기본정보"`
-	Revisions   RevisionContent  `json:"개정문" xml:"개정문"`
-	Tables      TableContent     `json:"별표" xml:"별표"`
-	ArticlesRaw ArticlesContent  `json:"조문" xml:"조문"`
+	LawKey                  string                         `json:"법령키" xml:"법령키"`
+	BasicInfo               *BasicInfo                     `json:"기본정보" xml:"기본정보"`
+	Revisions               RevisionContent                `json:"개정문" xml:"개정문"`
+	Tables                  TableContent                   `json:"별표" xml:"별표"`
+	ArticlesRaw             ArticlesContent                `json:"조문" xml:"조문"`
 	SupplementaryProvisions SupplementaryProvisionsContent `json:"부칙" xml:"부칙"`
 }
 
 // BasicInfo represents basic law information
 type BasicInfo struct {
-	LawID              string          `json:"법령ID" xml:"법령ID"`
-	LawNameKorean      string          `json:"법령명_한글" xml:"법령명_한글"`
-	LawNameHanja       string          `json:"법령명_한자" xml:"법령명_한자"`
-	LawNameAbbr        string          `json:"법령명약칭" xml:"법령명약칭"`
-	PromulgationDate   string          `json:"공포일자" xml:"공포일자"`
-	PromulgationNumber string          `json:"공포번호" xml:"공포번호"`
-	EffectiveDate      string          `json:"시행일자" xml:"시행일자"`
-	RevisionType       string          `json:"제개정구분" xml:"제개정구분"`
-	Department         DepartmentInfo  `json:"소관부처" xml:"소관부처"`
-	LawTypeInfo        LawTypeInfo     `json:"법종구분" xml:"법종구분"`
+	LawID              string         `json:"법령ID" xml:"법령ID"`
+	LawNameKorean      string         `json:"법령명_한글" xml:"법령명_한글"`
+	LawNameHanja       string         `json:"법령명_한자" xml:"법령명_한자"`
+	LawNameAbbr        string         `json:"법령명약칭" xml:"법령명약칭"`
+	PromulgationDate   string         `json:"공포일자" xml:"공포일자"`
+	PromulgationNumber string         `json:"공포번호" xml:"공포번호"`
+	EffectiveDate      string         `json:"시행일자" xml:"시행일자"`
+	RevisionType       string         `json:"제개정구분" xml:"제개정구분"`
+	Department         DepartmentInfo `json:"소관부처" xml:"소관부처"`
+	LawTypeInfo        LawTypeInfo    `json:"법종구분" xml:"법종구분"`
 }
 
 // DepartmentInfo represents department information
@@ -149,23 +149,22 @@ type ArticlesContent struct {
 
 // ArticleUnit represents a single article unit from the API
 type ArticleUnit struct {
-	ArticleKey          string      `json:"조문키" xml:"조문키"`
-	ArticleNumber       string      `json:"조문번호" xml:"조문번호"`
-	ArticleYN           string      `json:"조문여부" xml:"조문여부"`
-	ArticleContent      string      `json:"조문내용" xml:"조문내용"`
-	ArticleReference    string      `json:"조문참고자료" xml:"조문참고자료"`
-	ArticleEffectDate   string      `json:"조문시행일자" xml:"조문시행일자"`
-	ArticleTitle        string      `json:"조문제목" xml:"조문제목"`
-	ArticleChangeYN     string      `json:"조문변경여부" xml:"조문변경여부"`
-	ArticleMoveBefore   string      `json:"조문이동이전" xml:"조문이동이전"`
-	ArticleMoveAfter    string      `json:"조문이동이후" xml:"조문이동이후"`
-	Paragraphs          interface{} `json:"항" xml:"항"` // Can be array or object
-	ArticleHistory      interface{} `json:"조문이동이력" xml:"조문이동이력"`
-	LawID               string      `json:"법령ID" xml:"법령ID"`
-	LawNameKorean       string      `json:"법령명한글" xml:"법령명한글"`
-	LawSerialNo         string      `json:"법령일련번호" xml:"법령일련번호"`
+	ArticleKey        string      `json:"조문키" xml:"조문키"`
+	ArticleNumber     string      `json:"조문번호" xml:"조문번호"`
+	ArticleYN         string      `json:"조문여부" xml:"조문여부"`
+	ArticleContent    string      `json:"조문내용" xml:"조문내용"`
+	ArticleReference  string      `json:"조문참고자료" xml:"조문참고자료"`
+	ArticleEffectDate string      `json:"조문시행일자" xml:"조문시행일자"`
+	ArticleTitle      string      `json:"조문제목" xml:"조문제목"`
+	ArticleChangeYN   string      `json:"조문변경여부" xml:"조문변경여부"`
+	ArticleMoveBefore string      `json:"조문이동이전" xml:"조문이동이전"`
+	ArticleMoveAfter  string      `json:"조문이동이후" xml:"조문이동이후"`
+	Paragraphs        interface{} `json:"항" xml:"항"` // Can be array or object
+	ArticleHistory    interface{} `json:"조문이동이력" xml:"조문이동이력"`
+	LawID             string      `json:"법령ID" xml:"법령ID"`
+	LawNameKorean     string      `json:"법령명한글" xml:"법령명한글"`
+	LawSerialNo       string      `json:"법령일련번호" xml:"법령일련번호"`
 }
-
 
 // SupplementaryProvision represents a supplementary provision (부칙)
 type SupplementaryProvision struct {

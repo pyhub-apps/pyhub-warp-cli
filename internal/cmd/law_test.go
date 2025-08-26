@@ -131,8 +131,8 @@ func TestLawCommandFlags(t *testing.T) {
 	}
 
 	sizeFlag := lawCmd.Flag("size")
-	if sizeFlag.DefValue != "10" {
-		t.Errorf("size flag default = %s, want 10", sizeFlag.DefValue)
+	if sizeFlag.DefValue != "50" {
+		t.Errorf("size flag default = %s, want 50", sizeFlag.DefValue)
 	}
 }
 

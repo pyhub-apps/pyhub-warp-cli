@@ -104,7 +104,7 @@ func (c *AdmrulClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*
 		logger.Debug("JSON format not supported for administrative rule API, returning empty result")
 		return &SearchResponse{TotalCount: 0, Page: req.PageNo, Laws: []LawInfo{}}, nil
 	}
-	
+
 	// Parse XML response
 	var admrulResponse AdmrulSearchResponse
 	if err := xml.Unmarshal(body, &admrulResponse); err != nil {
