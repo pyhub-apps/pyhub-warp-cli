@@ -20,12 +20,14 @@ func TestNLICClient_Search(t *testing.T) {
 		{
 			name: "successful search",
 			responseBody: `{
-				"totalCnt": 2,
-				"page": 1,
-				"law": [
-					{"법령ID": "001", "법령명한글": "테스트법1"},
-					{"법령ID": "002", "법령명한글": "테스트법2"}
-				]
+				"LawSearch": {
+					"totalCnt": "2",
+					"page": "1",
+					"law": [
+						{"법령ID": "001", "법령명한글": "테스트법1"},
+						{"법령ID": "002", "법령명한글": "테스트법2"}
+					]
+				}
 			}`,
 			responseStatus: http.StatusOK,
 			expectedError:  false,
@@ -75,6 +77,7 @@ func TestNLICClient_Search(t *testing.T) {
 				Query:    "test",
 				PageNo:   1,
 				PageSize: 10,
+				Type:     "JSON",
 			}
 			result, err := client.Search(ctx, req)
 
@@ -372,14 +375,16 @@ func TestNLICClient_RetryLogic(t *testing.T) {
 			return
 		}
 
-		// Success response
-		response := SearchResponse{
-			TotalCount: 1,
-			Page:       1,
-			Laws: []LawInfo{
-				{
-					ID:   "001",
-					Name: "Test Law",
+		// Success response with LawSearch wrapper for JSON format
+		response := map[string]interface{}{
+			"LawSearch": map[string]interface{}{
+				"totalCnt": "1",
+				"page":     "1",
+				"law": []map[string]string{
+					{
+						"법령ID":     "001",
+						"법령명한글": "Test Law",
+					},
 				},
 			},
 		}
@@ -403,6 +408,7 @@ func TestNLICClient_RetryLogic(t *testing.T) {
 		Query:    "test",
 		PageNo:   1,
 		PageSize: 10,
+		Type:     "JSON",
 	}
 
 	// Should succeed after retries

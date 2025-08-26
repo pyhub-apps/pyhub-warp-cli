@@ -28,7 +28,10 @@ func initRootCmd() {
 		Use:   "warp",
 		Short: i18n.T("cli.short"),
 		Long:  i18n.T("cli.long"),
-		Example: `  # 법령 검색
+		Example: `  # 통합 검색
+  warp search "개인정보"
+  
+  # 법령 검색
   warp law "개인정보 보호법"
   
   # JSON 형식으로 출력
@@ -65,6 +68,7 @@ func Execute() {
 	initPrecedentCmd()
 	initAdmruleCmd()
 	initInterpretationCmd()
+	initSearchCmd()
 
 	// Add version command to root
 	rootCmd.AddCommand(versionCmd)
@@ -98,6 +102,9 @@ func Execute() {
 
 	// Add legal interpretation command to root
 	rootCmd.AddCommand(interpretationCmd)
+
+	// Add unified search command to root
+	rootCmd.AddCommand(searchCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -136,6 +143,7 @@ func updateCommandDescriptions() {
 	updatePrecedentCommand()
 	updateAdmruleCommand()
 	updateInterpretationCommand()
+	updateSearchCommand()
 }
 
 func init() {
