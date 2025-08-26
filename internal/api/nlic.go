@@ -117,7 +117,7 @@ func (c *NLICClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 			bodyStr := string(body)
 			if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
 				// Parse HTML error message
-				errorMsg := ParseHTMLError(bodyStr)
+				errorMsg := c.parseHTMLError(bodyStr)
 				logger.Debug("HTML error response detected: %s", errorMsg)
 				// Check if it's an API key error
 				if strings.Contains(errorMsg, "API 인증 실패") || strings.Contains(errorMsg, "API 키") {
