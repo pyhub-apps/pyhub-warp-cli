@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,8 +31,8 @@ func NewELISClient(apiKey string) *ELISClient {
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
-		baseURL:        "https://www.law.go.kr/DRF/lawService.do", // 자치법규 목록
-		detailURL:      "https://www.law.go.kr/DRF/lawContent.do", // 자치법규 본문
+		baseURL:        "https://www.law.go.kr/DRF/lawSearch.do", // 자치법규 목록
+		detailURL:      "https://www.law.go.kr/DRF/lawService.do", // 자치법규 본문
 		apiKey:         apiKey,
 		retryBaseDelay: 500 * time.Millisecond,
 		maxRetries:     3,
@@ -63,9 +63,14 @@ type OrdinanceDetail struct {
 
 // OrdinanceSearchResponse represents the search response for ordinances
 type OrdinanceSearchResponse struct {
-	TotalCount int             `json:"totalCnt" xml:"totalCnt"`
-	Page       int             `json:"page" xml:"page"`
-	Ordinances []OrdinanceInfo `json:"list" xml:"list>item"`
+	OrdinSearch struct {
+		ResultCode string                   `json:"resultCode"`
+		ResultMsg  string                   `json:"resultMsg"`
+		TotalCnt   string                   `json:"totalCnt"`
+		Page       string                   `json:"page"`
+		NumOfRows  string                   `json:"numOfRows"`
+		Law        []map[string]interface{} `json:"law"`
+	} `json:"OrdinSearch"`
 }
 
 // Search searches for local ordinances
@@ -74,15 +79,17 @@ func (c *ELISClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	params := url.Values{}
 	params.Set("OC", c.apiKey)
 	params.Set("target", "ordin") // 자치법규 대상
-	params.Set("query", req.Query)
+	
+	// Add region to query if provided
+	query := req.Query
+	if req.Region != "" {
+		query = req.Region + " " + query
+	}
+	params.Set("query", query)
+	
 	params.Set("page", fmt.Sprintf("%d", req.PageNo))
 	params.Set("display", fmt.Sprintf("%d", req.PageSize))
 	params.Set("type", "json")
-
-	// Add region filter if provided
-	if req.Region != "" {
-		params.Set("region", req.Region)
-	}
 
 	// Add sort order
 	if req.Sort != "" {
@@ -114,31 +121,64 @@ func (c *ELISClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 			}
 			return nil, fmt.Errorf("%s", errorMsg)
 		}
-		// Try XML if JSON fails
-		if err2 := xml.Unmarshal(body, &elisResp); err2 != nil {
-			logger.Debug("Response body: %s", bodyStr)
-			return nil, fmt.Errorf("응답 파싱 실패: %w", err)
-		}
+		logger.Debug("Response body: %s", bodyStr)
+		return nil, fmt.Errorf("응답 파싱 실패: %w", err)
+	}
+
+	// Check for API error
+	if elisResp.OrdinSearch.ResultCode != "00" {
+		return nil, fmt.Errorf("API 오류: %s", elisResp.OrdinSearch.ResultMsg)
+	}
+
+	// Parse total count and page
+	totalCount := 0
+	if tc, err := strconv.Atoi(elisResp.OrdinSearch.TotalCnt); err == nil {
+		totalCount = tc
+	}
+	page := 1
+	if p, err := strconv.Atoi(elisResp.OrdinSearch.Page); err == nil {
+		page = p
 	}
 
 	// Convert to unified SearchResponse
 	searchResp := &SearchResponse{
-		TotalCount: elisResp.TotalCount,
-		Page:       elisResp.Page,
-		Laws:       make([]LawInfo, len(elisResp.Ordinances)),
+		TotalCount: totalCount,
+		Page:       page,
+		Laws:       make([]LawInfo, 0, len(elisResp.OrdinSearch.Law)),
 	}
 
-	for i, ord := range elisResp.Ordinances {
-		searchResp.Laws[i] = LawInfo{
-			ID:         ord.ID,
-			Name:       ord.Name,
-			PromulDate: ord.PromulDate,
-			PromulNo:   ord.PromulNo,
-			Category:   ord.Category,
-			Department: ord.LocalGov, // 지자체명을 Department로 사용
-			EffectDate: ord.EffectDate,
-			LawType:    "자치법규",
+	for _, lawData := range elisResp.OrdinSearch.Law {
+		law := LawInfo{
+			LawType: "자치법규",
 		}
+		
+		// Parse fields from map
+		if v, ok := lawData["자치법규ID"].(string); ok {
+			law.ID = v
+		}
+		if v, ok := lawData["자치법규명"].(string); ok {
+			law.Name = v
+		}
+		if v, ok := lawData["자치법규일련번호"].(string); ok {
+			law.SerialNo = v
+		}
+		if v, ok := lawData["공포일자"].(string); ok {
+			law.PromulDate = v
+		}
+		if v, ok := lawData["공포번호"].(string); ok {
+			law.PromulNo = v
+		}
+		if v, ok := lawData["자치법규종류"].(string); ok {
+			law.Category = v
+		}
+		if v, ok := lawData["지자체기관명"].(string); ok {
+			law.Department = v
+		}
+		if v, ok := lawData["시행일자"].(string); ok {
+			law.EffectDate = v
+		}
+		
+		searchResp.Laws = append(searchResp.Laws, law)
 	}
 
 	return searchResp, nil
@@ -149,7 +189,7 @@ func (c *ELISClient) GetDetail(ctx context.Context, ordinanceID string) (*LawDet
 	params := url.Values{}
 	params.Set("OC", c.apiKey)
 	params.Set("target", "ordin")
-	params.Set("ID", ordinanceID)
+	params.Set("MST", ordinanceID) // Use MST parameter for ordinance serial number
 	params.Set("type", "json")
 
 	fullURL := fmt.Sprintf("%s?%s", c.detailURL, params.Encode())
@@ -161,11 +201,8 @@ func (c *ELISClient) GetDetail(ctx context.Context, ordinanceID string) (*LawDet
 	}
 
 	// Parse the response
-	var wrapper struct {
-		Ordinance *OrdinanceDetail `json:"자치법규" xml:"자치법규"`
-	}
-
-	if err := json.Unmarshal(body, &wrapper); err != nil {
+	var detailResp map[string]interface{}
+	if err := json.Unmarshal(body, &detailResp); err != nil {
 		// Check if response is HTML (error page)
 		bodyStr := string(body)
 		if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
@@ -177,37 +214,85 @@ func (c *ELISClient) GetDetail(ctx context.Context, ordinanceID string) (*LawDet
 			}
 			return nil, fmt.Errorf("%s", errorMsg)
 		}
-		// Try XML if JSON fails
-		if err2 := xml.Unmarshal(body, &wrapper); err2 != nil {
-			// Try direct unmarshal
-			var detail OrdinanceDetail
-			if err3 := json.Unmarshal(body, &detail); err3 != nil {
-				return nil, fmt.Errorf("자치법규 상세 정보 파싱 실패: %w", err)
-			}
-			wrapper.Ordinance = &detail
+		return nil, fmt.Errorf("자치법규 상세 정보 파싱 실패: %w", err)
+	}
+
+	// Check for error message
+	if lawMsg, ok := detailResp["Law"].(string); ok {
+		if strings.Contains(lawMsg, "일치하는 자치법규가 없습니다") {
+			return nil, fmt.Errorf("자치법규 상세 정보를 찾을 수 없습니다")
 		}
 	}
 
-	if wrapper.Ordinance == nil {
-		return nil, fmt.Errorf("자치법규 상세 정보를 찾을 수 없습니다")
+	// Parse LawService response
+	lawService, ok := detailResp["LawService"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("잘못된 응답 형식")
+	}
+
+	// Parse basic info
+	basicInfo, ok := lawService["자치법규기본정보"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("자치법규 기본 정보를 찾을 수 없습니다")
 	}
 
 	// Convert to LawDetail
 	lawDetail := &LawDetail{
 		LawInfo: LawInfo{
-			ID:         wrapper.Ordinance.ID,
-			Name:       wrapper.Ordinance.Name,
-			PromulDate: wrapper.Ordinance.PromulDate,
-			PromulNo:   wrapper.Ordinance.PromulNo,
-			Category:   wrapper.Ordinance.Category,
-			Department: wrapper.Ordinance.LocalGov,
-			EffectDate: wrapper.Ordinance.EffectDate,
-			LawType:    "자치법규",
+			LawType: "자치법규",
 		},
-		Content:     wrapper.Ordinance.Content,
-		Articles:    wrapper.Ordinance.Articles,
-		Attachments: wrapper.Ordinance.Attachments,
-		RelatedLaws: wrapper.Ordinance.RelatedLaws,
+	}
+
+	// Parse fields from basicInfo
+	if v, ok := basicInfo["자치법규ID"].(string); ok {
+		lawDetail.LawInfo.ID = v
+	}
+	if v, ok := basicInfo["자치법규명"].(string); ok {
+		lawDetail.LawInfo.Name = v
+	}
+	if v, ok := basicInfo["자치법규일련번호"].(string); ok {
+		lawDetail.LawInfo.SerialNo = v
+	}
+	if v, ok := basicInfo["공포일자"].(string); ok {
+		lawDetail.LawInfo.PromulDate = v
+	}
+	if v, ok := basicInfo["공포번호"].(string); ok {
+		lawDetail.LawInfo.PromulNo = v
+	}
+	if v, ok := basicInfo["자치법규종류"].(string); ok {
+		if v == "C0001" {
+			lawDetail.LawInfo.Category = "조례"
+		} else if v == "C0002" {
+			lawDetail.LawInfo.Category = "규칙"
+		} else {
+			lawDetail.LawInfo.Category = v
+		}
+	}
+	if v, ok := basicInfo["지자체기관명"].(string); ok {
+		lawDetail.LawInfo.Department = v
+	}
+	if v, ok := basicInfo["시행일자"].(string); ok {
+		lawDetail.LawInfo.EffectDate = v
+	}
+
+	// Parse content (articles)
+	if articles, ok := lawService["조문단위"].([]interface{}); ok {
+		lawDetail.Articles = make([]Article, 0, len(articles))
+		for _, art := range articles {
+			if artMap, ok := art.(map[string]interface{}); ok {
+				article := Article{}
+				if v, ok := artMap["조문번호"].(string); ok {
+					article.Number = v
+				}
+				if v, ok := artMap["조문제목"].(string); ok {
+					article.Title = v
+				}
+				if v, ok := artMap["조문내용"].(string); ok {
+					article.Content = v
+				}
+				lawDetail.Articles = append(lawDetail.Articles, article)
+			}
+		}
 	}
 
 	return lawDetail, nil
