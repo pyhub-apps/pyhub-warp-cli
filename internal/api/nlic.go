@@ -181,9 +181,9 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 		LawInfo: LawInfo{
 			SerialNo: lawID, // Use the provided law ID
 		},
-		Articles:                 make([]Article, 0),
-		Tables:                   make([]Table, 0),
-		SupplementaryProvisions:  make([]SupplementaryProvision, 0),
+		Articles:                make([]Article, 0),
+		Tables:                  make([]Table, 0),
+		SupplementaryProvisions: make([]SupplementaryProvision, 0),
 	}
 
 	// Extract basic info if available
@@ -195,12 +195,12 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 		detail.LawInfo.PromulNo = basicInfo.PromulgationNumber
 		detail.LawInfo.EffectDate = basicInfo.EffectiveDate
 		detail.LawInfo.Category = basicInfo.RevisionType
-		
+
 		// Extract department info if available
 		if basicInfo.Department.Content != "" {
 			detail.LawInfo.Department = basicInfo.Department.Content
 		}
-		
+
 		// Extract law type info if available
 		if basicInfo.LawTypeInfo.Content != "" {
 			detail.LawInfo.LawType = basicInfo.LawTypeInfo.Content
@@ -225,7 +225,7 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 			Number: unit.TableNumber,
 			Title:  unit.TableTitle,
 		}
-		
+
 		// Handle table content which can be string or array
 		if unit.TableContent != nil {
 			if tableStr, ok := unit.TableContent.(string); ok {
@@ -235,7 +235,7 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 				table.Content = "(별표 내용 있음)"
 			}
 		}
-		
+
 		detail.Tables = append(detail.Tables, table)
 	}
 
@@ -245,7 +245,7 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 			Number:           unit.ProvisionNumber,
 			PromulgationDate: unit.ProvisionDate,
 		}
-		
+
 		// Handle provision content which can be string or array
 		if unit.ProvisionContent != nil {
 			if provStr, ok := unit.ProvisionContent.(string); ok {
@@ -264,7 +264,7 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 				supp.Content = "(부칙 내용 있음)"
 			}
 		}
-		
+
 		detail.SupplementaryProvisions = append(detail.SupplementaryProvisions, supp)
 	}
 
@@ -277,7 +277,7 @@ func (c *NLICClient) GetDetail(ctx context.Context, lawID string) (*LawDetail, e
 			EffectDate: unit.ArticleEffectDate,
 		}
 		detail.Articles = append(detail.Articles, article)
-		
+
 		// If basic info wasn't in the main structure, try to get from article units
 		if detail.LawInfo.ID == "" && unit.LawID != "" {
 			detail.LawInfo.ID = unit.LawID
@@ -488,7 +488,7 @@ func (c *NLICClient) parseHTMLError(html string) string {
 	if strings.Contains(html, "미신청된 목록/본문에 대한 접근입니다") {
 		return "API 사용 권한이 없습니다. https://open.law.go.kr 에서 로그인 후 [OPEN API] -> [OPEN API 신청]에서 필요한 법령 종류를 체크해주세요"
 	}
-	
+
 	if strings.Contains(html, "페이지 접속에 실패하였습니다") {
 		return "API 접속 실패: API 키를 확인하거나 서비스 상태를 점검해주세요"
 	}

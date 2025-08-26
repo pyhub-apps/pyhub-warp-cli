@@ -24,13 +24,13 @@ type ExpcSearchResponse struct {
 
 // ExpcInfo represents individual legal interpretation information
 type ExpcInfo struct {
-	ID             string `xml:"법령해석례일련번호"`
-	Title          string `xml:"안건명"`
-	CaseNumber     string `xml:"안건번호"`
-	QueryDept      string `xml:"질의기관명"`
-	ResponseDept   string `xml:"회신기관명"`
-	ResponseDate   string `xml:"회신일자"`
-	DetailLink     string `xml:"법령해석례상세링크"`
+	ID           string `xml:"법령해석례일련번호"`
+	Title        string `xml:"안건명"`
+	CaseNumber   string `xml:"안건번호"`
+	QueryDept    string `xml:"질의기관명"`
+	ResponseDept string `xml:"회신기관명"`
+	ResponseDate string `xml:"회신일자"`
+	DetailLink   string `xml:"법령해석례상세링크"`
 }
 
 // ExpcClient represents the Legal Interpretation API client (법령해석례 API 클라이언트)
@@ -98,7 +98,6 @@ func (c *ExpcClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	if err != nil {
 		return nil, err
 	}
-	
 
 	// Parse response based on type
 	if strings.ToUpper(req.Type) == "JSON" {
@@ -106,14 +105,13 @@ func (c *ExpcClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 		logger.Debug("JSON format not supported for legal interpretation API, returning empty result")
 		return &SearchResponse{TotalCount: 0, Page: req.PageNo, Laws: []LawInfo{}}, nil
 	}
-	
+
 	// Parse XML response
 	var expcResponse ExpcSearchResponse
 	if err := xml.Unmarshal(body, &expcResponse); err != nil {
 		logger.Error("XML parsing failed: %v", err)
 		return nil, fmt.Errorf("XML 파싱 실패: %w", err)
 	}
-
 
 	// Convert to SearchResponse
 	response := &SearchResponse{
@@ -126,7 +124,7 @@ func (c *ExpcClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 		response.Laws[i] = LawInfo{
 			ID:         expc.ID,
 			Name:       expc.Title,
-			LawType:    "법령해석례",  // Legal interpretation type
+			LawType:    "법령해석례", // Legal interpretation type
 			Department: expc.QueryDept,
 			PromulDate: expc.ResponseDate,
 			PromulNo:   expc.CaseNumber,

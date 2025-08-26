@@ -427,7 +427,7 @@ func TestFormatTableToString(t *testing.T) {
 			contains: []string{
 				"매우 긴 법령 이름입니다",  // Text should be wrapped, not truncated
 				"이것은 정말로 너무 길어서", // Second line of wrapped text
-				"매우 긴 부처명입니다",      // Department text wrapped
+				"매우 긴 부처명입니다",    // Department text wrapped
 			},
 		},
 		{
