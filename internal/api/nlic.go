@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -103,7 +104,15 @@ func (c *NLICClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 	// Parse response
 	var searchResp SearchResponse
 	if req.Type == "JSON" {
-		if err := json.Unmarshal(body, &searchResp); err != nil {
+		// JSON response is wrapped in LawSearch object
+		var wrapper struct {
+			LawSearch struct {
+				TotalCnt string      `json:"totalCnt"`
+				Page     string      `json:"page"`
+				Law      []LawInfo   `json:"law"`
+			} `json:"LawSearch"`
+		}
+		if err := json.Unmarshal(body, &wrapper); err != nil {
 			// Check if response is HTML (error page)
 			bodyStr := string(body)
 			if strings.HasPrefix(strings.TrimSpace(bodyStr), "<!DOCTYPE") || strings.HasPrefix(strings.TrimSpace(bodyStr), "<html") {
@@ -123,6 +132,14 @@ func (c *NLICClient) Search(ctx context.Context, req *UnifiedSearchRequest) (*Se
 			logger.Debug("API Response (first 500 chars): %s", bodyStr)
 			return nil, fmt.Errorf("응답 데이터 파싱 실패: %w", err)
 		}
+		// Convert wrapper to SearchResponse
+		if totalCnt, err := strconv.Atoi(wrapper.LawSearch.TotalCnt); err == nil {
+			searchResp.TotalCount = totalCnt
+		}
+		if page, err := strconv.Atoi(wrapper.LawSearch.Page); err == nil {
+			searchResp.Page = page
+		}
+		searchResp.Laws = wrapper.LawSearch.Law
 	} else {
 		if err := xml.Unmarshal(body, &searchResp); err != nil {
 			return nil, fmt.Errorf("XML 파싱 실패: %w", err)
